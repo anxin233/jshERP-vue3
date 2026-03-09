@@ -7,4 +7,5 @@
 **/logs
 
 ## front
-**/*.lock
+**/*.lock.claude/
+jshERP-web/npminstall-debug.log
