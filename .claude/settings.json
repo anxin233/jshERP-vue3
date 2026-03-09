@@ -4,7 +4,17 @@
       "Bash(git remote set-url myfork https://github.com/anxin233/jshERP-vue3.git)",
       "Bash(gh repo sync anxin233/jshERP-vue3 --source . --force)",
       "Bash(git restore jshERP-web/package.json)",
-      "Bash(git add .gitignore .claude/settings.json)"
+      "Bash(git add .gitignore .claude/settings.json)",
+      "Bash(git checkout -b vue2-only)",
+      "Bash(git add -A)",
+      "Bash(git rm -rf jshERP-web-v3)",
+      "Bash(git rm \"前端迁移文档-Vue2转Vue3.md\")",
+      "Bash(git checkout master)",
+      "Bash(git checkout vue2-only)",
+      "Bash(git branch -m vue2-only vue2)",
+      "Bash(git clean -fd)",
+      "Bash(git add .claude/settings.json)",
+      "Bash(git commit -m \"chore: 更新 Claude Code 配置:*)"
     ]
   }
 }
