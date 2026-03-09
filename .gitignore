@@ -7,5 +7,10 @@
 **/logs
 
 ## front
-**/*.lock.claude/
+**/*.lock
+
+## claude
+.claude/settings.local.json
+.claude/projects/
+.claude/*.jsonl
 jshERP-web/npminstall-debug.log

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git remote set-url myfork https://github.com/anxin233/jshERP-vue3.git)",
+      "Bash(gh repo sync anxin233/jshERP-vue3 --source . --force)",
+      "Bash(git restore jshERP-web/package.json)",
+      "Bash(git add .gitignore .claude/settings.json)"
+    ]
+  }
+}
