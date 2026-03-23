@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.ProjectCategoryMapperEx">
+
+    <select id="selectByConditionProjectCategory" resultMap="com.jsh.erp.datasource.mappers.ProjectCategoryMapper.BaseResultMap">
+        select *
+        FROM jsh_project_category
+        where 1=1
+        and ifnull(delete_flag,'0') !='1'
+        <if test="name != null">
+            <bind name="bindName" value="'%'+name+'%'"/>
+            and name like #{bindName}
+        </if>
+        <if test="parentId != null">
+            and parent_id = #{parentId}
+        </if>
+        order by sort asc
+    </select>
+
+    <resultMap id="BaseTreeResultMap" type="com.jsh.erp.datasource.vo.TreeNode">
+        <result column="id" property="id"/>
+        <result column="id" property="key"/>
+        <result column="id" property="value"/>
+        <result column="name" property="title"/>
+        <collection column="{currentId=currentId,id=id}" property="children" javaType="java.util.ArrayList"
+                    ofType="com.jsh.erp.datasource.vo.TreeNode" select="getNextNodeTree"/>
+    </resultMap>
+
+    <resultMap id="NextTreeResultMap" type="com.jsh.erp.datasource.vo.TreeNode">
+        <result column="id" property="id"/>
+        <result column="id" property="key"/>
+        <result column="id" property="value"/>
+        <result column="name" property="title"/>
+        <collection column="{currentId=currentId,id=id}" property="children" javaType="java.util.ArrayList"
+                    ofType="com.jsh.erp.datasource.vo.TreeNode" select="getNextNodeTree"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name
+    </sql>
+
+    <select id="getNextNodeTree" resultMap="NextTreeResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>,#{currentId} as currentId
+        FROM jsh_project_category
+        WHERE parent_id = #{id}
+        <if test="currentId != null">
+            and id !=#{currentId}
+        </if>
+        and ifnull(delete_flag,'0') !='1'
+        order by sort asc
+    </select>
+
+    <select id="getNodeTree" resultMap="BaseTreeResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>,#{currentId} as currentId
+        FROM jsh_project_category
+        WHERE parent_id is null
+        and ifnull(delete_flag,'0') !='1'
+        <if test="currentId != null">
+            and id !=#{currentId}
+        </if>
+        order by sort asc
+    </select>
+
+    <insert id="addProjectCategory" parameterType="com.jsh.erp.datasource.entities.ProjectCategory"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+       insert into jsh_project_category
+        (name, category_level, parent_id, sort, serial_no, remark,
+        create_time, update_time, tenant_id, delete_flag)
+        values
+        (#{name}, #{categoryLevel}, #{parentId}, #{sort}, #{serialNo}, #{remark},
+        #{createTime}, #{updateTime}, #{tenantId}, '0')
+    </insert>
+
+    <update id="batchDeleteProjectCategoryByIds">
+       update jsh_project_category
+       set update_time=#{updateTime}, delete_flag='1'
+       where 1=1
+       and ifnull(delete_flag,'0') !='1'
+       and id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </update>
+
+    <update id="editProjectCategory" parameterType="com.jsh.erp.datasource.entities.ProjectCategory">
+        update jsh_project_category
+        set name = #{name},
+            category_level = #{categoryLevel},
+            parent_id = #{parentId},
+            sort = #{sort},
+            serial_no = #{serialNo},
+            remark = #{remark},
+            update_time = #{updateTime}
+        where id = #{id}
+        and ifnull(delete_flag,'0') !='1'
+    </update>
+
+    <select id="getProjectCategoryBySerialNo" resultMap="com.jsh.erp.datasource.mappers.ProjectCategoryMapper.BaseResultMap">
+        select *
+        from jsh_project_category
+        where serial_no = #{serialNo}
+        and ifnull(delete_flag,'0') !='1'
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+
+    <select id="getProjectCategoryListByCategoryIds" resultMap="com.jsh.erp.datasource.mappers.ProjectCategoryMapper.BaseResultMap">
+        select *
+        from jsh_project_category
+        where id in
+        <foreach collection="parentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and ifnull(delete_flag,'0') !='1'
+    </select>
+
+    <select id="getListByParentId" resultMap="com.jsh.erp.datasource.mappers.ProjectCategoryMapper.BaseResultMap">
+        select *
+        from jsh_project_category
+        where parent_id = #{parentId}
+        and ifnull(delete_flag,'0') !='1'
+        order by sort asc
+    </select>
+
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.WorkOrderMapperEx">
+
+  <select id="selectByCondition" resultMap="com.jsh.erp.datasource.mappers.WorkOrderMapper.BaseResultMap">
+    select *
+    from jsh_work_order
+    where ifnull(delete_flag,'0') != '1'
+    <if test="orderNo != null and orderNo != ''">
+      <bind name="bindOrderNo" value="'%'+orderNo+'%'"/>
+      and order_no like #{bindOrderNo}
+    </if>
+    <if test="customerName != null and customerName != ''">
+      <bind name="bindName" value="'%'+customerName+'%'"/>
+      and customer_name like #{bindName}
+    </if>
+    <if test="licensePlate != null and licensePlate != ''">
+      <bind name="bindPlate" value="'%'+licensePlate+'%'"/>
+      and license_plate like #{bindPlate}
+    </if>
+    <if test="status != null and status != ''">
+      and status = #{status}
+    </if>
+    <if test="beginTime != null and beginTime != ''">
+      and intake_time &gt;= #{beginTime}
+    </if>
+    <if test="endTime != null and endTime != ''">
+      and intake_time &lt;= #{endTime}
+    </if>
+    order by id desc
+  </select>
+
+  <update id="batchDeleteByIds">
+    update jsh_work_order
+    set update_time = #{updateTime}, delete_flag = '1'
+    where ifnull(delete_flag,'0') != '1'
+    and id in (
+    <foreach collection="ids" item="id" separator=",">
+      #{id}
+    </foreach>
+    )
+  </update>
+
+</mapper>

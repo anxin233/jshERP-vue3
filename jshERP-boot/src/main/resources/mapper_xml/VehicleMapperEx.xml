@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.VehicleMapperEx">
+
+    <!-- 跨字段关键字搜索：车牌号/姓名/手机/VIN 任一字段匹配即返回 -->
+    <select id="searchByKeyword" resultMap="com.jsh.erp.datasource.mappers.VehicleMapper.BaseResultMap">
+        <bind name="kw" value="'%'+keyword+'%'"/>
+        select *
+        from jsh_vehicle
+        where ifnull(delete_flag,'0') != '1'
+          and enabled = 1
+          and (
+              license_plate_no like #{kw}
+           or concat(ifnull(license_plate_province,''), ifnull(license_plate_no,'')) like #{kw}
+           or customer_name    like #{kw}
+           or customer_phone   like #{kw}
+           or vin              like #{kw}
+          )
+        order by id desc
+        limit #{limit}
+    </select>
+
+    <select id="selectByConditionVehicle" resultMap="com.jsh.erp.datasource.mappers.VehicleMapper.BaseResultMap">
+        select *
+        from jsh_vehicle
+        where ifnull(delete_flag,'0') != '1'
+        <if test="licensePlateNo != null and licensePlateNo != ''">
+            <bind name="bindPlate" value="'%'+licensePlateNo+'%'"/>
+            and license_plate_no like #{bindPlate}
+        </if>
+        <if test="customerName != null and customerName != ''">
+            <bind name="bindName" value="'%'+customerName+'%'"/>
+            and customer_name like #{bindName}
+        </if>
+        <if test="customerPhone != null and customerPhone != ''">
+            <bind name="bindPhone" value="'%'+customerPhone+'%'"/>
+            and customer_phone like #{bindPhone}
+        </if>
+        <if test="enabled != null and enabled != ''">
+            and enabled = #{enabled}
+        </if>
+        order by id desc
+    </select>
+
+    <update id="batchDeleteVehicleByIds">
+        update jsh_vehicle
+        set update_time = #{updateTime}, delete_flag = '1'
+        where ifnull(delete_flag,'0') != '1'
+        and id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </update>
+
+    <update id="batchSetStatus">
+        update jsh_vehicle
+        set enabled = #{enabled}
+        where ifnull(delete_flag,'0') != '1'
+        and id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </update>
+
+</mapper>

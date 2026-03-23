@@ -1,0 +1,248 @@
+# jshERP 菜单配置机制详解
+
+## 核心机制：数据库驱动的动态路由
+
+jshERP 使用**完全动态的路由系统**，所有菜单和路由都是从数据库加载的，**不需要在 router.config.js 中手动配置**。
+
+## 工作流程
+
+### 1. 用户登录后的路由加载流程
+
+```
+用户登录
+    ↓
+permission.js 拦截路由
+    ↓
+调用 store.dispatch('GetPermissionList')
+    ↓
+后端 API: /function/findMenuByPNumber (queryPermissionsByUser)
+    ↓
+从 jsh_function 表查询用户有权限的菜单
+    ↓
+generateIndexRouter(menuData) 生成路由配置
+    ↓
+router.addRoutes() 动态添加路由
+    ↓
+菜单显示，路由生效
+```
+
+### 2. 关键代码位置
+
+**前端路由拦截器：** `jshERP-web/src/permission.js`
+```javascript
+// 第22行：获取权限列表
+store.dispatch('GetPermissionList').then(res => {
+  const menuData = res;
+  // 第32行：生成路由
+  constRoutes = generateIndexRouter(menuData);
+  // 第37行：动态添加路由
+  router.addRoutes(store.getters.addRouters)
+})
+```
+
+**路由生成函数：** `jshERP-web/src/utils/util.js`
+```javascript
+// 第84行：generateIndexRouter 函数
+export function generateIndexRouter(data) {
+  let indexRouter = generateChildRouters(data)
+  // ...
+}
+
+// 第102行：generateChildRouters 函数
+function generateChildRouters (data) {
+  // 遍历菜单数据
+  for (let item of data) {
+    // 根据 component 字段动态导入组件
+    if(item.component.indexOf("layouts")>=0){
+      componentPath = () => import('@/components'+item.component);
+    } else {
+      componentPath = () => import('@/views'+item.component);
+    }
+    // 生成路由配置
+    let menu = {
+      path: item.url,
+      name: item.text,
+      meta: { title: item.text, icon: item.icon, ... }
+    }
+  }
+}
+```
+
+**权限获取：** `jshERP-web/src/store/modules/user.js`
+```javascript
+// 第89行：GetPermissionList action
+GetPermissionList({ commit }) {
+  let params = {pNumber:0, userId: Vue.ls.get(USER_ID)};
+  queryPermissionsByUser(params).then(response => {
+    commit('SET_PERMISSIONLIST', menuData)
+  })
+}
+```
+
+**后端API：** `jshERP-boot/src/main/java/com/jsh/erp/controller/FunctionController.java`
+```java
+@PostMapping(value = "/findMenuByPNumber")
+public JSONArray findMenuByPNumber(@RequestBody JSONObject obj) {
+    // 根据用户ID和父菜单编号查询菜单
+    // 返回树形结构的菜单数据
+}
+```
+
+### 3. 数据库表结构
+
+**jsh_function 表（菜单配置表）：**
+
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| number | 菜单编号（唯一标识） | `project` |
+| name | 菜单名称 | `项目管理` |
+| parent_number | 父菜单编号 | `0`（顶级菜单） |
+| url | 前端路由路径 | `/project` |
+| component | Vue组件路径 | `RouteView` 或 `project/ProjectList` |
+| sort | 排序号 | `150` |
+| enabled | 是否启用 | `1` |
+| icon | 图标名称 | `project` |
+| type | 类型 | `0`（菜单） |
+| push_btn | 功能按钮权限 | `1,3`（编辑、导出） |
+
+### 4. Component 字段的映射规则
+
+根据 `generateChildRouters` 函数的逻辑：
+
+```javascript
+if(item.component.indexOf("layouts")>=0){
+  // 包含 "layouts" 的组件从 @/components 导入
+  componentPath = () => import('@/components' + item.component);
+} else {
+  // 其他组件从 @/views 导入
+  componentPath = () => import('@/views' + item.component);
+}
+```
+
+**示例映射：**
+
+| component 值 | 实际导入路径 | 说明 |
+|-------------|-------------|------|
+| `RouteView` | `@/components/layouts/RouteView` | 布局组件（父菜单） |
+| `project/ProjectList` | `@/views/project/ProjectList` | 页面组件（子菜单） |
+| `/project/ProjectCategoryList` | `@/views/project/ProjectCategoryList` | 页面组件 |
+
+**注意：** component 字段如果以 `/` 开头，会被自动处理为 `@/views/project/ProjectCategoryList`
+
+## 为什么不需要修改 router.config.js？
+
+### router.config.js 的作用
+
+`router.config.js` 只定义了**静态路由**：
+- 登录页面 (`/user/login`)
+- 注册页面 (`/user/register`)
+- 首页 (`/dashboard/analysis`)
+- 404页面 (`/404`)
+
+### asyncRouterMap 为什么是空的？
+
+```javascript
+export const asyncRouterMap = [
+  {
+    path: '/',
+    name: 'dashboard',
+    component: TabLayout,
+    meta: { title: '首页' },
+    redirect: '/dashboard/analysis',
+    children: [
+      // 这里是空的！所有业务菜单都是动态加载的
+    ]
+  }
+]
+```
+
+因为所有业务菜单（商品管理、财务管理、项目管理等）都是：
+1. 存储在数据库 `jsh_function` 表中
+2. 用户登录后从后端API获取
+3. 通过 `generateIndexRouter` 动态生成路由
+4. 通过 `router.addRoutes()` 动态添加到路由表
+
+## 项目管理模块的菜单配置
+
+我们已经通过SQL脚本在 `jsh_function` 表中插入了菜单配置：
+
+```sql
+-- 一级菜单
+INSERT INTO jsh_function (number, name, parent_number, url, component, ...)
+VALUES ('project', '项目管理', '0', '/project', 'RouteView', ...);
+
+-- 二级菜单
+INSERT INTO jsh_function (number, name, parent_number, url, component, ...)
+VALUES ('project_category', '项目类别', 'project', '/project/category', 'project/ProjectCategoryList', ...);
+
+INSERT INTO jsh_function (number, name, parent_number, url, component, ...)
+VALUES ('project_info', '项目信息', 'project', '/project/info', 'project/ProjectList', ...);
+```
+
+### 路由生成结果
+
+当用户登录后，系统会自动生成如下路由：
+
+```javascript
+{
+  path: '/project',
+  name: '项目管理',
+  component: () => import('@/components/layouts/RouteView'),
+  meta: { title: '项目管理', icon: 'project' },
+  children: [
+    {
+      path: '/project/category',
+      name: '项目类别',
+      component: () => import('@/views/project/ProjectCategoryList'),
+      meta: { title: '项目类别', icon: 'folder' }
+    },
+    {
+      path: '/project/info',
+      name: '项目信息',
+      component: () => import('@/views/project/ProjectList'),
+      meta: { title: '项目信息', icon: 'file-text' }
+    }
+  ]
+}
+```
+
+## 验证菜单配置
+
+### 1. 检查数据库
+
+```sql
+SELECT number, name, parent_number, url, component, enabled
+FROM jsh_function
+WHERE number LIKE 'project%';
+```
+
+### 2. 检查用户权限
+
+确保用户角色有访问这些菜单的权限（通过 `jsh_user_business` 表配置）。
+
+### 3. 重启服务
+
+- 重启后端：`java -jar jshERP-boot/target/jshERP.jar`
+- 重启前端：`cd jshERP-web && yarn serve`
+
+### 4. 登录测试
+
+登录系统后，左侧菜单会自动显示"项目管理"及其子菜单。
+
+## 总结
+
+✅ **不需要修改 router.config.js**
+✅ **所有菜单配置都在数据库中**
+✅ **前端组件文件已创建在正确位置**
+✅ **系统会自动加载和渲染菜单**
+
+只需要：
+1. ✅ 数据库中插入菜单配置（已完成）
+2. ✅ 创建对应的Vue组件文件（已完成）
+3. ⏳ 重启服务
+4. ⏳ 登录测试
+
+---
+
+**创建日期：** 2026-03-09
+**作者：** 系统架构师

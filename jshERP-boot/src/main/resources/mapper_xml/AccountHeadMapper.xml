@@ -19,6 +19,7 @@
     <result column="source" jdbcType="VARCHAR" property="source" />
     <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
     <result column="delete_flag" jdbcType="VARCHAR" property="deleteFlag" />
+    <result column="work_order_id" jdbcType="BIGINT" property="workOrderId" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -80,7 +81,7 @@
   </sql>
   <sql id="Base_Column_List">
     id, type, organ_id, hands_person_id, creator, change_amount, discount_money, total_price, 
-    account_id, bill_no, bill_time, remark, file_name, status, source, tenant_id, delete_flag
+    account_id, bill_no, bill_time, remark, file_name, status, source, tenant_id, delete_flag, work_order_id
   </sql>
   <select id="selectByExample" parameterType="com.jsh.erp.datasource.entities.AccountHeadExample" resultMap="BaseResultMap">
     select
@@ -118,7 +119,7 @@
       discount_money, total_price, account_id, 
       bill_no, bill_time, remark, 
       file_name, status, source, 
-      tenant_id, delete_flag)
+      tenant_id, delete_flag, work_order_id)
     values (#{id,jdbcType=BIGINT}, #{type,jdbcType=VARCHAR}, #{organId,jdbcType=BIGINT}, 
       #{handsPersonId,jdbcType=BIGINT}, #{creator,jdbcType=BIGINT}, #{changeAmount,jdbcType=DECIMAL}, 
       #{discountMoney,jdbcType=DECIMAL}, #{totalPrice,jdbcType=DECIMAL}, #{accountId,jdbcType=BIGINT}, 
@@ -180,6 +181,9 @@
       <if test="deleteFlag != null">
         delete_flag,
       </if>
+      <if test="workOrderId != null">
+        work_order_id,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -232,6 +236,9 @@
       </if>
       <if test="deleteFlag != null">
         #{deleteFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="workOrderId != null">
+        #{workOrderId,jdbcType=BIGINT},
       </if>
     </trim>
   </insert>
@@ -374,6 +381,9 @@
       <if test="deleteFlag != null">
         delete_flag = #{deleteFlag,jdbcType=VARCHAR},
       </if>
+      <if test="workOrderId != null">
+        work_order_id = #{workOrderId,jdbcType=BIGINT},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -394,7 +404,8 @@
       status = #{status,jdbcType=VARCHAR},
       source = #{source,jdbcType=VARCHAR},
       tenant_id = #{tenantId,jdbcType=BIGINT},
-      delete_flag = #{deleteFlag,jdbcType=VARCHAR}
+      delete_flag = #{deleteFlag,jdbcType=VARCHAR},
+      work_order_id = #{workOrderId,jdbcType=BIGINT}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

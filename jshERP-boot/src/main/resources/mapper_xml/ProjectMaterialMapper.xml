@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.ProjectMaterialMapper">
+    <resultMap id="BaseResultMap" type="com.jsh.erp.datasource.entities.ProjectMaterial">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="project_id" jdbcType="BIGINT" property="projectId" />
+        <result column="material_id" jdbcType="BIGINT" property="materialId" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
+        <result column="delete_flag" jdbcType="VARCHAR" property="deleteFlag" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, project_id, material_id, create_time, tenant_id, delete_flag
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from jsh_project_material
+        where id = #{id,jdbcType=BIGINT}
+        and ifnull(delete_flag,'0') !='1'
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update jsh_project_material
+        set delete_flag = '1'
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.jsh.erp.datasource.entities.ProjectMaterial"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into jsh_project_material (project_id, material_id, create_time,
+        tenant_id, delete_flag)
+        values (#{projectId,jdbcType=BIGINT}, #{materialId,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP},
+        #{tenantId,jdbcType=BIGINT}, '0')
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jsh.erp.datasource.entities.ProjectMaterial"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into jsh_project_material
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">
+                project_id,
+            </if>
+            <if test="materialId != null">
+                material_id,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="tenantId != null">
+                tenant_id,
+            </if>
+            delete_flag,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">
+                #{projectId,jdbcType=BIGINT},
+            </if>
+            <if test="materialId != null">
+                #{materialId,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="tenantId != null">
+                #{tenantId,jdbcType=BIGINT},
+            </if>
+            '0',
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jsh.erp.datasource.entities.ProjectMaterial">
+        update jsh_project_material
+        <set>
+            <if test="projectId != null">
+                project_id = #{projectId,jdbcType=BIGINT},
+            </if>
+            <if test="materialId != null">
+                material_id = #{materialId,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="deleteFlag != null">
+                delete_flag = #{deleteFlag,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jsh.erp.datasource.entities.ProjectMaterial">
+        update jsh_project_material
+        set project_id = #{projectId,jdbcType=BIGINT},
+        material_id = #{materialId,jdbcType=BIGINT},
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+        tenant_id = #{tenantId,jdbcType=BIGINT},
+        delete_flag = #{deleteFlag,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

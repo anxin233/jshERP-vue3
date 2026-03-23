@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.OptionGroupMapper">
+
+    <resultMap id="BaseResultMap" type="com.jsh.erp.datasource.entities.OptionGroup">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="code"        jdbcType="VARCHAR" property="code"/>
+        <result column="name"        jdbcType="VARCHAR" property="name"/>
+        <result column="scope"       jdbcType="VARCHAR" property="scope"/>
+        <result column="tenant_id"   jdbcType="BIGINT"  property="tenantId"/>
+        <result column="remark"      jdbcType="VARCHAR" property="remark"/>
+        <result column="enabled"     jdbcType="BIT"     property="enabled"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="delete_flag" jdbcType="CHAR"    property="deleteFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, code, name, scope, tenant_id, remark, enabled, create_time, update_time, delete_flag
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from jsh_option_group
+        where id = #{id}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from jsh_option_group
+        where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.jsh.erp.datasource.entities.OptionGroup">
+        insert into jsh_option_group (code, name, scope, tenant_id, remark, enabled, delete_flag)
+        values (#{code}, #{name}, #{scope}, #{tenantId}, #{remark}, #{enabled}, #{deleteFlag})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jsh.erp.datasource.entities.OptionGroup">
+        insert into jsh_option_group
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="scope != null">scope,</if>
+            <if test="tenantId != null">tenant_id,</if>
+            <if test="remark != null">remark,</if>
+            <if test="enabled != null">enabled,</if>
+            <if test="deleteFlag != null">delete_flag,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="scope != null">#{scope},</if>
+            <if test="tenantId != null">#{tenantId},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="enabled != null">#{enabled},</if>
+            <if test="deleteFlag != null">#{deleteFlag},</if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jsh.erp.datasource.entities.OptionGroup">
+        update jsh_option_group
+        <set>
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="scope != null">scope = #{scope},</if>
+            <if test="tenantId != null">tenant_id = #{tenantId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="enabled != null">enabled = #{enabled},</if>
+            <if test="deleteFlag != null">delete_flag = #{deleteFlag},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jsh.erp.datasource.entities.OptionGroup">
+        update jsh_option_group
+        set code = #{code},
+            name = #{name},
+            scope = #{scope},
+            tenant_id = #{tenantId},
+            remark = #{remark},
+            enabled = #{enabled},
+            delete_flag = #{deleteFlag}
+        where id = #{id}
+    </update>
+
+</mapper>
+

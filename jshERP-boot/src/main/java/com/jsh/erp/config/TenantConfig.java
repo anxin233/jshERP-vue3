@@ -53,9 +53,17 @@ public class TenantConfig {
                 String token = request.getHeader("X-Access-Token");
                 Long tenantId = Tools.getTenantIdByToken(token);
                 if (tenantId!=0L) {
-                    // 这里可以判断是否过滤表
-                    if ("jsh_sequence".equals(tableName) || "jsh_function".equals(tableName)
-                            || "jsh_platform_config".equals(tableName) || "jsh_tenant".equals(tableName)) {
+                    // 这里可以判断是否过滤表（不加租户字段的表）
+                    if ("jsh_sequence".equals(tableName)
+                            || "jsh_function".equals(tableName)
+                            || "jsh_platform_config".equals(tableName)
+                            || "jsh_tenant".equals(tableName)
+                            // 工单明细表本身不带 tenant_id，依赖主表过滤
+                            || "jsh_work_order_project".equals(tableName)
+                            || "jsh_work_order_material".equals(tableName)
+                            // 选项中心需要合并系统级(tenant_id IS NULL)和租户级数据，自行在 SQL 过滤
+                            || "jsh_option_group".equals(tableName)
+                            || "jsh_option_item".equals(tableName)) {
                         res = true;
                     } else {
                         res = false;

@@ -1,0 +1,285 @@
+# 项目管理菜单问题排查与解决
+
+## 问题1：菜单不显示
+
+### 原因
+缺少角色权限配置。jshERP使用基于角色的权限控制，即使菜单配置正确，如果角色没有权限也不会显示。
+
+### 解决方案
+已执行SQL为管理员角色（角色ID=4）添加权限：
+
+```sql
+-- 添加菜单权限
+UPDATE jsh_user_business
+SET value = CONCAT(value, '[262][263][264]')
+WHERE type='RoleFunctions' AND key_id='4';
+
+-- 添加按钮权限
+UPDATE jsh_user_business
+SET btn_str = CONCAT(
+    TRIM(TRAILING ']' FROM btn_str),
+    ',{"funId":263,"btnStr":"1,3"},{"funId":264,"btnStr":"1,3"}]'
+)
+WHERE type='RoleFunctions' AND key_id='4';
+```
+
+### 验证
+```sql
+SELECT value FROM jsh_user_business
+WHERE type='RoleFunctions' AND key_id='4';
+-- 应该包含 [262][263][264]
+```
+
+---
+
+## 问题2：点击菜单报错 "Cannot find module './viewsRouteView'"
+
+### 错误信息
+```
+Error: Cannot find module './viewsRouteView'
+    at eval (eval at ./src lazy recursive ^\.\/views.*$ (app.js:15540:1)
+```
+
+### 原因
+一级菜单的 `component` 字段配置错误。使用了 `RouteView` 而不是 `/layouts/TabLayout`。
+
+根据 `jshERP-web/src/utils/util.js` 的路由生成逻辑：
+```javascript
+if(item.component.indexOf("layouts")>=0){
+  // 包含 "layouts" 的从 @/components 导入
+  componentPath = () => import('@/components' + item.component);
+} else {
+  // 其他的从 @/views 导入
+  componentPath = () => import('@/views' + item.component);
+}
+```
+
+使用 `RouteView` 会被解析为 `@/views/RouteView`，导致找不到模块。
+
+### 正确配置
+
+**一级菜单（父菜单）：**
+- component: `/layouts/TabLayout`
+- 会被解析为：`@/components/layouts/TabLayout`
+
+**二级菜单（子菜单）：**
+- component: `/project/ProjectCategoryList` （注意开头必须有斜杠）
+- 会被解析为：`@/views/project/ProjectCategoryList`
+
+### 解决方案
+已执行SQL修复：
+
+```sql
+UPDATE jsh_function
+SET component='/layouts/TabLayout'
+WHERE number='project';
+```
+
+### 验证
+```sql
+SELECT id, number, name, component
+FROM jsh_function
+WHERE number LIKE 'project%';
+```
+
+应该显示：
+```
+262  project           项目管理  /layouts/TabLayout
+263  project_category  项目类别  /project/ProjectCategoryList
+264  project_info      项目信息  /project/ProjectList
+```
+
+---
+
+## 问题3：点击子菜单报错 "Cannot find module './viewsproject/ProjectCategoryList'"
+
+### 错误信息
+```
+Error: Cannot find module './viewsproject/ProjectCategoryList'
+    at eval (eval at ./src lazy recursive ^\.\/views.*$ (app.js:15540:1)
+```
+
+### 原因
+二级菜单的 `component` 字段缺少开头的斜杠。使用了 `project/ProjectCategoryList` 而不是 `/project/ProjectCategoryList`。
+
+根据 `jshERP-web/src/utils/util.js` 第110行的路由生成逻辑：
+```javascript
+componentPath = () => import('@/views' + item.component);
+```
+
+直接拼接 `@/views` 和 `item.component`，如果 `item.component` 不以斜杠开头，就会变成 `@/viewsproject/...`（缺少斜杠分隔）。
+
+### 正确配置
+
+**二级菜单必须以斜杠开头：**
+- ✅ 正确：`/project/ProjectCategoryList` → 解析为 `@/views/project/ProjectCategoryList`
+- ❌ 错误：`project/ProjectCategoryList` → 解析为 `@/viewsproject/ProjectCategoryList`
+
+### 解决方案
+执行SQL修复：
+
+```sql
+UPDATE jsh_function
+SET component='/project/ProjectCategoryList'
+WHERE number='project_category';
+
+UPDATE jsh_function
+SET component='/project/ProjectList'
+WHERE number='project_info';
+```
+
+### 验证
+```sql
+SELECT id, number, name, component
+FROM jsh_function
+WHERE number LIKE 'project%';
+```
+
+应该显示：
+```
+262  project           项目管理  /layouts/TabLayout
+263  project_category  项目类别  /project/ProjectCategoryList
+264  project_info      项目信息  /project/ProjectList
+```
+
+---
+
+## 完整的菜单配置规范
+
+### 数据库配置 (jsh_function表)
+
+| 字段 | 一级菜单 | 二级菜单 | 说明 |
+|------|---------|---------|------|
+| number | `project` | `project_category` | 唯一标识 |
+| name | `项目管理` | `项目类别` | 显示名称 |
+| parent_number | `0` | `project` | 父菜单编号 |
+| url | `/project` | `/project/category` | 路由路径 |
+| component | `/layouts/TabLayout` | `project/ProjectCategoryList` | 组件路径 |
+| sort | `150` | `151` | 排序号 |
+| enabled | `b'1'` | `b'1'` | 是否启用 |
+| icon | `project` | `folder` | 图标名称 |
+| type | `0` | `0` | 类型（0=菜单） |
+| push_btn | `NULL` | `1,3` | 按钮权限 |
+
+### 权限配置 (jsh_user_business表)
+
+**菜单权限 (type='RoleFunctions')：**
+- value字段：`[262][263][264]` （菜单ID数组）
+
+**按钮权限 (btn_str字段)：**
+```json
+[
+  {"funId":263,"btnStr":"1,3"},  // 项目类别：编辑、导出
+  {"funId":264,"btnStr":"1,3"}   // 项目信息：编辑、导出
+]
+```
+
+**按钮权限代码：**
+- 1 = 编辑
+- 2 = 删除
+- 3 = 导出
+- 7 = 批量删除
+
+---
+
+## 排查步骤清单
+
+### 1. 检查菜单配置
+```sql
+SELECT id, number, name, parent_number, url, component, enabled
+FROM jsh_function
+WHERE number LIKE 'project%';
+```
+
+✅ 确认：
+- [ ] 菜单记录存在
+- [ ] component路径正确（一级菜单用 `/layouts/TabLayout`）
+- [ ] enabled字段有值（可以为空）
+
+### 2. 检查用户角色
+```sql
+-- 查询用户ID（假设登录名是admin）
+SELECT id FROM jsh_user WHERE login_name='admin';
+
+-- 查询用户的角色ID
+SELECT value FROM jsh_user_business
+WHERE type='UserRole' AND key_id='<用户ID>';
+```
+
+### 3. 检查角色权限
+```sql
+-- 查询角色的菜单权限
+SELECT value FROM jsh_user_business
+WHERE type='RoleFunctions' AND key_id='<角色ID>';
+```
+
+✅ 确认：value字段包含 `[262][263][264]`
+
+### 4. 检查前端文件
+```bash
+# 检查Vue组件文件是否存在
+ls jshERP-web/src/views/project/ProjectCategoryList.vue
+ls jshERP-web/src/views/project/ProjectList.vue
+ls jshERP-web/src/views/project/modules/ProjectCategoryModal.vue
+ls jshERP-web/src/views/project/modules/ProjectModal.vue
+```
+
+### 5. 清除缓存并重新登录
+1. 退出登录
+2. 清除浏览器缓存（F12 → Application → Clear storage）
+3. 清除LocalStorage
+4. 重新登录
+
+---
+
+## 常见问题
+
+### Q1: 菜单显示了但点击报404
+**原因：** 前端Vue组件文件不存在或路径错误
+**解决：** 检查 `jshERP-web/src/views/project/` 目录下的文件
+
+### Q2: 菜单显示了但没有按钮（编辑、删除等）
+**原因：** 缺少按钮权限配置
+**解决：** 更新 `jsh_user_business` 表的 `btn_str` 字段
+
+### Q3: 修改了数据库但菜单还是不显示
+**原因：** 前端缓存了旧的权限数据
+**解决：** 重新登录或清除LocalStorage
+
+### Q4: 后端启动报MyBatis错误
+**原因：** 缺少基础Mapper XML文件
+**解决：** 确保以下文件存在：
+- `ProjectCategoryMapper.xml`
+- `ProjectMapper.xml`
+- `ProjectCategoryMapperEx.xml`
+- `ProjectMapperEx.xml`
+
+---
+
+## 相关文件清单
+
+### 数据库脚本
+- ✅ `project_management_migration.sql` - 数据表创建
+- ✅ `project_menu_config.sql` - 菜单配置（已修复）
+- ✅ `project_menu_permission.sql` - 权限配置
+
+### 后端文件
+- ✅ Entity: `ProjectCategory.java`, `Project.java`, `ProjectEx.java`
+- ✅ Mapper: `ProjectCategoryMapper.java`, `ProjectMapper.java`
+- ✅ MapperEx: `ProjectCategoryMapperEx.java`, `ProjectMapperEx.java`
+- ✅ XML: `ProjectCategoryMapper.xml`, `ProjectMapper.xml`
+- ✅ XMLEx: `ProjectCategoryMapperEx.xml`, `ProjectMapperEx.xml`
+- ✅ Service: `ProjectCategoryService.java`, `ProjectService.java`
+- ✅ Controller: `ProjectCategoryController.java`, `ProjectController.java`
+
+### 前端文件
+- ✅ API: `api/api.js` (已添加项目管理API)
+- ✅ 页面: `views/project/ProjectCategoryList.vue`
+- ✅ 页面: `views/project/ProjectList.vue`
+- ✅ 组件: `views/project/modules/ProjectCategoryModal.vue`
+- ✅ 组件: `views/project/modules/ProjectModal.vue`
+
+---
+
+**最后更新：** 2026-03-10
+**状态：** ✅ 所有问题已解决

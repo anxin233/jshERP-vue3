@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.ProjectMaterialMapperEx">
+
+    <select id="getListByProjectId" resultMap="com.jsh.erp.datasource.mappers.ProjectMaterialMapper.BaseResultMap">
+        select *
+        from jsh_project_material
+        where project_id = #{projectId}
+        and ifnull(delete_flag,'0') !='1'
+    </select>
+
+    <select id="getMaterialIdsByProjectId" resultType="java.lang.Long">
+        select material_id
+        from jsh_project_material
+        where project_id = #{projectId}
+        and ifnull(delete_flag,'0') !='1'
+    </select>
+
+    <resultMap id="ProjectMaterialVoMap" type="com.jsh.erp.datasource.vo.ProjectMaterialVo">
+        <result column="material_id"      property="materialId" />
+        <result column="name"             property="name" />
+        <result column="category_name"    property="categoryName" />
+        <result column="standard"         property="standard" />
+        <result column="model"            property="model" />
+        <result column="commodity_decimal" property="commodityDecimal" />
+        <result column="quantity"         property="quantity" />
+    </resultMap>
+
+    <select id="getProjectMaterialsWithDetail" resultMap="ProjectMaterialVoMap">
+        select pm.material_id, m.name, mc.name as category_name,
+               m.standard, m.model, jme.commodity_decimal, pm.quantity
+        from jsh_project_material pm
+        join (
+            select m2.id, min(me2.id) as me_id
+            from jsh_material m2
+            left join jsh_material_extend me2 on m2.id = me2.material_id
+                and ifnull(me2.delete_flag,'0') != '1'
+            where ifnull(m2.delete_flag,'0') != '1'
+            group by m2.id
+        ) t on pm.material_id = t.id
+        join jsh_material m on t.id = m.id
+        left join jsh_material_category mc on m.category_id = mc.id
+        left join jsh_material_extend jme on t.me_id = jme.id
+        where pm.project_id = #{projectId}
+        and ifnull(pm.delete_flag,'0') != '1'
+    </select>
+
+    <update id="deleteByProjectIds">
+        update jsh_project_material
+        set delete_flag = '1', create_time = #{updateTime}
+        where project_id in (
+        <foreach collection="projectIds" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+        and ifnull(delete_flag,'0') != '1'
+    </update>
+
+    <insert id="batchInsert">
+        insert into jsh_project_material (project_id, material_id, quantity, create_time, delete_flag)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.projectId}, #{item.materialId}, #{item.quantity}, #{item.createTime}, '0')
+        </foreach>
+    </insert>
+
+    <update id="deleteByProjectId">
+        update jsh_project_material
+        set delete_flag = '1'
+        where project_id = #{projectId}
+        and ifnull(delete_flag,'0') !='1'
+    </update>
+
+</mapper>

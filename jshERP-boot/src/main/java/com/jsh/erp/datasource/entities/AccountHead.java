@@ -38,6 +38,9 @@ public class AccountHead {
 
     private String deleteFlag;
 
+    /** 关联工单ID，用于将工单结算纳入账户统计 */
+    private Long workOrderId;
+
     public Long getId() {
         return id;
     }
@@ -172,5 +175,13 @@ public class AccountHead {
 
     public void setDeleteFlag(String deleteFlag) {
         this.deleteFlag = deleteFlag == null ? null : deleteFlag.trim();
+    }
+
+    public Long getWorkOrderId() {
+        return workOrderId;
+    }
+
+    public void setWorkOrderId(Long workOrderId) {
+        this.workOrderId = workOrderId;
     }
 }

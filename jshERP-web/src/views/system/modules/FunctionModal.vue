@@ -169,8 +169,10 @@
           this.jselectMultiple.value = ''
         }
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model,'number', 'name', 'parentNumber', 'parentName', 'url', 'component', 'sort', 'pushBtn', 'icon', 'enabled'))
-          autoJumpNextInput('functionModal')
+          setTimeout(() => {
+            this.form.setFieldsValue(pick(this.model,'number', 'name', 'parentNumber', 'parentName', 'url', 'component', 'sort', 'pushBtn', 'icon', 'enabled'))
+            autoJumpNextInput('functionModal')
+          }, 0)
         });
       },
       close () {

@@ -78,6 +78,24 @@ const addFunction = (params)=>postAction("/function/add",params);
 const editFunction = (params)=>putAction("/function/update",params);
 const checkFunction = (params)=>getAction("/function/checkIsNameExist",params);
 const checkNumber = (params)=>getAction("/function/checkIsNumberExist",params);
+//项目类别
+const addProjectCategory = (params)=>postAction("/projectCategory/add",params);
+const editProjectCategory = (params)=>putAction("/projectCategory/update",params);
+const checkProjectCategory = (params)=>getAction("/projectCategory/checkIsNameExist",params);
+const getProjectCategoryTree = (params)=>getAction("/projectCategory/getTree",params);
+const queryProjectCategoryById = (params)=>getAction("/projectCategory/info",params);
+//项目信息
+const addProject = (params)=>postAction("/project/add",params);
+const editProject = (params)=>putAction("/project/update",params);
+const getProjectListByCategoryId = (params)=>getAction("/project/getListByCategoryId",params);
+//客户车辆
+const addVehicle = (params)=>postAction("/vehicle/add",params);
+const editVehicle = (params)=>putAction("/vehicle/update",params);
+//工单管理
+const addWorkOrder = (params)=>postAction("/workOrder/add",params);
+const editWorkOrder = (params)=>putAction("/workOrder/update",params);
+const getWorkOrderInfo = (params)=>getAction("/workOrder/info",params);
+const updateWorkOrderStatus = (params)=>putAction("/workOrder/updateStatus",params);
 //系统配置
 const addSystemConfig = (params)=>postAction("/systemConfig/add",params);
 const editSystemConfig = (params)=>putAction("/systemConfig/update",params);
@@ -208,7 +226,21 @@ export {
   batchAddDepotHeadAndDetail,
   findStockByDepotAndBarCode,
   getBatchNumberList,
-  findFinancialDetailByNumber
+  findFinancialDetailByNumber,
+  addProjectCategory,
+  editProjectCategory,
+  checkProjectCategory,
+  getProjectCategoryTree,
+  queryProjectCategoryById,
+  addProject,
+  editProject,
+  getProjectListByCategoryId,
+  addVehicle,
+  editVehicle,
+  addWorkOrder,
+  editWorkOrder,
+  getWorkOrderInfo,
+  updateWorkOrderStatus
 }
 
 

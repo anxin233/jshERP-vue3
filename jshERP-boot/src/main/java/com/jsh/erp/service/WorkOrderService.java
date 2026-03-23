@@ -1,0 +1,351 @@
+package com.jsh.erp.service;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.jsh.erp.constants.BusinessConstants;
+import com.jsh.erp.datasource.entities.Vehicle;
+import com.jsh.erp.datasource.entities.WorkOrder;
+import com.jsh.erp.datasource.entities.WorkOrderMaterial;
+import com.jsh.erp.datasource.entities.WorkOrderProject;
+import com.jsh.erp.datasource.entities.AccountHead;
+import com.jsh.erp.datasource.entities.AccountItem;
+import com.jsh.erp.datasource.mappers.WorkOrderMapper;
+import com.jsh.erp.datasource.mappers.WorkOrderMapperEx;
+import com.jsh.erp.datasource.mappers.WorkOrderMaterialMapperEx;
+import com.jsh.erp.datasource.mappers.WorkOrderProjectMapperEx;
+import com.jsh.erp.datasource.mappers.AccountHeadMapper;
+import com.jsh.erp.datasource.mappers.AccountItemMapper;
+import com.jsh.erp.exception.JshException;
+import com.jsh.erp.utils.PageUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class WorkOrderService {
+
+    private final Logger logger = LoggerFactory.getLogger(WorkOrderService.class);
+
+    @Resource
+    private WorkOrderMapper workOrderMapper;
+    @Resource
+    private WorkOrderMapperEx workOrderMapperEx;
+    @Resource
+    private WorkOrderProjectMapperEx workOrderProjectMapperEx;
+    @Resource
+    private WorkOrderMaterialMapperEx workOrderMaterialMapperEx;
+    @Resource
+    private LogService logService;
+    @Resource
+    private com.jsh.erp.datasource.mappers.VehicleMapper vehicleMapper;
+    @Resource
+    private AccountHeadMapper accountHeadMapper;
+    @Resource
+    private AccountItemMapper accountItemMapper;
+    @Resource
+    private UserService userService;
+
+    public WorkOrder getById(Long id) throws Exception {
+        try {
+            return workOrderMapper.selectByPrimaryKey(id);
+        } catch (Exception e) {
+            JshException.readFail(logger, e);
+        }
+        return null;
+    }
+
+    public List<WorkOrderProject> getProjects(Long orderId) throws Exception {
+        try {
+            return workOrderProjectMapperEx.getByOrderId(orderId);
+        } catch (Exception e) {
+            JshException.readFail(logger, e);
+        }
+        return new ArrayList<>();
+    }
+
+    public List<WorkOrderMaterial> getMaterials(Long orderId) throws Exception {
+        try {
+            return workOrderMaterialMapperEx.getByOrderId(orderId);
+        } catch (Exception e) {
+            JshException.readFail(logger, e);
+        }
+        return new ArrayList<>();
+    }
+
+    public List<WorkOrder> select(String orderNo, String customerName, String licensePlate,
+                                  String status, String beginTime, String endTime) throws Exception {
+        List<WorkOrder> list = null;
+        try {
+            PageUtils.startPage();
+            list = workOrderMapperEx.selectByCondition(orderNo, customerName, licensePlate,
+                    status, beginTime, endTime);
+        } catch (Exception e) {
+            JshException.readFail(logger, e);
+        }
+        return list;
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int insertWorkOrder(JSONObject obj, HttpServletRequest request) throws Exception {
+        WorkOrder order = JSONObject.parseObject(obj.toJSONString(), WorkOrder.class);
+
+        // 手动录入模式：先创建车辆档案，再把新 vehicleId 写入工单
+        Boolean isManualVehicle = obj.getBoolean("isManualVehicle");
+        if (Boolean.TRUE.equals(isManualVehicle) && order.getVehicleId() == null) {
+            Long newVehicleId = createVehicleFromOrder(obj);
+            if (newVehicleId != null) {
+                order.setVehicleId(newVehicleId);
+            }
+        }
+
+        order.setOrderNo(generateOrderNo());
+        order.setCreateTime(new Date());
+        order.setUpdateTime(new Date());
+        if (order.getStatus() == null) {
+            order.setStatus(0);
+        }
+        if (order.getPaymentStatus() == null) {
+            order.setPaymentStatus(0);
+        }
+        int result = 0;
+        try {
+            result = workOrderMapper.insertSelective(order);
+            saveProjectItems(order.getId(), obj.getJSONArray("projects"));
+            saveMaterialItems(order.getId(), obj.getJSONArray("materials"));
+            logService.insertLog("工单管理",
+                    BusinessConstants.LOG_OPERATION_TYPE_ADD + order.getOrderNo(), request);
+        } catch (Exception e) {
+            JshException.writeFail(logger, e);
+        }
+        return result;
+    }
+
+    /**
+     * 根据工单请求体中的车辆信息创建新的车辆档案，返回新车辆ID
+     */
+    private Long createVehicleFromOrder(JSONObject obj) {
+        try {
+            Vehicle vehicle = new Vehicle();
+            String licensePlate = obj.getString("licensePlate");
+            // 拆分省份前缀（首字符）和车牌号
+            if (licensePlate != null && licensePlate.length() > 1) {
+                vehicle.setLicensePlateProvince(licensePlate.substring(0, 1));
+                vehicle.setLicensePlateNo(licensePlate.substring(1));
+            }
+            vehicle.setCustomerName(obj.getString("customerName"));
+            vehicle.setCustomerPhone(obj.getString("customerPhone"));
+            vehicle.setCustomerLevel(obj.getString("customerLevel"));
+            vehicle.setCustomerAddress(obj.getString("customerAddress"));
+            vehicle.setCustomerDetailAddress(obj.getString("customerDetailAddress"));
+            vehicle.setBrandModel(obj.getString("vehicleInfo"));
+            vehicle.setVehiclePurpose(obj.getString("vehiclePurpose"));
+            vehicle.setVehicleType(obj.getString("vehicleType"));
+            vehicle.setVin(obj.getString("vin"));
+            vehicle.setEnabled(true);
+            vehicle.setCreateTime(new Date());
+            vehicle.setUpdateTime(new Date());
+            vehicleMapper.insertSelective(vehicle);
+            return vehicle.getId();
+        } catch (Exception e) {
+            logger.warn("自动创建车辆档案失败，将以无vehicleId方式保存工单", e);
+            return null;
+        }
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int updateWorkOrder(JSONObject obj, HttpServletRequest request) throws Exception {
+        WorkOrder order = JSONObject.parseObject(obj.toJSONString(), WorkOrder.class);
+        order.setUpdateTime(new Date());
+        int result = 0;
+        try {
+            result = workOrderMapper.updateByPrimaryKeySelective(order);
+            saveProjectItems(order.getId(), obj.getJSONArray("projects"));
+            saveMaterialItems(order.getId(), obj.getJSONArray("materials"));
+            logService.insertLog("工单管理",
+                    BusinessConstants.LOG_OPERATION_TYPE_EDIT + order.getOrderNo(), request);
+        } catch (Exception e) {
+            JshException.writeFail(logger, e);
+        }
+        return result;
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int deleteWorkOrder(Long id, HttpServletRequest request) throws Exception {
+        return batchDeleteByIds(id.toString(), request);
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int batchDeleteByIds(String ids, HttpServletRequest request) throws Exception {
+        int result = 0;
+        try {
+            String[] idArray = ids.split(",");
+            result = workOrderMapperEx.batchDeleteByIds(new Date(), idArray);
+            workOrderProjectMapperEx.deleteByOrderIds(idArray);
+            workOrderMaterialMapperEx.deleteByOrderIds(idArray);
+            logService.insertLog("工单管理", "批量删除,id集:" + ids, request);
+        } catch (Exception e) {
+            JshException.writeFail(logger, e);
+        }
+        return result;
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int updateStatus(Long id, Integer status, HttpServletRequest request) throws Exception {
+        WorkOrder order = new WorkOrder();
+        order.setId(id);
+        order.setStatus(status);
+        order.setUpdateTime(new Date());
+        if (status != null && status == 4) {
+            order.setActualFinishTime(new Date());
+        }
+        int result = 0;
+        try {
+            result = workOrderMapper.updateByPrimaryKeySelective(order);
+            logService.insertLog("工单管理", "更新状态，id:" + id + " status:" + status, request);
+        } catch (Exception e) {
+            JshException.writeFail(logger, e);
+        }
+        return result;
+    }
+
+    /**
+     * 工单结算：生成一张收款单据并回写工单收款状态，金额将自动进入账户统计
+     */
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public void settleWorkOrder(Long workOrderId, BigDecimal settleAmount, Long accountId, HttpServletRequest request) throws Exception {
+        WorkOrder order = workOrderMapper.selectByPrimaryKey(workOrderId);
+        if (order == null || BusinessConstants.DELETE_FLAG_DELETED.equals(order.getDeleteFlag())) {
+            throw new RuntimeException("工单不存在或已删除");
+        }
+        if (settleAmount == null || settleAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("结算金额必须大于0");
+        }
+        Long userId = userService.getUserId(request);
+
+        // 创建收款单主表
+        AccountHead accountHead = new AccountHead();
+        accountHead.setType("收款");
+        accountHead.setOrganId(order.getCustomerId());
+        accountHead.setHandsPersonId(null);
+        accountHead.setCreator(userId);
+        accountHead.setChangeAmount(settleAmount);
+        accountHead.setDiscountMoney(BigDecimal.ZERO);
+        accountHead.setTotalPrice(settleAmount);
+        accountHead.setAccountId(accountId);
+        accountHead.setBillNo(order.getOrderNo()); // 可改为独立编号规则
+        accountHead.setBillTime(new Date());
+        accountHead.setRemark("工单结算：" + order.getOrderNo());
+        accountHead.setStatus(BusinessConstants.BILLS_STATUS_AUDIT);
+        accountHead.setSource("0");
+        accountHead.setDeleteFlag(BusinessConstants.DELETE_FLAG_EXISTS);
+        accountHead.setWorkOrderId(workOrderId);
+        accountHeadMapper.insertSelective(accountHead);
+
+        // 创建收款明细
+        AccountItem item = new AccountItem();
+        item.setAccountHeadId(accountHead.getId());
+        item.setAccountId(accountId);
+        item.setEachAmount(settleAmount);
+        item.setRemark("工单结算：" + order.getOrderNo());
+        accountItemMapper.insertSelective(item);
+
+        // 回写工单收款金额与状态
+        BigDecimal received = order.getReceivedAmount() == null ? BigDecimal.ZERO : order.getReceivedAmount();
+        received = received.add(settleAmount);
+        order.setReceivedAmount(received);
+        if (order.getPayableAmount() != null && received.compareTo(order.getPayableAmount()) >= 0) {
+            order.setPaymentStatus(2); // 已付清
+            order.setStatus(4);        // 已结算
+        } else {
+            order.setPaymentStatus(1); // 部分付款
+        }
+        order.setUpdateTime(new Date());
+        workOrderMapper.updateByPrimaryKeySelective(order);
+
+        logService.insertLog("工单管理", "工单结算，编号:" + order.getOrderNo() + " 金额:" + settleAmount, request);
+    }
+
+    // ——— 私有工具方法 ————————————————————————————————
+
+    private void saveProjectItems(Long orderId, JSONArray projects) throws Exception {
+        workOrderProjectMapperEx.deleteByOrderId(orderId);
+        if (projects == null || projects.isEmpty()) return;
+        List<WorkOrderProject> list = new ArrayList<>();
+        for (int i = 0; i < projects.size(); i++) {
+            JSONObject p = projects.getJSONObject(i);
+            String name = p.getString("projectName");
+            if (name == null || name.trim().isEmpty()) continue;
+            WorkOrderProject item = new WorkOrderProject();
+            item.setOrderId(orderId);
+            item.setProjectId(p.getLong("projectId"));
+            item.setProjectName(name);
+            item.setUnitPrice(toBigDecimal(p.getString("unitPrice")));
+            item.setQuantity(toBigDecimal(p.getString("quantity"), BigDecimal.ONE));
+            item.setDiscountRate(toBigDecimal(p.getString("discountRate"), new BigDecimal("100")));
+            item.setAmount(toBigDecimal(p.getString("amount")));
+            item.setWorkerName(p.getString("workerName"));
+            item.setRemark(p.getString("remark"));
+            item.setSort(i);
+            list.add(item);
+        }
+        if (!list.isEmpty()) {
+            workOrderProjectMapperEx.batchInsert(list);
+        }
+    }
+
+    private void saveMaterialItems(Long orderId, JSONArray materials) throws Exception {
+        workOrderMaterialMapperEx.deleteByOrderId(orderId);
+        if (materials == null || materials.isEmpty()) return;
+        List<WorkOrderMaterial> list = new ArrayList<>();
+        for (int i = 0; i < materials.size(); i++) {
+            JSONObject m = materials.getJSONObject(i);
+            String name = m.getString("materialName");
+            if (name == null || name.trim().isEmpty()) continue;
+            WorkOrderMaterial item = new WorkOrderMaterial();
+            item.setOrderId(orderId);
+            item.setMaterialId(m.getLong("materialId"));
+            item.setMaterialName(name);
+            item.setStandard(m.getString("standard"));
+            item.setModel(m.getString("model"));
+            item.setUnit(m.getString("unit"));
+            item.setUnitPrice(toBigDecimal(m.getString("unitPrice")));
+            item.setQuantity(toBigDecimal(m.getString("quantity"), BigDecimal.ONE));
+            item.setDiscountRate(toBigDecimal(m.getString("discountRate"), new BigDecimal("100")));
+            item.setAmount(toBigDecimal(m.getString("amount")));
+            item.setRemark(m.getString("remark"));
+            item.setSort(i);
+            list.add(item);
+        }
+        if (!list.isEmpty()) {
+            workOrderMaterialMapperEx.batchInsert(list);
+        }
+    }
+
+    private String generateOrderNo() {
+        String dateStr = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String timeStr = new SimpleDateFormat("HHmmssSSS").format(new Date());
+        return "WO" + dateStr + timeStr;
+    }
+
+    private BigDecimal toBigDecimal(String val) {
+        return toBigDecimal(val, BigDecimal.ZERO);
+    }
+
+    private BigDecimal toBigDecimal(String val, BigDecimal defaultVal) {
+        if (val == null || val.trim().isEmpty()) return defaultVal;
+        try {
+            return new BigDecimal(val.trim());
+        } catch (NumberFormatException e) {
+            return defaultVal;
+        }
+    }
+}

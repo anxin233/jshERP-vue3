@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jsh.erp.datasource.mappers.VehicleMapper">
+
+  <resultMap id="BaseResultMap" type="com.jsh.erp.datasource.entities.Vehicle">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="vehicle_purpose"              jdbcType="VARCHAR"    property="vehiclePurpose" />
+    <result column="license_plate_province"       jdbcType="VARCHAR"    property="licensePlateProvince" />
+    <result column="license_plate_no"             jdbcType="VARCHAR"    property="licensePlateNo" />
+    <result column="no_plate"                     jdbcType="BIT"        property="noPlate" />
+    <result column="vin"                          jdbcType="VARCHAR"    property="vin" />
+    <result column="no_vin"                       jdbcType="BIT"        property="noVin" />
+    <result column="vehicle_type"                 jdbcType="VARCHAR"    property="vehicleType" />
+    <result column="production_year"              jdbcType="VARCHAR"    property="productionYear" />
+    <result column="fuel_type"                    jdbcType="VARCHAR"    property="fuelType" />
+    <result column="vehicle_category"             jdbcType="VARCHAR"    property="vehicleCategory" />
+    <result column="body_color"                   jdbcType="VARCHAR"    property="bodyColor" />
+    <result column="images"                       jdbcType="LONGVARCHAR" property="images" />
+    <result column="vehicle_source"               jdbcType="VARCHAR"    property="vehicleSource" />
+    <result column="customer_name"                jdbcType="VARCHAR"    property="customerName" />
+    <result column="customer_phone"               jdbcType="VARCHAR"    property="customerPhone" />
+    <result column="customer_level"               jdbcType="VARCHAR"    property="customerLevel" />
+    <result column="customer_gender"              jdbcType="VARCHAR"    property="customerGender" />
+    <result column="customer_address"             jdbcType="VARCHAR"    property="customerAddress" />
+    <result column="customer_detail_address"      jdbcType="VARCHAR"    property="customerDetailAddress" />
+    <result column="vehicle_owner"                jdbcType="VARCHAR"    property="vehicleOwner" />
+    <result column="brand_model"                  jdbcType="VARCHAR"    property="brandModel" />
+    <result column="engine_no"                    jdbcType="VARCHAR"    property="engineNo" />
+    <result column="register_date"                jdbcType="DATE"       property="registerDate" />
+    <result column="issue_date"                   jdbcType="DATE"       property="issueDate" />
+    <result column="usage_nature"                 jdbcType="VARCHAR"    property="usageNature" />
+    <result column="registration_images"          jdbcType="LONGVARCHAR" property="registrationImages" />
+    <result column="annual_check_date"            jdbcType="DATE"       property="annualCheckDate" />
+    <result column="traffic_insurance_expire"     jdbcType="DATE"       property="trafficInsuranceExpire" />
+    <result column="commercial_insurance_expire"  jdbcType="DATE"       property="commercialInsuranceExpire" />
+    <result column="no_insurance"                 jdbcType="BIT"        property="noInsurance" />
+    <result column="insurance_company"            jdbcType="VARCHAR"    property="insuranceCompany" />
+    <result column="insurance_contact"            jdbcType="VARCHAR"    property="insuranceContact" />
+    <result column="insurance_phone"              jdbcType="VARCHAR"    property="insurancePhone" />
+    <result column="repairer_name"                jdbcType="VARCHAR"    property="repairerName" />
+    <result column="repairer_contact"             jdbcType="VARCHAR"    property="repairerContact" />
+    <result column="repairer_gender"              jdbcType="VARCHAR"    property="repairerGender" />
+    <result column="repairer_id_no"               jdbcType="VARCHAR"    property="repairerIdNo" />
+    <result column="repairer_region"              jdbcType="VARCHAR"    property="repairerRegion" />
+    <result column="repairer_address"             jdbcType="VARCHAR"    property="repairerAddress" />
+    <result column="remark"                       jdbcType="VARCHAR"    property="remark" />
+    <result column="enabled"                      jdbcType="BIT"        property="enabled" />
+    <result column="create_time"                  jdbcType="TIMESTAMP"  property="createTime" />
+    <result column="update_time"                  jdbcType="TIMESTAMP"  property="updateTime" />
+    <result column="tenant_id"                    jdbcType="BIGINT"     property="tenantId" />
+    <result column="delete_flag"                  jdbcType="VARCHAR"    property="deleteFlag" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, vehicle_purpose, license_plate_province, license_plate_no, no_plate, vin, no_vin,
+    vehicle_type, production_year, fuel_type, vehicle_category, body_color, images, vehicle_source,
+    customer_name, customer_phone, customer_level, customer_gender, customer_address, customer_detail_address,
+    vehicle_owner, brand_model, engine_no, register_date, issue_date, usage_nature, registration_images,
+    annual_check_date, traffic_insurance_expire, commercial_insurance_expire, no_insurance,
+    insurance_company, insurance_contact, insurance_phone,
+    repairer_name, repairer_contact, repairer_gender, repairer_id_no, repairer_region, repairer_address,
+    remark, enabled, create_time, update_time, tenant_id, delete_flag
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from jsh_vehicle
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from jsh_vehicle where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.jsh.erp.datasource.entities.Vehicle"
+          useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    insert into jsh_vehicle
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="vehiclePurpose != null">vehicle_purpose,</if>
+      <if test="licensePlateProvince != null">license_plate_province,</if>
+      <if test="licensePlateNo != null">license_plate_no,</if>
+      <if test="noPlate != null">no_plate,</if>
+      <if test="vin != null">vin,</if>
+      <if test="noVin != null">no_vin,</if>
+      <if test="vehicleType != null">vehicle_type,</if>
+      <if test="productionYear != null">production_year,</if>
+      <if test="fuelType != null">fuel_type,</if>
+      <if test="vehicleCategory != null">vehicle_category,</if>
+      <if test="bodyColor != null">body_color,</if>
+      <if test="images != null">images,</if>
+      <if test="vehicleSource != null">vehicle_source,</if>
+      <if test="customerName != null">customer_name,</if>
+      <if test="customerPhone != null">customer_phone,</if>
+      <if test="customerLevel != null">customer_level,</if>
+      <if test="customerGender != null">customer_gender,</if>
+      <if test="customerAddress != null">customer_address,</if>
+      <if test="customerDetailAddress != null">customer_detail_address,</if>
+      <if test="vehicleOwner != null">vehicle_owner,</if>
+      <if test="brandModel != null">brand_model,</if>
+      <if test="engineNo != null">engine_no,</if>
+      <if test="registerDate != null">register_date,</if>
+      <if test="issueDate != null">issue_date,</if>
+      <if test="usageNature != null">usage_nature,</if>
+      <if test="registrationImages != null">registration_images,</if>
+      <if test="annualCheckDate != null">annual_check_date,</if>
+      <if test="trafficInsuranceExpire != null">traffic_insurance_expire,</if>
+      <if test="commercialInsuranceExpire != null">commercial_insurance_expire,</if>
+      <if test="noInsurance != null">no_insurance,</if>
+      <if test="insuranceCompany != null">insurance_company,</if>
+      <if test="insuranceContact != null">insurance_contact,</if>
+      <if test="insurancePhone != null">insurance_phone,</if>
+      <if test="repairerName != null">repairer_name,</if>
+      <if test="repairerContact != null">repairer_contact,</if>
+      <if test="repairerGender != null">repairer_gender,</if>
+      <if test="repairerIdNo != null">repairer_id_no,</if>
+      <if test="repairerRegion != null">repairer_region,</if>
+      <if test="repairerAddress != null">repairer_address,</if>
+      <if test="remark != null">remark,</if>
+      <if test="enabled != null">enabled,</if>
+      <if test="createTime != null">create_time,</if>
+      <if test="updateTime != null">update_time,</if>
+      <if test="tenantId != null">tenant_id,</if>
+      delete_flag,
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="vehiclePurpose != null">#{vehiclePurpose},</if>
+      <if test="licensePlateProvince != null">#{licensePlateProvince},</if>
+      <if test="licensePlateNo != null">#{licensePlateNo},</if>
+      <if test="noPlate != null">#{noPlate},</if>
+      <if test="vin != null">#{vin},</if>
+      <if test="noVin != null">#{noVin},</if>
+      <if test="vehicleType != null">#{vehicleType},</if>
+      <if test="productionYear != null">#{productionYear},</if>
+      <if test="fuelType != null">#{fuelType},</if>
+      <if test="vehicleCategory != null">#{vehicleCategory},</if>
+      <if test="bodyColor != null">#{bodyColor},</if>
+      <if test="images != null">#{images},</if>
+      <if test="vehicleSource != null">#{vehicleSource},</if>
+      <if test="customerName != null">#{customerName},</if>
+      <if test="customerPhone != null">#{customerPhone},</if>
+      <if test="customerLevel != null">#{customerLevel},</if>
+      <if test="customerGender != null">#{customerGender},</if>
+      <if test="customerAddress != null">#{customerAddress},</if>
+      <if test="customerDetailAddress != null">#{customerDetailAddress},</if>
+      <if test="vehicleOwner != null">#{vehicleOwner},</if>
+      <if test="brandModel != null">#{brandModel},</if>
+      <if test="engineNo != null">#{engineNo},</if>
+      <if test="registerDate != null">#{registerDate},</if>
+      <if test="issueDate != null">#{issueDate},</if>
+      <if test="usageNature != null">#{usageNature},</if>
+      <if test="registrationImages != null">#{registrationImages},</if>
+      <if test="annualCheckDate != null">#{annualCheckDate},</if>
+      <if test="trafficInsuranceExpire != null">#{trafficInsuranceExpire},</if>
+      <if test="commercialInsuranceExpire != null">#{commercialInsuranceExpire},</if>
+      <if test="noInsurance != null">#{noInsurance},</if>
+      <if test="insuranceCompany != null">#{insuranceCompany},</if>
+      <if test="insuranceContact != null">#{insuranceContact},</if>
+      <if test="insurancePhone != null">#{insurancePhone},</if>
+      <if test="repairerName != null">#{repairerName},</if>
+      <if test="repairerContact != null">#{repairerContact},</if>
+      <if test="repairerGender != null">#{repairerGender},</if>
+      <if test="repairerIdNo != null">#{repairerIdNo},</if>
+      <if test="repairerRegion != null">#{repairerRegion},</if>
+      <if test="repairerAddress != null">#{repairerAddress},</if>
+      <if test="remark != null">#{remark},</if>
+      <if test="enabled != null">#{enabled},</if>
+      <if test="createTime != null">#{createTime},</if>
+      <if test="updateTime != null">#{updateTime},</if>
+      <if test="tenantId != null">#{tenantId},</if>
+      '0',
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.jsh.erp.datasource.entities.Vehicle">
+    update jsh_vehicle
+    <set>
+      <if test="vehiclePurpose != null">vehicle_purpose = #{vehiclePurpose},</if>
+      <if test="licensePlateProvince != null">license_plate_province = #{licensePlateProvince},</if>
+      <if test="licensePlateNo != null">license_plate_no = #{licensePlateNo},</if>
+      <if test="noPlate != null">no_plate = #{noPlate},</if>
+      <if test="vin != null">vin = #{vin},</if>
+      <if test="noVin != null">no_vin = #{noVin},</if>
+      <if test="vehicleType != null">vehicle_type = #{vehicleType},</if>
+      <if test="productionYear != null">production_year = #{productionYear},</if>
+      <if test="fuelType != null">fuel_type = #{fuelType},</if>
+      <if test="vehicleCategory != null">vehicle_category = #{vehicleCategory},</if>
+      <if test="bodyColor != null">body_color = #{bodyColor},</if>
+      <if test="images != null">images = #{images},</if>
+      <if test="vehicleSource != null">vehicle_source = #{vehicleSource},</if>
+      <if test="customerName != null">customer_name = #{customerName},</if>
+      <if test="customerPhone != null">customer_phone = #{customerPhone},</if>
+      <if test="customerLevel != null">customer_level = #{customerLevel},</if>
+      <if test="customerGender != null">customer_gender = #{customerGender},</if>
+      <if test="customerAddress != null">customer_address = #{customerAddress},</if>
+      <if test="customerDetailAddress != null">customer_detail_address = #{customerDetailAddress},</if>
+      <if test="vehicleOwner != null">vehicle_owner = #{vehicleOwner},</if>
+      <if test="brandModel != null">brand_model = #{brandModel},</if>
+      <if test="engineNo != null">engine_no = #{engineNo},</if>
+      <if test="registerDate != null">register_date = #{registerDate},</if>
+      <if test="issueDate != null">issue_date = #{issueDate},</if>
+      <if test="usageNature != null">usage_nature = #{usageNature},</if>
+      <if test="registrationImages != null">registration_images = #{registrationImages},</if>
+      <if test="annualCheckDate != null">annual_check_date = #{annualCheckDate},</if>
+      <if test="trafficInsuranceExpire != null">traffic_insurance_expire = #{trafficInsuranceExpire},</if>
+      <if test="commercialInsuranceExpire != null">commercial_insurance_expire = #{commercialInsuranceExpire},</if>
+      <if test="noInsurance != null">no_insurance = #{noInsurance},</if>
+      <if test="insuranceCompany != null">insurance_company = #{insuranceCompany},</if>
+      <if test="insuranceContact != null">insurance_contact = #{insuranceContact},</if>
+      <if test="insurancePhone != null">insurance_phone = #{insurancePhone},</if>
+      <if test="repairerName != null">repairer_name = #{repairerName},</if>
+      <if test="repairerContact != null">repairer_contact = #{repairerContact},</if>
+      <if test="repairerGender != null">repairer_gender = #{repairerGender},</if>
+      <if test="repairerIdNo != null">repairer_id_no = #{repairerIdNo},</if>
+      <if test="repairerRegion != null">repairer_region = #{repairerRegion},</if>
+      <if test="repairerAddress != null">repairer_address = #{repairerAddress},</if>
+      <if test="remark != null">remark = #{remark},</if>
+      <if test="enabled != null">enabled = #{enabled},</if>
+      <if test="updateTime != null">update_time = #{updateTime},</if>
+      <if test="deleteFlag != null">delete_flag = #{deleteFlag},</if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+</mapper>
