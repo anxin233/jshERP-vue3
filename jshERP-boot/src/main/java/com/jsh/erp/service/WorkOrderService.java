@@ -29,11 +29,21 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class WorkOrderService {
 
     private final Logger logger = LoggerFactory.getLogger(WorkOrderService.class);
+    private static final int STATUS_DRAFT = 0;
+    private static final int STATUS_WAIT_DISPATCH = 1;
+    private static final int STATUS_REPAIRING = 2;
+    private static final int STATUS_FINISHED = 3;
+    private static final int STATUS_WAIT_PAYMENT = 4;
+    private static final int STATUS_PAID = 5;
+    private static final int STATUS_CANCELLED = 6;
+    private final ConcurrentMap<Long, Object> settleLocks = new ConcurrentHashMap<>();
 
     @Resource
     private WorkOrderMapper workOrderMapper;
@@ -110,12 +120,7 @@ public class WorkOrderService {
         order.setOrderNo(generateOrderNo());
         order.setCreateTime(new Date());
         order.setUpdateTime(new Date());
-        if (order.getStatus() == null) {
-            order.setStatus(0);
-        }
-        if (order.getPaymentStatus() == null) {
-            order.setPaymentStatus(0);
-        }
+        order.setStatus(STATUS_WAIT_DISPATCH);
         int result = 0;
         try {
             result = workOrderMapper.insertSelective(order);
@@ -164,12 +169,27 @@ public class WorkOrderService {
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int updateWorkOrder(JSONObject obj, HttpServletRequest request) throws Exception {
         WorkOrder order = JSONObject.parseObject(obj.toJSONString(), WorkOrder.class);
+        if (order.getId() == null) {
+            throw new RuntimeException("工单ID不能为空");
+        }
+        WorkOrder existing = workOrderMapper.selectByPrimaryKey(order.getId());
+        if (existing == null) {
+            throw new RuntimeException("工单不存在或无权操作");
+        }
+        Integer s = existing.getStatus();
+        if (s != null && (s == STATUS_PAID || s == STATUS_CANCELLED)) {
+            throw new RuntimeException("已收款或已取消的工单不允许编辑");
+        }
+        // Status changes must go through the dedicated status/settlement APIs.
+        order.setStatus(existing.getStatus());
         order.setUpdateTime(new Date());
         int result = 0;
         try {
             result = workOrderMapper.updateByPrimaryKeySelective(order);
-            saveProjectItems(order.getId(), obj.getJSONArray("projects"));
-            saveMaterialItems(order.getId(), obj.getJSONArray("materials"));
+            if (result > 0) {
+                saveProjectItems(order.getId(), obj.getJSONArray("projects"));
+                saveMaterialItems(order.getId(), obj.getJSONArray("materials"));
+            }
             logService.insertLog("工单管理",
                     BusinessConstants.LOG_OPERATION_TYPE_EDIT + order.getOrderNo(), request);
         } catch (Exception e) {
@@ -188,10 +208,26 @@ public class WorkOrderService {
         int result = 0;
         try {
             String[] idArray = ids.split(",");
-            result = workOrderMapperEx.batchDeleteByIds(new Date(), idArray);
-            workOrderProjectMapperEx.deleteByOrderIds(idArray);
-            workOrderMaterialMapperEx.deleteByOrderIds(idArray);
-            logService.insertLog("工单管理", "批量删除,id集:" + ids, request);
+            List<String> validIds = new ArrayList<>();
+            for (String idStr : idArray) {
+                WorkOrder existing = workOrderMapper.selectByPrimaryKey(Long.parseLong(idStr.trim()));
+                if (existing == null) {
+                    continue;
+                }
+                Integer s = existing.getStatus();
+                if (s != null && (s == 5 || s == 6)) {
+                    throw new RuntimeException("已收款或已取消的工单不允许删除（工单ID:" + idStr + "）");
+                }
+                validIds.add(idStr.trim());
+            }
+            if (validIds.isEmpty()) {
+                return 0;
+            }
+            String[] validArray = validIds.toArray(new String[0]);
+            result = workOrderMapperEx.batchDeleteByIds(new Date(), validArray);
+            workOrderProjectMapperEx.deleteByOrderIds(validArray);
+            workOrderMaterialMapperEx.deleteByOrderIds(validArray);
+            logService.insertLog("工单管理", "批量删除,id集:" + String.join(",", validIds), request);
         } catch (Exception e) {
             JshException.writeFail(logger, e);
         }
@@ -200,11 +236,32 @@ public class WorkOrderService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int updateStatus(Long id, Integer status, HttpServletRequest request) throws Exception {
+        if (id == null) {
+            throw new RuntimeException("工单ID不能为空");
+        }
+        if (status == null) {
+            throw new RuntimeException("工单状态不能为空");
+        }
+        WorkOrder existing = workOrderMapper.selectByPrimaryKey(id);
+        if (existing == null || BusinessConstants.DELETE_FLAG_DELETED.equals(existing.getDeleteFlag())) {
+            throw new RuntimeException("工单不存在或已删除");
+        }
+        Integer currentStatus = existing.getStatus();
+        if (currentStatus == null) {
+            throw new RuntimeException("工单状态异常，无法流转");
+        }
+        if (!canTransitionStatus(currentStatus, status)) {
+            throw new RuntimeException("非法状态流转：" + getStatusName(currentStatus) + " -> " + getStatusName(status));
+        }
+        if (currentStatus.equals(status)) {
+            return 1;
+        }
+
         WorkOrder order = new WorkOrder();
         order.setId(id);
         order.setStatus(status);
         order.setUpdateTime(new Date());
-        if (status != null && status == 4) {
+        if (status == STATUS_FINISHED && existing.getActualFinishTime() == null) {
             order.setActualFinishTime(new Date());
         }
         int result = 0;
@@ -222,59 +279,135 @@ public class WorkOrderService {
      */
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public void settleWorkOrder(Long workOrderId, BigDecimal settleAmount, Long accountId, HttpServletRequest request) throws Exception {
-        WorkOrder order = workOrderMapper.selectByPrimaryKey(workOrderId);
-        if (order == null || BusinessConstants.DELETE_FLAG_DELETED.equals(order.getDeleteFlag())) {
-            throw new RuntimeException("工单不存在或已删除");
+        if (workOrderId == null) {
+            throw new RuntimeException("工单ID不能为空");
+        }
+        if (accountId == null) {
+            throw new RuntimeException("结算账户不能为空");
         }
         if (settleAmount == null || settleAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("结算金额必须大于0");
         }
-        Long userId = userService.getUserId(request);
 
-        // 创建收款单主表
-        AccountHead accountHead = new AccountHead();
-        accountHead.setType("收款");
-        accountHead.setOrganId(order.getCustomerId());
-        accountHead.setHandsPersonId(null);
-        accountHead.setCreator(userId);
-        accountHead.setChangeAmount(settleAmount);
-        accountHead.setDiscountMoney(BigDecimal.ZERO);
-        accountHead.setTotalPrice(settleAmount);
-        accountHead.setAccountId(accountId);
-        accountHead.setBillNo(order.getOrderNo()); // 可改为独立编号规则
-        accountHead.setBillTime(new Date());
-        accountHead.setRemark("工单结算：" + order.getOrderNo());
-        accountHead.setStatus(BusinessConstants.BILLS_STATUS_AUDIT);
-        accountHead.setSource("0");
-        accountHead.setDeleteFlag(BusinessConstants.DELETE_FLAG_EXISTS);
-        accountHead.setWorkOrderId(workOrderId);
-        accountHeadMapper.insertSelective(accountHead);
+        synchronized (getSettleLock(workOrderId)) {
+            WorkOrder order = workOrderMapper.selectByPrimaryKey(workOrderId);
+            if (order == null || BusinessConstants.DELETE_FLAG_DELETED.equals(order.getDeleteFlag())) {
+                throw new RuntimeException("工单不存在或已删除");
+            }
+            Integer currentStatus = order.getStatus();
+            if (currentStatus == STATUS_PAID) {
+                throw new RuntimeException("工单已收款，不能重复结算");
+            }
+            if (currentStatus == STATUS_CANCELLED) {
+                throw new RuntimeException("已取消工单不能结算");
+            }
+            if (currentStatus == null || (currentStatus != STATUS_FINISHED && currentStatus != STATUS_WAIT_PAYMENT)) {
+                throw new RuntimeException("只有已完工或待收款状态的工单才能结算");
+            }
 
-        // 创建收款明细
-        AccountItem item = new AccountItem();
-        item.setAccountHeadId(accountHead.getId());
-        item.setAccountId(accountId);
-        item.setEachAmount(settleAmount);
-        item.setRemark("工单结算：" + order.getOrderNo());
-        accountItemMapper.insertSelective(item);
+            BigDecimal payable = order.getPayableAmount() == null ? BigDecimal.ZERO : order.getPayableAmount();
+            BigDecimal received = order.getReceivedAmount() == null ? BigDecimal.ZERO : order.getReceivedAmount();
+            BigDecimal remaining = payable.subtract(received);
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new RuntimeException("工单已无剩余应收金额，不能重复结算");
+            }
+            if (settleAmount.compareTo(remaining) > 0) {
+                throw new RuntimeException("结算金额不能大于剩余应收金额");
+            }
 
-        // 回写工单收款金额与状态
-        BigDecimal received = order.getReceivedAmount() == null ? BigDecimal.ZERO : order.getReceivedAmount();
-        received = received.add(settleAmount);
-        order.setReceivedAmount(received);
-        if (order.getPayableAmount() != null && received.compareTo(order.getPayableAmount()) >= 0) {
-            order.setPaymentStatus(2); // 已付清
-            order.setStatus(4);        // 已结算
-        } else {
-            order.setPaymentStatus(1); // 部分付款
+            Long userId = userService.getUserId(request);
+
+            // Per-work-order lock prevents repeated clicks from creating duplicate settlements.
+            AccountHead accountHead = new AccountHead();
+            accountHead.setType("收款");
+            accountHead.setOrganId(null);
+            accountHead.setHandsPersonId(null);
+            accountHead.setCreator(userId);
+            accountHead.setChangeAmount(settleAmount);
+            accountHead.setDiscountMoney(BigDecimal.ZERO);
+            accountHead.setTotalPrice(settleAmount);
+            accountHead.setAccountId(accountId);
+            accountHead.setBillNo(order.getOrderNo()); // 可改为独立编号规则
+            accountHead.setBillTime(new Date());
+            accountHead.setRemark("工单结算：" + order.getOrderNo());
+            accountHead.setStatus(BusinessConstants.BILLS_STATUS_AUDIT);
+            accountHead.setSource("0");
+            accountHead.setDeleteFlag(BusinessConstants.DELETE_FLAG_EXISTS);
+            accountHead.setWorkOrderId(workOrderId);
+            accountHeadMapper.insertSelective(accountHead);
+
+            AccountItem item = new AccountItem();
+            item.setHeaderId(accountHead.getId());
+            item.setEachAmount(settleAmount);
+            item.setRemark("工单结算：" + order.getOrderNo());
+            accountItemMapper.insertSelective(item);
+
+            BigDecimal newReceived = received.add(settleAmount);
+            order.setReceivedAmount(newReceived);
+            if (newReceived.compareTo(payable) >= 0) {
+                order.setStatus(STATUS_PAID);
+                order.setPaymentStatus(2);
+            } else {
+                order.setStatus(STATUS_WAIT_PAYMENT);
+                order.setPaymentStatus(1);
+            }
+            order.setUpdateTime(new Date());
+            workOrderMapper.updateByPrimaryKeySelective(order);
+
+            logService.insertLog("工单管理", "工单结算，编号:" + order.getOrderNo() + " 金额:" + settleAmount, request);
         }
-        order.setUpdateTime(new Date());
-        workOrderMapper.updateByPrimaryKeySelective(order);
-
-        logService.insertLog("工单管理", "工单结算，编号:" + order.getOrderNo() + " 金额:" + settleAmount, request);
     }
 
     // ——— 私有工具方法 ————————————————————————————————
+
+    private boolean canTransitionStatus(Integer currentStatus, Integer targetStatus) {
+        if (currentStatus == null || targetStatus == null) {
+            return false;
+        }
+        if (currentStatus.equals(targetStatus)) {
+            return true;
+        }
+        switch (currentStatus) {
+            case STATUS_WAIT_DISPATCH:
+                return targetStatus == STATUS_REPAIRING || targetStatus == STATUS_CANCELLED;
+            case STATUS_REPAIRING:
+                return targetStatus == STATUS_FINISHED || targetStatus == STATUS_CANCELLED;
+            case STATUS_FINISHED:
+                return targetStatus == STATUS_WAIT_PAYMENT;
+            case STATUS_WAIT_PAYMENT:
+            case STATUS_PAID:
+            case STATUS_CANCELLED:
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    private String getStatusName(Integer status) {
+        if (status == null) {
+            return "未知";
+        }
+        switch (status) {
+            case STATUS_WAIT_DISPATCH:
+                return "待派工";
+            case STATUS_REPAIRING:
+                return "维修中";
+            case STATUS_FINISHED:
+                return "已完工";
+            case STATUS_WAIT_PAYMENT:
+                return "待收款";
+            case STATUS_PAID:
+                return "已收款";
+            case STATUS_CANCELLED:
+                return "已取消";
+            default:
+                return "未知";
+        }
+    }
+
+    private Object getSettleLock(Long workOrderId) {
+        return settleLocks.computeIfAbsent(workOrderId, key -> new Object());
+    }
 
     private void saveProjectItems(Long orderId, JSONArray projects) throws Exception {
         workOrderProjectMapperEx.deleteByOrderId(orderId);

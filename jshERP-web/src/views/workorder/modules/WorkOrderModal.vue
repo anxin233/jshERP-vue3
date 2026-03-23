@@ -166,15 +166,13 @@
                 placeholder="km"
                 :disabled="isViewMode" />
             </a-form-item>
-            <a-form-item label="经手人">
-              <a-input v-decorator="['handlerName']" placeholder="请输入经手人" :disabled="isViewMode" />
-            </a-form-item>
-            <a-form-item label="付款状态">
-              <a-select v-decorator="['paymentStatus', {initialValue: 0}]" :disabled="isViewMode">
-                <a-select-option :value="0">未付款</a-select-option>
-                <a-select-option :value="1">部分付款</a-select-option>
-                <a-select-option :value="2">已付清</a-select-option>
-              </a-select>
+            <a-form-item label="派工人员">
+              <dynamic-option-select
+                v-decorator="['handlerName']"
+                code="dispatch_staff"
+                placeholder="请选择派工人员"
+                :disabled="isViewMode"
+                style="width:100%" />
             </a-form-item>
           </a-col>
 
@@ -473,7 +471,7 @@ export default {
       // 不在这里 set status，由工单状态下拉（DynamicOptionSelect）加载选项后自动设默认值，避免先显示 "0"
       this.$nextTick(() => {
         setTimeout(() => {
-          this.form.setFieldsValue({ paymentStatus: 0 })
+          this.form.setFieldsValue({})
         }, 0)
       })
     },
@@ -516,7 +514,6 @@ export default {
             setTimeout(() => {
               this.form.setFieldsValue({
                 status:              info.status,
-                paymentStatus:       info.paymentStatus,
                 mileage:             info.mileage,
                 handlerName:         info.handlerName,
                 faultDesc:           info.faultDesc,

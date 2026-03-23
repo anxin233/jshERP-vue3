@@ -58,11 +58,11 @@
           <!-- 快速状态流转按钮 -->
           <a-divider type="vertical" v-if="selectedRowKeys.length > 0" />
           <template v-if="selectedRowKeys.length === 1">
-            <a-button v-if="currentRecord && currentRecord.status === 0" @click="quickStatus(1)" icon="schedule" style="color:#fa8c16;border-color:#fa8c16">待派工</a-button>
-            <a-button v-if="currentRecord && currentRecord.status === 1" @click="quickStatus(2)" icon="tool" style="color:#1890ff;border-color:#1890ff">开始维修</a-button>
-            <a-button v-if="currentRecord && currentRecord.status === 2" @click="quickStatus(3)" icon="check-circle" style="color:#52c41a;border-color:#52c41a">完工结算</a-button>
-            <a-button v-if="currentRecord && currentRecord.status === 3" @click="quickStatus(4)" icon="pay-circle" style="color:#722ed1;border-color:#722ed1">确认收款</a-button>
-            <a-button v-if="currentRecord && [0,1,2].includes(currentRecord.status)" @click="quickStatus(5)" icon="close-circle" style="color:#ff4d4f;border-color:#ff4d4f">取消工单</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '1'" @click="quickStatus(2)" icon="tool" style="color:#1890ff;border-color:#1890ff">开始维修</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '2'" @click="quickStatus(3)" icon="check-circle" style="color:#13c2c2;border-color:#13c2c2">完工</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '3'" @click="openSettleModal(currentRecord)" icon="pay-circle" style="color:#722ed1;border-color:#722ed1">结算收款</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '4'" @click="openSettleModal(currentRecord)" icon="dollar" style="color:#52c41a;border-color:#52c41a">继续收款</a-button>
+            <a-button v-if="currentRecord && ['1','2'].includes(String(currentRecord.status))" @click="quickStatus(6)" icon="close-circle" style="color:#ff4d4f;border-color:#ff4d4f">取消工单</a-button>
           </template>
         </div>
 
@@ -98,29 +98,26 @@
             <a-tag :color="statusColor(status)">{{ statusLabel(status) }}</a-tag>
           </template>
 
-          <!-- 付款状态 -->
-          <template slot="paymentStatusCol" slot-scope="ps">
-            <a-tag :color="ps===2?'green':ps===1?'orange':'red'">
-              {{ ps===2?'已付清':ps===1?'部分付款':'未付款' }}
-            </a-tag>
-          </template>
-
           <!-- 金额 -->
           <template slot="amountCol" slot-scope="text">
             <span style="color:#f5222d;font-weight:500">¥ {{ text }}</span>
           </template>
 
           <!-- 操作列 -->
-          <span slot="action" slot-scope="text, record">
-            <a @click="handleEdit(record)">编辑</a>
-            <a-divider type="vertical" />
-            <a @click="handleView(record)" style="color:#1890ff">详情</a>
-            <a-divider type="vertical" />
-            <a v-if="record.status === 3" @click="openSettleModal(record)" style="color:#722ed1">结算</a>
-            <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
-            <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除此工单?" @confirm="() => handleDelete(record.id)">
-              <a style="color:#f5222d">删除</a>
-            </a-popconfirm>
+          <span slot="action" slot-scope="text, record" style="white-space:nowrap">
+            <a v-if="!isFinished(record.status)" @click="handleEdit(record)">编辑</a>
+            <a-divider v-if="!isFinished(record.status)" type="vertical" />
+            <a @click="handleView(record)">详情</a>
+            <template v-if="String(record.status) === '3' || String(record.status) === '4'">
+              <a-divider type="vertical" />
+              <a @click="openSettleModal(record)" style="color:#722ed1">结算</a>
+            </template>
+            <template v-if="btnEnableList.indexOf(1)>-1 && !isFinished(record.status)">
+              <a-divider type="vertical" />
+              <a-popconfirm title="确定删除此工单?" @confirm="() => handleDelete(record.id)">
+                <a style="color:#f5222d">删除</a>
+              </a-popconfirm>
+            </template>
           </span>
         </a-table>
 
@@ -138,9 +135,11 @@
             <p>工单号：{{ settleRecord.orderNo }}</p>
             <p>客户：{{ settleRecord.customerName }}（{{ settleRecord.customerPhone }}）</p>
             <p>应收金额：<b style="color:#f5222d">¥ {{ settleRecord.payableAmount }}</b></p>
+            <p v-if="settleRecord.receivedAmount > 0">已收金额：<b style="color:#52c41a">¥ {{ settleRecord.receivedAmount }}</b></p>
+            <p v-if="settleRecord.receivedAmount > 0">剩余应收：<b style="color:#fa8c16">¥ {{ (settleRecord.payableAmount - settleRecord.receivedAmount).toFixed(2) }}</b></p>
           </div>
           <a-form :labelCol="{span:6}" :wrapperCol="{span:16}">
-            <a-form-item label="结算账户">
+            <a-form-item label="结算账户" required>
               <a-select
                 v-model="settleAccountId"
                 placeholder="请选择结算账户"
@@ -156,7 +155,7 @@
               <a-input-number
                 v-model="settleAmount"
                 :min="0"
-                :max="settleRecord ? settleRecord.payableAmount : 99999999"
+                :max="settleRecord ? (settleRecord.payableAmount - (settleRecord.receivedAmount || 0)) || settleRecord.payableAmount : 99999999"
                 :step="0.01"
                 style="width:100%" />
             </a-form-item>
@@ -173,14 +172,11 @@ import { JeecgListMixin } from '@/mixins/JeecgListMixin'
 import { putAction, postAction } from '@/api/manage'
 import DynamicOptionSelect from '@/components/biz/DynamicOptionSelect'
 import { getAccount } from '@/api/api'
+import { getAction } from '@/api/manage'
 
-const STATUS_MAP = {
-  0: { label: '草稿',   color: 'default' },
-  1: { label: '待派工', color: 'orange' },
-  2: { label: '维修中', color: 'blue' },
-  3: { label: '待结算', color: 'purple' },
-  4: { label: '已结算', color: 'green' },
-  5: { label: '已取消', color: 'red' }
+const STATUS_COLOR = {
+  '1': 'orange', '2': 'blue',
+  '3': 'cyan', '4': 'purple', '5': 'green', '6': 'red'
 }
 
 export default {
@@ -199,24 +195,22 @@ export default {
       columns: [
         { title: '#', dataIndex: '', key: 'rowIndex', width: 50, align: 'center',
           customRender: (t, r, index) => parseInt(index) + 1 },
-        { title: '操作', dataIndex: 'action', width: 130, align: 'center',
+        { title: '操作', dataIndex: 'action', width: 200, align: 'center',
           scopedSlots: { customRender: 'action' } },
         { title: '工单编号', dataIndex: 'orderNo', width: 180, ellipsis: true,
           scopedSlots: { customRender: 'orderNo' } },
+        { title: '状态', dataIndex: 'status', width: 90, align: 'center',
+          scopedSlots: { customRender: 'statusCol' } },
         { title: '车辆/车牌', dataIndex: 'licensePlate', width: 200,
           scopedSlots: { customRender: 'vehicleCol' } },
         { title: '客户姓名', dataIndex: 'customerName', width: 100 },
         { title: '客户电话', dataIndex: 'customerPhone', width: 120 },
         { title: '故障描述', dataIndex: 'faultDesc', width: 160, ellipsis: true },
-        { title: '经手人', dataIndex: 'handlerName', width: 90 },
+        { title: '派工人员', dataIndex: 'handlerName', width: 100 },
         { title: '接车时间', dataIndex: 'intakeTime', width: 150 },
         { title: '预计完工', dataIndex: 'estimatedFinishTime', width: 150 },
         { title: '应收金额', dataIndex: 'payableAmount', width: 110, align: 'right',
-          scopedSlots: { customRender: 'amountCol' } },
-        { title: '状态', dataIndex: 'status', width: 80, align: 'center',
-          scopedSlots: { customRender: 'statusCol' } },
-        { title: '付款状态', dataIndex: 'paymentStatus', width: 90, align: 'center',
-          scopedSlots: { customRender: 'paymentStatusCol' } }
+          scopedSlots: { customRender: 'amountCol' } }
       ],
       url: {
         list: '/workOrder/list',
@@ -224,7 +218,7 @@ export default {
         deleteBatch: '/workOrder/deleteBatch',
         exportXlsUrl: '/workOrder/exportXls'
       },
-      // 结算相关
+      statusMap: {},
       settleVisible: false,
       settleLoading: false,
       settleRecord: null,
@@ -242,12 +236,34 @@ export default {
       }
     }
   },
+  created() {
+    this.loadStatusOptions()
+  },
   methods: {
+    modalFormOk() {
+      this.loadData(1)
+      this.$nextTick(() => { this.initScroll() })
+    },
+    loadStatusOptions() {
+      getAction('/option/list', { code: 'workorder_status' }).then(res => {
+        const rows = (res.data && res.data.rows) || []
+        const map = {}
+        rows.forEach(r => { map[String(r.value)] = r.label })
+        this.statusMap = map
+      })
+    },
+    isFinished(status) {
+      const s = String(status == null ? '' : status)
+      return s === '5' || s === '6'
+    },
     statusLabel(status) {
-      return STATUS_MAP[status] ? STATUS_MAP[status].label : '未知'
+      const key = String(status == null ? '' : status)
+      if (this.statusMap[key]) return this.statusMap[key]
+      const fallback = { '1': '待派工', '2': '维修中', '3': '已完工', '4': '待收款', '5': '已收款', '6': '已取消' }
+      return fallback[key] || '未知'
     },
     statusColor(status) {
-      return STATUS_MAP[status] ? STATUS_MAP[status].color : 'default'
+      return STATUS_COLOR[String(status == null ? '' : status)] || 'default'
     },
     onDateRangeChange(dates, dateStrings) {
       this.queryParam.beginTime = dateStrings[0] ? dateStrings[0] + ' 00:00:00' : ''
@@ -258,11 +274,10 @@ export default {
     },
     quickStatus(status) {
       if (!this.currentRecord) return
-      putAction('/workOrder/updateStatus', null, {
-        params: { id: this.currentRecord.id, status }
-      }).then(res => {
+      putAction('/workOrder/updateStatus?id=' + this.currentRecord.id + '&status=' + status, {}).then(res => {
         if (res.code === 200) {
           this.$message.success('状态更新成功')
+          this.queryParam.status = ''
           this.loadData()
           this.selectedRowKeys = []
         } else {
@@ -272,15 +287,24 @@ export default {
     },
     openSettleModal(record) {
       this.settleRecord = record
-      this.settleAmount = record.payableAmount || 0
+      const remaining = (record.payableAmount || 0) - (record.receivedAmount || 0)
+      this.settleAmount = remaining > 0 ? remaining : (record.payableAmount || 0)
       this.settleAccountId = undefined
       this.settleVisible = true
+      const setDefault = () => {
+        if (this.accountList.length && !this.settleAccountId) {
+          this.settleAccountId = this.accountList[0].id
+        }
+      }
       if (!this.accountList.length) {
         getAccount({}).then(res => {
           if (res && res.code === 200 && res.data && res.data.accountList) {
             this.accountList = res.data.accountList
+            setDefault()
           }
         })
+      } else {
+        setDefault()
       }
     },
     doSettle() {
@@ -302,6 +326,7 @@ export default {
         if (res.code === 200) {
           this.$message.success('结算成功，已纳入账户统计')
           this.settleVisible = false
+          this.queryParam.status = ''
           this.loadData()
         } else {
           this.$message.warning(res.data || '结算失败')

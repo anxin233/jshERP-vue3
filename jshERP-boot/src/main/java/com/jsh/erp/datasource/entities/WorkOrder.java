@@ -31,6 +31,7 @@ public class WorkOrder {
     private String remark;
     private Date createTime;
     private Date updateTime;
+    private BigDecimal receivedAmount;
     private Long tenantId;
     private String deleteFlag;
 
@@ -84,6 +85,8 @@ public class WorkOrder {
     public void setCreateTime(Date createTime) { this.createTime = createTime; }
     public Date getUpdateTime() { return updateTime; }
     public void setUpdateTime(Date updateTime) { this.updateTime = updateTime; }
+    public BigDecimal getReceivedAmount() { return receivedAmount; }
+    public void setReceivedAmount(BigDecimal receivedAmount) { this.receivedAmount = receivedAmount; }
     public Long getTenantId() { return tenantId; }
     public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
     public String getDeleteFlag() { return deleteFlag; }

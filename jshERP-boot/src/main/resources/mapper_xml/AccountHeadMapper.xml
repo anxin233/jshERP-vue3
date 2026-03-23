@@ -127,7 +127,7 @@
       #{fileName,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, #{source,jdbcType=VARCHAR}, 
       #{tenantId,jdbcType=BIGINT}, #{deleteFlag,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.jsh.erp.datasource.entities.AccountHead">
+  <insert id="insertSelective" parameterType="com.jsh.erp.datasource.entities.AccountHead" useGeneratedKeys="true" keyProperty="id">
     insert into jsh_account_head
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
