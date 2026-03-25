@@ -6,7 +6,9 @@ function resolve (dir) {
 }
 
 // vue.config.js
+// 子路径部署示例：VUE_APP_PUBLIC_PATH=/erp/（须以 / 开头和结尾）
 module.exports = {
+    publicPath: process.env.VUE_APP_PUBLIC_PATH || '/',
     // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
     productionSourceMap: false,
     configureWebpack: config => {

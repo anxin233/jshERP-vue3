@@ -1,0 +1,22 @@
+# 构建上下文：仓库根目录
+# 子路径部署示例（与 nginx /erp 一致）：
+#   docker build --build-arg VUE_APP_PUBLIC_PATH=/erp/ --build-arg VUE_APP_API_BASE=/erp/jshERP-boot ...
+# 默认同 compose：DaoCloud Hub 代理。可直连 Hub 时用 build-arg 传 node:20-alpine / nginx:1.25-alpine。
+ARG NODE_BUILD_IMAGE=docker.m.daocloud.io/library/node:20-alpine
+ARG NGINX_RUNTIME_IMAGE=docker.m.daocloud.io/library/nginx:1.25-alpine
+FROM ${NODE_BUILD_IMAGE} AS build
+ARG VUE_APP_PUBLIC_PATH=/
+ARG VUE_APP_API_BASE=
+WORKDIR /app
+ENV VUE_APP_PUBLIC_PATH=$VUE_APP_PUBLIC_PATH
+ENV VUE_APP_API_BASE=$VUE_APP_API_BASE
+COPY jshERP-web/package.json ./
+# Vue CLI 3 + vue-loader@15 与 npm 7+ 严格 peer 解析冲突，需与本地 yarn 行为对齐
+RUN npm install --no-audit --no-fund --legacy-peer-deps
+COPY jshERP-web/ ./
+RUN npm run build
+
+FROM ${NGINX_RUNTIME_IMAGE}
+COPY deploy/docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80

@@ -155,7 +155,7 @@
           content: '真的要退出登录吗 ?',
           onOk() {
             return that.Logout({}).then(() => {
-                window.location.href="/";
+                window.location.href = process.env.BASE_URL || '/'
               //window.location.reload()
             }).catch(err => {
               that.$message.error({

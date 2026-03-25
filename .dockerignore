@@ -1,0 +1,10 @@
+# 构建上下文为仓库根目录（deploy/docker 中 context: ../..）
+# 勿把宿主机 node_modules 拷进镜像，否则会与容器内 npm install 冲突
+
+jshERP-web/node_modules
+# dist 不能忽略：使用 Dockerfile.frontend.prebuilt 时需把本机 yarn build 产物打进镜像
+# target 内仅保留 jar 供 Dockerfile.backend.prebuilt；其余仍忽略以减小上下文
+jshERP-boot/target/*
+!jshERP-boot/target/jshERP.jar
+**/.git
+.git

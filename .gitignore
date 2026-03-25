@@ -9,6 +9,9 @@
 ## front
 **/*.lock
 
+## docker deploy secrets
+deploy/docker/.env
+
 ## claude
 .claude/settings.local.json
 .claude/projects/

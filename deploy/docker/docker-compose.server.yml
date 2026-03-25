@@ -1,0 +1,12 @@
+# 服务器专用：去掉 build，只从 Harbor 拉镜像，避免无源码时误触发本地构建
+# 用法：docker compose -f docker-compose.yml -f docker-compose.server.yml pull
+#       docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
+#
+# 与 docker-compose.yml 合并后，jsherp-boot / jsherp-web 不再包含 build 段。
+
+services:
+  jsherp-boot:
+    build: !reset null
+
+  jsherp-web:
+    build: !reset null

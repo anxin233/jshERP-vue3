@@ -3,14 +3,14 @@
     <div id="userLayout" :class="['user-layout-wrapper', device]">
       <div class="container">
         <div class="poster-img">
-          <img src="/static/rightImg.png?v=320">
+          <img :src="publicBase + 'static/rightImg.png?v=320'">
         </div>
         <div class="right-form">
           <div class="top">
             <div class="header">
               <a-row>
                 <a-col>
-                  <a href="/">
+                  <a :href="publicBase">
                     <span class="title">{{systemTitle}}</span>
                     <small class="desc">V3.6</small>
                   </a>
@@ -25,17 +25,17 @@
     <div class="footer" v-if="device === 'desktop'">
       <div class="third-party-platform" v-if="isShowRight">
         <div class="platform-info" @click="openAndroid()">
-          <img src="/static/Android.png" style="height:30px" >
+          <img :src="publicBase + 'static/Android.png'" style="height:30px" >
           <span>安卓版</span>
         </div>
         <div style="width:50px"></div>
         <div class="platform-info" @click="openIPhone()">
-          <img src="/static/iPhone.png" style="height:30px" >
+          <img :src="publicBase + 'static/iPhone.png'" style="height:30px" >
           <span>iPhone版</span>
         </div>
         <div style="width:50px"></div>
         <div class="platform-info" @click="openMiniProgram()">
-          <img src="/static/mini-program.png" style="height:30px" >
+          <img :src="publicBase + 'static/mini-program.png'" style="height:30px" >
           <span>小程序版</span>
         </div>
       </div>
@@ -50,19 +50,19 @@
       <template slot="footer">
         <a-button key="back" @click="handleAndroidCancel">取消</a-button>
       </template>
-      <div class="platform-modal"><img src="/static/android-code.png" style="width:200px" /></div>
+      <div class="platform-modal"><img :src="publicBase + 'static/android-code.png'" style="width:200px" /></div>
     </a-modal>
     <a-modal v-model="isIphoneShow" title="微信扫一扫下载iPhone版" width="200" centered>
       <template slot="footer">
         <a-button key="back" @click="handleIphoneCancel">取消</a-button>
       </template>
-      <div class="platform-modal"><img src="/static/iphone-code.png" style="width:200px" /></div>
+      <div class="platform-modal"><img :src="publicBase + 'static/iphone-code.png'" style="width:200px" /></div>
     </a-modal>
     <a-modal v-model="isMiniProgramShow" title="微信扫一扫使用小程序版" width="200" centered>
       <template slot="footer">
         <a-button key="back" @click="handleMiniProgramCancel">取消</a-button>
       </template>
-      <div class="platform-modal"><img src="/static/weixin-code.png" style="width:200px;" /></div>
+      <div class="platform-modal"><img :src="publicBase + 'static/weixin-code.png'" style="width:200px;" /></div>
     </a-modal>
   </div>
 </template>
@@ -90,6 +90,11 @@
     },
     beforeDestroy () {
       document.body.classList.remove('userLayout')
+    },
+    computed: {
+      publicBase () {
+        return process.env.BASE_URL || '/'
+      }
     },
     created () {
       let host = window.location.host

@@ -19,6 +19,8 @@ import java.io.IOException;
 @EnableAsync
 public class ErpApplication{
     public static void main(String[] args) throws IOException {
+        // 须在任何 java.awt / Font 类加载之前设置，否则 Docker/Alpine 无 X11 时会初始化 X11FontManager 失败
+        System.setProperty("java.awt.headless", "true");
         ConfigurableApplicationContext context = SpringApplication.run(ErpApplication.class, args);
         Environment environment = context.getBean(Environment.class);
         System.out.println("启动成功，后端服务API地址：http://" + ComputerInfo.getIpAddr() + ":"

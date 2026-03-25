@@ -1,3 +1,4 @@
+import '@/config/api-base-bootstrap'
 import Vue from 'vue'
 import App from './App.vue'
 import Storage from 'vue-ls'

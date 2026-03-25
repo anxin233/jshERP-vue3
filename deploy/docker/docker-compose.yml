@@ -1,0 +1,101 @@
+# 最简一键：MySQL + Redis + 后端 + 前端（Nginx 反代 API）
+# 构建：在 deploy/docker 目录执行  docker compose build
+# 运行：docker compose up -d
+# Harbor：设置 .env 后 build 会打上完整镜像名，再 push 到私库
+#
+# 默认经 DaoCloud 拉 Docker Hub 官方库（避免 auth.docker.io 超时）。可直连 Hub 时在 .env 覆盖为短名，例如：
+#   MYSQL_IMAGE=mysql:8.0  REDIS_IMAGE=redis:7-alpine
+#   MAVEN_BUILD_IMAGE=maven:3.9-eclipse-temurin-8  JRE_RUNTIME_IMAGE=eclipse-temurin:8-jre-alpine
+#   NODE_BUILD_IMAGE=node:20-alpine  NGINX_RUNTIME_IMAGE=nginx:1.25-alpine
+
+services:
+  mysql:
+    image: ${MYSQL_IMAGE:-docker.m.daocloud.io/library/mysql:8.0}
+    container_name: jsherp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-jsh_erp}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - jsherp-mysql-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  redis:
+    image: ${REDIS_IMAGE:-docker.m.daocloud.io/library/redis:7-alpine}
+    container_name: jsherp-redis
+    restart: unless-stopped
+    command: redis-server
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - jsherp-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  jsherp-boot:
+    image: ${REGISTRY_PREFIX:-local}/jsherp-boot:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: ${DOCKERFILE_BACKEND:-deploy/docker/Dockerfile.backend}
+      args:
+        MAVEN_BUILD_IMAGE: ${MAVEN_BUILD_IMAGE:-docker.m.daocloud.io/library/maven:3.9-eclipse-temurin-8}
+        JRE_RUNTIME_IMAGE: ${JRE_RUNTIME_IMAGE:-docker.m.daocloud.io/library/eclipse-temurin:8-jre-alpine}
+    container_name: jsherp-boot
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-jsh_erp}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - jsherp-upload:/data/upload
+    entrypoint:
+      - java
+      - -Dfile.path=/data/upload
+      - -Dserver.tomcat.basedir=/tmp/tomcat
+      - -Djava.awt.headless=true
+      - -jar
+      - /app/app.jar
+    expose:
+      - "9999"
+
+  jsherp-web:
+    image: ${REGISTRY_PREFIX:-local}/jsherp-web:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: ${DOCKERFILE_FRONTEND:-deploy/docker/Dockerfile.frontend}
+      args:
+        VUE_APP_PUBLIC_PATH: ${VUE_APP_PUBLIC_PATH:-/}
+        VUE_APP_API_BASE: ${VUE_APP_API_BASE:-}
+        NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-docker.m.daocloud.io/library/node:20-alpine}
+        NGINX_RUNTIME_IMAGE: ${NGINX_RUNTIME_IMAGE:-docker.m.daocloud.io/library/nginx:1.25-alpine}
+    container_name: jsherp-web
+    restart: unless-stopped
+    depends_on:
+      - jsherp-boot
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  jsherp-mysql-data:
+  jsherp-redis-data:
+  jsherp-upload:

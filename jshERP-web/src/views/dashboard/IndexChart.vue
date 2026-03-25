@@ -129,7 +129,7 @@
               :visible="hovered"
               @visibleChange="handleHoverChange">
               <div slot="content">
-                <img src="/static/weixin.jpg" style="width:258px" />
+                <img :src="(publicBase + 'static/weixin.jpg')" style="width:258px" />
               </div>
               <a-button type="link" v-if="showWeixinSpan()">管伊佳ERP微信小程序</a-button>
             </a-popover>
@@ -209,6 +209,11 @@
     },
     mounted() {
       handleIntroJs('indexChart', 1)
+    },
+    computed: {
+      publicBase () {
+        return process.env.BASE_URL || '/'
+      }
     },
     methods: {
       initInfo () {

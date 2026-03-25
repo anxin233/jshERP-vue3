@@ -14,6 +14,10 @@ import java.util.Random;
  */
 public class RandImageUtil {
 
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     public static final String key = "JEECG_LOGIN_KEY";
 
     /**
@@ -113,7 +117,8 @@ public class RandImageUtil {
             graphics.setColor(Color.BLACK);
             // 设置字体样式
 //			graphics.setFont(new Font("Arial Black", Font.ITALIC, 18));
-            graphics.setFont(new Font("Times New Roman", Font.BOLD, 24));
+            // 逻辑字体在 headless/Linux 下可用；物理字体名在 Alpine 无字库时易触发字体子系统异常
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
             // 设置字符，字符间距，上边距
             graphics.drawString(String.valueOf(resultCode.charAt(i)), (23 * i) + 8, 26);
         }
