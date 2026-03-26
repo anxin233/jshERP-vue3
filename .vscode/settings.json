@@ -1,0 +1,14 @@
+{
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.jdt.ls.java.home": "D:\\Program Files\\Java\\jdk1.8.0_221",
+  "java.configuration.java.home": "D:\\Program Files\\Java\\jdk1.8.0_221",
+  "maven.executable.path": "D:\\Program Files\\apache-maven-3.9.11\\bin\\mvn.cmd",
+  "maven.terminal.customEnv": [
+    {
+      "environmentVariable": "JAVA_HOME",
+      "value": "D:\\Program Files\\Java\\jdk1.8.0_221"
+    }
+  ],
+  "java.configuration.maven.globalSettings": "D:\\Program Files\\apache-maven-3.9.11\\conf\\settings.xml",
+  "java.configuration.maven.userSettings": "D:\\Program Files\\apache-maven-3.9.11\\conf\\settings.xml"
+}

@@ -1,0 +1,4 @@
+2026/03/25-19:25:59 INFO  [main] com.jsh.erp.ErpApplication - Starting ErpApplication on DESKTOP-RC70GDM with PID 18912 (C:\Users\ASUS\Desktop\jshERP\jshERP-boot\target\classes started by ASUS in C:\Users\ASUS\Desktop\jshERP)
+2026/03/25-19:25:59 DEBUG [main] com.jsh.erp.ErpApplication - Running with Spring Boot v2.0.0.RELEASE, Spring v5.0.4.RELEASE
+2026/03/25-19:25:59 INFO  [main] com.jsh.erp.ErpApplication - No active profile set, falling back to default profiles: default
+2026/03/25-19:26:28 INFO  [main] com.jsh.erp.ErpApplication - Started ErpApplication in 30.496 seconds (JVM running for 32.946)

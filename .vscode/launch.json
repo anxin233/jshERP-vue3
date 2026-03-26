@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "启动后端 (jshERP-boot)",
+      "request": "launch",
+      "mainClass": "com.jsh.erp.ErpApplication",
+      "projectName": "jshERP-boot",
+      "vmArgs": "-Dfile.encoding=UTF-8",
+      "env": {
+        "JAVA_HOME": "D:\\Program Files\\Java\\jdk1.8.0_221"
+      }
+    }
+  ]
+}

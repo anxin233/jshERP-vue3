@@ -24,4 +24,4 @@ if ($PrebuiltBoot) {
   $env:DOCKERFILE_BACKEND = "deploy/docker/Dockerfile.backend.prebuilt"
 }
 Set-Location (Join-Path $PSScriptRoot "deploy\docker")
-docker compose -f docker-compose.external-mysql.yml build jsherp-boot jsherp-web
+docker compose build redis jsherp-boot jsherp-web

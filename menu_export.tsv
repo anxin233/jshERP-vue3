@@ -1,0 +1,71 @@
+﻿225	0401	闆跺敭绠＄悊	0	0101	/billC	
+32	0502	閲囪喘绠＄悊	0	0330	/bill	
+38	0603	閿€鍞鐞?0	0390	/billB	
+239	0801	浠撳簱绠＄悊	0	0420	/billD	
+44	0704	璐㈠姟绠＄悊	0	0450	/financial	
+198	0301	鎶ヨ〃鏌ヨ	0	0570	/report	
+21	0101	鍟嗗搧绠＄悊	0	0620	/material	
+24	0102	鍩虹璧勬枡	0	0750	/systemA	
+266	workorder	宸ュ崟绠＄悊	0	0900	/workorder	
+1	0001	绯荤粺绠＄悊	0	0910	/system	
+262	project	椤圭洰绠＄悊	0	150	/project	
+13	000102	瑙掕壊绠＄悊	0001	0130	/system/role	
+14	000103	鐢ㄦ埛绠＄悊	0001	0140	/system/user	
+243	000108	鏈烘瀯绠＄悊	0001	0150	/system/organization	
+15	000104	鏃ュ織绠＄悊	0001	0160	/system/log	
+236	000106	鍟嗗搧灞炴€?0001	0163	/material/material_property	
+234	000105	绯荤粺閰嶇疆	0001	0164	/system/system_config	
+16	000105	鍔熻兘绠＄悊	0001	0166	/system/function	
+18	000109	绉熸埛绠＄悊	0001	0167	/system/tenant	
+245	000107	鎻掍欢绠＄悊	0001	0170	/system/plugin	
+258	000112	骞冲彴閰嶇疆	0001	0175	/system/platform_config	
+268	0910	閫夐」绠＄悊	0001	0910	/system/optionList	
+22	010101	鍟嗗搧绫诲埆	0101	0230	/material/material_category	
+23	010102	鍟嗗搧淇℃伅	0101	0240	/material/material	
+220	010103	澶氬崟浣?0101	0245	/system/unit	
+247	010105	澶氬睘鎬?0101	0250	/material/material_attribute	
+25	01020101	渚涘簲鍟嗕俊鎭?0102	0260	/system/vendor	
+217	01020102	瀹㈡埛淇℃伅	0102	0262	/system/customer	
+218	01020103	浼氬憳淇℃伅	0102	0263	/system/member	
+265	01020104	瀹㈡埛杞﹁締	0102	0264	/vehicle/vehicleList	
+26	010202	浠撳簱淇℃伅	0102	0270	/system/depot	
+194	010204	鏀舵敮椤圭洰	0102	0282	/system/in_out_item	
+195	010205	缁撶畻璐︽埛	0102	0283	/system/account	
+31	010206	缁忔墜浜虹鐞?0102	0284	/system/person	
+246	030113	鍟嗗搧搴撳瓨	0301	0605	/report/material_stock	
+207	030102	璐︽埛缁熻	0301	0610	/report/account_report	
+259	030105	闆跺敭缁熻	0301	0615	/report/retail_out_report	
+208	030103	閲囪喘缁熻	0301	0620	/report/buy_in_report	
+209	030104	閿€鍞粺璁?0301	0630	/report/sale_out_report	
+226	030106	鍏ュ簱鏄庣粏	0301	0640	/report/in_detail	
+227	030107	鍑哄簱鏄庣粏	0301	0645	/report/out_detail	
+248	030150	璋冩嫧鏄庣粏	0301	0646	/report/allocation_detail	
+228	030108	鍏ュ簱姹囨€?0301	0650	/report/in_material_count	
+229	030109	鍑哄簱姹囨€?0301	0655	/report/out_material_count	
+59	030101	杩涢攢瀛樼粺璁?0301	0658	/report/in_out_stock_report	
+235	030110	瀹㈡埛瀵硅处	0301	0660	/report/customer_account	
+237	030111	渚涘簲鍟嗗璐?0301	0665	/report/vendor_account	
+244	030112	搴撳瓨棰勮	0301	0670	/report/stock_warning_report	
+210	040102	闆跺敭鍑哄簱	0401	0405	/bill/retail_out	
+211	040104	闆跺敭閫€璐?0401	0407	/bill/retail_back	
+261	050203	璇疯喘鍗?0502	0330	/bill/purchase_apply	
+241	050202	閲囪喘璁㈠崟	0502	0335	/bill/purchase_order	
+33	050201	閲囪喘鍏ュ簱	0502	0340	/bill/purchase_in	
+199	050204	閲囪喘閫€璐?0502	0345	/bill/purchase_back	
+242	060301	閿€鍞鍗?0603	0392	/bill/sale_order	
+41	060303	閿€鍞嚭搴?0603	0394	/bill/sale_out	
+200	060305	閿€鍞€€璐?0603	0396	/bill/sale_back	
+197	070402	鏀跺叆鍗?0704	0465	/financial/item_in	
+203	070403	鏀嚭鍗?0704	0470	/financial/item_out	
+204	070404	鏀舵鍗?0704	0475	/financial/money_in	
+205	070405	浠樻鍗?0704	0480	/financial/money_out	
+206	070406	杞处鍗?0704	0490	/financial/giro	
+212	070407	鏀堕浠樻	0704	0495	/financial/advance_in	
+201	080103	鍏跺畠鍏ュ簱	0801	0803	/bill/other_in	
+202	080105	鍏跺畠鍑哄簱	0801	0805	/bill/other_out	
+40	080107	璋冩嫧鍑哄簱	0801	0807	/bill/allocation_out	
+232	080109	缁勮鍗?0801	0809	/bill/assemble	
+233	080111	鎷嗗嵏鍗?0801	0811	/bill/disassemble	
+263	project_category	椤圭洰绫诲埆	project	151	/project/category	
+264	project_info	椤圭洰淇℃伅	project	152	/project/info	
+267	workorder_info	宸ュ崟淇℃伅	workorder	0901	/workorder/workOrderList	

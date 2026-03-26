@@ -11,6 +11,7 @@
 
 ## docker deploy secrets
 deploy/docker/.env
+deploy/docker/ssl-aicode-extract/
 
 ## claude
 .claude/settings.local.json
