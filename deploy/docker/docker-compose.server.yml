@@ -2,9 +2,12 @@
 # 用法：docker compose -f docker-compose.yml -f docker-compose.server.yml pull
 #       docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
 #
-# 与 docker-compose.yml 合并后，jsherp-boot / jsherp-web 不再包含 build 段。
+# 与 docker-compose.yml 合并后，redis / jsherp-boot / jsherp-web 不再包含 build 段。
 
 services:
+  redis:
+    build: !reset null
+
   jsherp-boot:
     build: !reset null
 

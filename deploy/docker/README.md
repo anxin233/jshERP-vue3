@@ -1,13 +1,12 @@
 # jshERP Docker 最简发布（含 Harbor 私库）
 
-## Compose 文件（根目录只保留这三类）
+## Compose 文件
 
 | 文件 | 用途 |
 |------|------|
-| `docker-compose.yml` | 默认：MySQL + Redis + 前后端，本机或完整栈。 |
-| `docker-compose.external-mysql.yml` | 不用内置 MySQL，连已有库（Harbor 部署常用）。 |
-| `docker-compose.server.yml` | 与上面任一套 **`-f` 合并**：去掉 `build`，只 `pull` 镜像。 |
-| `overrides/*.yml` | 可选第四层，例如 MySQL 在别的 Docker 网络里，见 **[overrides/README.md](./overrides/README.md)**。 |
+| `docker-compose.yml` | **默认**：Redis + 前后端；MySQL 在宿主机或其它容器，由 `.env` 中 `EXTERNAL_MYSQL_*` 指定。 |
+| `docker-compose.server.yml` | 与 `docker-compose.yml` **`-f` 合并**：去掉 `build`，只 `pull` 镜像。 |
+| `overrides/*.yml` | 可选叠加，例如 MySQL 在别的 Docker 网络里，见 **[overrides/README.md](./overrides/README.md)**。 |
 
 完整「构建推 Harbor + 服务器仅 pull」流程见 **[HARBOR_RELEASE.md](./HARBOR_RELEASE.md)**。
 
@@ -17,10 +16,10 @@
 |------|------|
 | `jsherp-web` | Nginx 托管 Vue；**默认按 `/erp` 子路径**（见下文），API 为 `/erp/jshERP-boot/` |
 | `jsherp-boot` | Spring Boot，端口容器内 `9999` |
-| `mysql` | MySQL 8，库名默认 `jsh_erp` |
+| MySQL（外置） | 不在本 compose 内；`.env` 配置 `EXTERNAL_MYSQL_HOST` 等，库名默认 `jsh_erp` |
 | `redis` | Redis 7，默认无密码（与当前 compose 一致） |
 
-首次部署需在 MySQL 中导入 `jshERP-boot/docs/jsh_erp.sql`（及你启用的工单等扩展脚本）。
+首次部署需在你选定的 MySQL 上创建库并导入 `jshERP-boot/docs/jsh_erp.sql`（及你启用的工单等扩展脚本）。
 
 ## 本地构建并运行
 
@@ -33,14 +32,13 @@ docker compose build
 docker compose up -d
 ```
 
-导入数据库（示例，密码与 `.env` 中 `MYSQL_ROOT_PASSWORD` 一致）：
+导入数据库（示例：宿主机 MySQL，账号密码与 `.env` 中 `EXTERNAL_MYSQL_USER`、`MYSQL_ROOT_PASSWORD` 一致）：
 
 ```bash
-docker cp ../../jshERP-boot/docs/jsh_erp.sql jsherp-mysql:/tmp/jsh_erp.sql
-docker exec -i jsherp-mysql mysql -uroot -p你的密码 jsh_erp < ../../jshERP-boot/docs/jsh_erp.sql
+mysql -h127.0.0.1 -P3306 -uroot -p jsh_erp < ../../jshERP-boot/docs/jsh_erp.sql
 ```
 
-或在宿主机用 `mysql` 客户端连 `localhost:3306` 导入。
+若 MySQL 在其它 Docker 容器内，对该容器执行 `docker exec -i ... mysql ...` 导入即可。变量示例见 `.env.external-mysql.example`。
 
 访问：`http://localhost:8080/erp/`（默认 `WEB_PORT`，且 `.env.example` 中已配置子路径）。
 
@@ -81,7 +79,7 @@ VUE_APP_API_BASE=
 3. 在 `deploy/docker/.env` 中设置：
    - `DOCKERFILE_BACKEND=deploy/docker/Dockerfile.backend.prebuilt`
    - `DOCKERFILE_FRONTEND=deploy/docker/Dockerfile.frontend.prebuilt`
-4. `cd deploy/docker` 后执行 `docker compose build jsherp-boot jsherp-web` 与 `docker compose push jsherp-boot jsherp-web`（或 `.\build-push-harbor.ps1`），镜像名仍由 `REGISTRY_PREFIX`、`IMAGE_TAG` 决定。
+4. `cd deploy/docker` 后执行 `docker compose build redis jsherp-boot jsherp-web` 与 `docker compose push redis jsherp-boot jsherp-web`（或 `.\build-push-harbor.ps1`），镜像名仍由 `REGISTRY_PREFIX`、`IMAGE_TAG` 决定（Redis 为 `${REGISTRY_PREFIX}/jsherp-redis`）。
 
 ## 推送到 Harbor（私库）
 
@@ -109,6 +107,7 @@ docker compose build
 5. 推送：
 
 ```bash
+docker push harbor.你的域名.com/erp/jsherp-redis:3.6
 docker push harbor.你的域名.com/erp/jsherp-boot:3.6
 docker push harbor.你的域名.com/erp/jsherp-web:3.6
 ```
@@ -122,7 +121,7 @@ docker compose pull
 docker compose up -d
 ```
 
-**说明**：`mysql`、`redis` 仍使用 Docker Hub 官方镜像。若内网不能访问公网，可在 Harbor 中做代理缓存，或把 `mysql:8.0`、`redis:7-alpine` 先推到 Harbor，再把 compose 里 `image:` 改成私库地址。
+**说明**：运行时的 Redis 镜像名为 `${REGISTRY_PREFIX}/jsherp-redis`（构建时从 `REDIS_IMAGE` 基底复制一层，便于整栈推同一 Harbor 项目）。MySQL 由你自行提供。
 
 ## 与手工部署的差异
 
