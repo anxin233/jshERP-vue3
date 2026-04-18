@@ -53,6 +53,14 @@ module.exports = {
                 target: 'http://localhost:9999', // 请求本地 需要jshERP-boot后台项目
                 ws: false,
                 changeOrigin: true
+            },
+            '/erp/jshERP-boot': {
+                target: 'http://localhost:9999', // 支持 /erp 子路径访问
+                ws: false,
+                changeOrigin: true,
+                pathRewrite: {
+                    '^/erp': '' // 去掉 /erp 前缀，转发到后端
+                }
             }
         }
     },

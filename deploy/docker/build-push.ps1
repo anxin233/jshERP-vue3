@@ -1,8 +1,6 @@
-# 在 deploy/docker 目录执行: .\build-push-harbor.ps1
-# 需已安装 Docker，且能访问 Docker Hub（或已配置镜像加速 / 私有基础镜像仓库）
-# 推送前请先: docker login <你的Harbor域名>
-#
-# .env 中设 REGISTRY_PREFIX、IMAGE_TAG；可设 DOCKERFILE_* 为 *.prebuilt
+# 在 deploy/docker 执行，或：.\deploy\docker\build-push.ps1
+# 前置：本机已有 jshERP-boot/target/jshERP.jar、jshERP-web/dist；推送前 docker login
+# .env：REGISTRY_PREFIX、IMAGE_TAG；可选 JRE_RUNTIME_IMAGE、NGINX_RUNTIME_IMAGE、NGINX_CONF
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
@@ -20,9 +18,8 @@ if (Test-Path ".env") {
 }
 
 Write-Host "REGISTRY_PREFIX=$env:REGISTRY_PREFIX IMAGE_TAG=$env:IMAGE_TAG"
-docker compose build redis jsherp-boot jsherp-web
-docker compose push redis jsherp-boot jsherp-web
-Write-Host "Done. Images:"
-Write-Host "  $env:REGISTRY_PREFIX/jsherp-redis:$env:IMAGE_TAG"
+docker compose build jsherp-boot jsherp-web
+docker compose push jsherp-boot jsherp-web
+Write-Host "Done:"
 Write-Host "  $env:REGISTRY_PREFIX/jsherp-boot:$env:IMAGE_TAG"
 Write-Host "  $env:REGISTRY_PREFIX/jsherp-web:$env:IMAGE_TAG"

@@ -1,3 +1,0 @@
-# 基于官方 Redis 打一层，便于与 jsherp-boot / jsherp-web 同 Harbor 前缀推送
-ARG REDIS_BASE_IMAGE=docker.m.daocloud.io/library/redis:7-alpine
-FROM ${REDIS_BASE_IMAGE}

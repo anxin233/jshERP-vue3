@@ -1,59 +1,24 @@
-# Redis + jsherp-boot + jsherp-web（不含内置 MySQL，连已有库）
+# jsherp-boot + jsherp-web；MySQL / Redis：共享基础设施（如 /opt/infra，网络 infra_default）
 #
-# .env 中设置 EXTERNAL_MYSQL_HOST、EXTERNAL_MYSQL_PORT（可选）、MYSQL_DATABASE、
-# MYSQL_ROOT_PASSWORD（或 SPRING 库密码）、EXTERNAL_MYSQL_USER（可选，默认 root）
-# MySQL 在其它 Docker 网络：再叠 -f overrides/mysql-external-docker-network.yml（见 overrides/README.md）
-#
-# 构建：docker compose build redis jsherp-boot jsherp-web
-# 运行：docker compose up -d
-# 服务器只拉镜像：docker compose -f docker-compose.yml -f docker-compose.server.yml pull && ... up -d
-#
-# 基础镜像默认经 DaoCloud 拉 Hub；可直连时在 .env 覆盖为短名，例如：
-#   REDIS_IMAGE=redis:7-alpine
-#   MAVEN_BUILD_IMAGE=maven:3.9-eclipse-temurin-8
-#   JRE_RUNTIME_IMAGE=eclipse-temurin:8-jre-alpine
-#   NODE_BUILD_IMAGE=node:20-alpine
-#   NGINX_RUNTIME_IMAGE=nginx:1.25-alpine
+# 构建前本机须已有：jshERP-boot/target/jshERP.jar、jshERP-web/dist
+# 构建：docker compose build jsherp-boot jsherp-web  或  .\build-push.ps1
+# 服务器：./server-deploy.sh
 
 services:
-  redis:
-    image: ${REGISTRY_PREFIX:-local}/jsherp-redis:${IMAGE_TAG:-latest}
-    build:
-      context: .
-      dockerfile: Dockerfile.redis
-      args:
-        REDIS_BASE_IMAGE: ${REDIS_IMAGE:-docker.m.daocloud.io/library/redis:7-alpine}
-    container_name: jsherp-redis
-    restart: unless-stopped
-    command: redis-server
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - jsherp-redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
   jsherp-boot:
     image: ${REGISTRY_PREFIX:-local}/jsherp-boot:${IMAGE_TAG:-latest}
     build:
       context: ../..
-      dockerfile: ${DOCKERFILE_BACKEND:-deploy/docker/Dockerfile.backend}
+      dockerfile: deploy/docker/Dockerfile.backend
       args:
-        MAVEN_BUILD_IMAGE: ${MAVEN_BUILD_IMAGE:-docker.m.daocloud.io/library/maven:3.9-eclipse-temurin-8}
         JRE_RUNTIME_IMAGE: ${JRE_RUNTIME_IMAGE:-docker.m.daocloud.io/library/eclipse-temurin:8-jre-alpine}
     container_name: jsherp-boot
     restart: unless-stopped
-    depends_on:
-      redis:
-        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://${EXTERNAL_MYSQL_HOST:-host.docker.internal}:${EXTERNAL_MYSQL_PORT:-3306}/${MYSQL_DATABASE:-jsh_erp}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_URL: jdbc:mysql://${EXTERNAL_MYSQL_HOST:-shared-mysql}:${EXTERNAL_MYSQL_PORT:-3306}/${MYSQL_DATABASE:-jsh_erp}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: ${EXTERNAL_MYSQL_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_HOST: ${SPRING_REDIS_HOST:-shared-redis}
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     extra_hosts:
@@ -69,17 +34,18 @@ services:
       - /app/app.jar
     expose:
       - "9999"
+    networks:
+      - default
+      - infra_default
 
   jsherp-web:
     image: ${REGISTRY_PREFIX:-local}/jsherp-web:${IMAGE_TAG:-latest}
     build:
       context: ../..
-      dockerfile: ${DOCKERFILE_FRONTEND:-deploy/docker/Dockerfile.frontend}
+      dockerfile: deploy/docker/Dockerfile.frontend
       args:
-        VUE_APP_PUBLIC_PATH: ${VUE_APP_PUBLIC_PATH:-/}
-        VUE_APP_API_BASE: ${VUE_APP_API_BASE:-}
-        NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-docker.m.daocloud.io/library/node:20-alpine}
         NGINX_RUNTIME_IMAGE: ${NGINX_RUNTIME_IMAGE:-docker.m.daocloud.io/library/nginx:1.25-alpine}
+        NGINX_CONF: ${NGINX_CONF:-deploy/docker/nginx/default.conf}
     container_name: jsherp-web
     restart: unless-stopped
     depends_on:
@@ -88,5 +54,8 @@ services:
       - "${WEB_PORT:-8080}:80"
 
 volumes:
-  jsherp-redis-data:
   jsherp-upload:
+
+networks:
+  infra_default:
+    external: true

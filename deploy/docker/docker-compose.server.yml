@@ -1,15 +1,23 @@
-# 服务器专用：去掉 build，只从 Harbor 拉镜像，避免无源码时误触发本地构建
-# 用法：docker compose -f docker-compose.yml -f docker-compose.server.yml pull
-#       docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
-#
-# 与 docker-compose.yml 合并后，redis / jsherp-boot / jsherp-web 不再包含 build 段。
+# 与 docker-compose.yml 合并：去掉 build，仅 pull；并限制内存、收紧 JVM（适合 2G 内存小机）
+# 服务器：docker compose -f docker-compose.yml -f docker-compose.server.yml pull && docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
 
 services:
-  redis:
-    build: !reset null
-
   jsherp-boot:
     build: !reset null
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   jsherp-web:
     build: !reset null
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 16M
