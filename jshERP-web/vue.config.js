@@ -12,9 +12,25 @@ module.exports = {
     // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
     productionSourceMap: false,
     configureWebpack: config => {
+        config.resolve = config.resolve || {}
+        config.resolve.fallback = {
+            ...(config.resolve.fallback || {}),
+            timers: require.resolve('timers-browserify')
+        }
     // 生产环境取消 console.log
         if (process.env.NODE_ENV === 'production') {
-            config.optimization.minimizer[0].options.terserOptions.compress.drop_console = true
+            const minimizers = config.optimization && config.optimization.minimizer
+            if (Array.isArray(minimizers)) {
+                minimizers.forEach(minimizer => {
+                    if (minimizer && minimizer.options) {
+                        minimizer.options.terserOptions = minimizer.options.terserOptions || {}
+                        minimizer.options.terserOptions.compress = {
+                            ...(minimizer.options.terserOptions.compress || {}),
+                            drop_console: true
+                        }
+                    }
+                })
+            }
         }
     },
     chainWebpack: (config) => {
@@ -35,14 +51,22 @@ module.exports = {
     },
     css: {
         loaderOptions: {
+            css: {
+                url: {
+                    filter: url => !url.startsWith('/static/')
+                }
+            },
             less: {
-                modifyVars: {
+                lessOptions: {
+                    modifyVars: {
                     /* less 变量覆盖，用于自定义 ant design 主题 */
                     'primary-color': '#1890FF',
                     'link-color': '#1890FF',
-                    'border-radius-base': '4px'
-                },
-                javascriptEnabled: true
+                        'border-radius-base': '4px'
+                    },
+                    javascriptEnabled: true,
+                    math: 'always'
+                }
             }
         }
     },
