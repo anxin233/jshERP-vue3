@@ -210,11 +210,43 @@
         bordered
         rowKey="rowKey"
         :scroll="{x: 900}">
-        <!-- 项目名称 -->
+        <!-- 项目名称（仅从项目库选择） -->
         <template slot="projectName" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.projectName" placeholder="请输入服务项目"
-            @change="() => recalcProject(record)" size="small" />
-          <span v-else>{{ text }}</span>
+          <template v-if="isViewMode">
+            <span>{{ text }}</span>
+          </template>
+          <template v-else-if="isLegacyProjectRow(record)">
+            <div>
+              <span>{{ record.projectName }}</span>
+              <a-tag color="orange" style="margin-left:6px">未关联项目库</a-tag>
+              <a @click="clearProjectRowForReselect(record)" style="margin-left:6px;font-size:12px">清空并重选</a>
+            </div>
+          </template>
+          <a-select
+            v-else
+            show-search
+            :filter-option="false"
+            :not-found-content="record._projectLoading ? undefined : null"
+            :get-popup-container="getSelectPopupContainer"
+            placeholder="搜索并选择服务项目"
+            style="width:100%;min-width:160px"
+            :value="record.projectId != null ? record.projectId : undefined"
+            allow-clear
+            size="small"
+            @dropdownVisibleChange="(open) => onProjectDropdownVisible(record, open)"
+            @search="(q) => onProjectNameSearch(record, q)"
+            @change="(v) => onProjectSelectChange(record, v)">
+            <a-spin v-if="record._projectLoading" slot="notFoundContent" size="small" />
+            <a-select-option v-for="opt in record._projectOptions || []" :key="'pj_'+opt.id" :value="opt.id">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:500">{{ opt.name }}</div>
+                  <div v-if="opt.categoryName" style="font-size:11px;color:#999;margin-top:2px">类别 {{ opt.categoryName }}</div>
+                </div>
+                <span v-if="opt.totalPrice != null" style="color:#f5222d;font-size:12px;white-space:nowrap">¥{{ opt.totalPrice }}</span>
+              </div>
+            </a-select-option>
+          </a-select>
         </template>
         <!-- 单价 -->
         <template slot="unitPrice" slot-scope="text, record">
@@ -268,11 +300,51 @@
         bordered
         rowKey="rowKey"
         :scroll="{x: 980}">
-        <!-- 商品名称 -->
+        <!-- 商品名称（仅从商品库选择） -->
         <template slot="materialName" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.materialName" placeholder="请输入商品名称"
-            @change="() => recalcMaterial(record)" size="small" />
-          <span v-else>{{ text }}</span>
+          <template v-if="isViewMode">
+            <span>{{ text }}</span>
+          </template>
+          <template v-else-if="isLegacyMaterialRow(record)">
+            <div>
+              <span>{{ record.materialName }}</span>
+              <a-tag color="orange" style="margin-left:6px">未关联商品库</a-tag>
+              <a @click="clearMaterialRowForReselect(record)" style="margin-left:6px;font-size:12px">清空并重选</a>
+            </div>
+          </template>
+          <a-select
+            v-else
+            show-search
+            :filter-option="false"
+            :not-found-content="record._materialLoading ? undefined : null"
+            :get-popup-container="getSelectPopupContainer"
+            placeholder="搜索并选择商品"
+            style="width:100%;min-width:160px"
+            :value="materialSelectValue(record)"
+            allow-clear
+            size="small"
+            @dropdownVisibleChange="(open) => onMaterialDropdownVisible(record, open)"
+            @search="(q) => onMaterialNameSearch(record, q)"
+            @change="(v) => onMaterialSelectChange(record, v)">
+            <a-spin v-if="record._materialLoading" slot="notFoundContent" size="small" />
+            <a-select-option
+              v-for="opt in record._materialOptions || []"
+              :key="'mat_' + record.rowKey + '_' + materialOptionKey(opt)"
+              :value="materialOptionValue(opt)">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis">{{ opt.name }}</div>
+                    <div v-if="opt.categoryName" style="font-size:11px;color:#999;margin-top:2px">类别 {{ opt.categoryName }}</div>
+                  </div>
+                  <span style="color:#999;font-size:12px;white-space:nowrap">库存 {{ formatStock(opt.stock) }}</span>
+                </div>
+                <div v-if="opt.standard || opt.model" style="font-size:11px;color:#999;margin-top:2px">
+                  {{ opt.standard || '' }} {{ opt.model || '' }}
+                </div>
+              </div>
+            </a-select-option>
+          </a-select>
         </template>
         <!-- 规格 -->
         <template slot="standard" slot-scope="text, record">
@@ -371,7 +443,10 @@
 
 <script>
 import moment from 'moment'
+import Vue from 'vue'
 import { postAction, putAction, getAction } from '@/api/manage'
+import { getMaterialBySelect } from '@/api/api'
+import { getMpListShort } from '@/utils/util'
 import MaterialSelectModal from '@/views/project/modules/MaterialSelectModal'
 import ProjectSelectModal from './ProjectSelectModal'
 import VehicleModal from '@/views/vehicle/modules/VehicleModal'
@@ -411,6 +486,9 @@ export default {
       vehicleSearchLoading: false,
       vehicleSearchTimer: null,
       isManualEntry: false,
+
+      /** 商品远程搜索用的默认仓库（库存展示），取当前用户首个仓库 */
+      materialDepotId: null,
 
       // 服务项目列表
       projectItems: [],
@@ -534,13 +612,18 @@ export default {
             discountRate:p.discountRate,
             amount:      p.amount,
             workerName:  p.workerName,
-            remark:      p.remark
+            remark:      p.remark,
+            _projectOptions: (p.projectId != null)
+              ? [{ id: p.projectId, name: p.projectName, totalPrice: p.unitPrice, categoryName: p.categoryName }]
+              : [],
+            _projectLoading: false
           }))
 
           // 回填材料行
           this.materialItems = materials.map((m, i) => ({
             rowKey: 'm_' + i,
             materialId:   m.materialId,
+            materialExtendId: null,
             materialName: m.materialName,
             standard:     m.standard,
             model:        m.model,
@@ -549,7 +632,18 @@ export default {
             quantity:     m.quantity,
             discountRate: m.discountRate,
             amount:       m.amount,
-            remark:       m.remark
+            remark:       m.remark,
+            _materialOptions: (m.materialId != null)
+              ? [{
+                id: null,
+                materialId: m.materialId,
+                name: m.materialName,
+                standard: m.standard,
+                model: m.model,
+                stock: null
+              }]
+              : [],
+            _materialLoading: false
           }))
         }
       }).finally(() => { this.confirmLoading = false })
@@ -686,7 +780,9 @@ export default {
           discountRate:100,
           amount:      p.totalPrice || 0,
           workerName:  '',
-          remark:      ''
+          remark:      '',
+          _projectOptions: [{ id: p.id, name: p.name, totalPrice: p.totalPrice, categoryName: p.categoryName }],
+          _projectLoading: false
         })
       })
     },
@@ -695,7 +791,9 @@ export default {
         rowKey: 'p_' + Date.now(),
         projectId: null, projectName: '', unitPrice: 0,
         quantity: 1, discountRate: 100, amount: '0.00',
-        workerName: '', remark: ''
+        workerName: '', remark: '',
+        _projectOptions: [],
+        _projectLoading: false
       })
     },
     removeProjectRow(record) {
@@ -716,15 +814,26 @@ export default {
           this.materialItems.push({
             rowKey: 'm_' + Date.now() + Math.random(),
             materialId:   m.id,
+            materialExtendId: null,
             materialName: m.name,
             standard:     m.standard || '',
             model:        m.model || '',
-            unit:         '',
+            unit:         m.commodityUnit || m.unit || '',
             unitPrice:    m.commodityDecimal || 0,
             quantity:     1,
             discountRate: 100,
             amount:       this.calcAmount(m.commodityDecimal || 0, 1, 100),
-            remark:       ''
+            remark:       '',
+            _materialOptions: [{
+              id: null,
+              materialId: m.id,
+              name: m.name,
+              categoryName: m.categoryName,
+              standard: m.standard,
+              model: m.model,
+              stock: null
+            }],
+            _materialLoading: false
           })
         }
       })
@@ -732,9 +841,11 @@ export default {
     addMaterialRow() {
       this.materialItems.push({
         rowKey: 'm_' + Date.now(),
-        materialId: null, materialName: '', standard: '', model: '',
+        materialId: null, materialExtendId: null, materialName: '', standard: '', model: '',
         unit: '', unitPrice: 0, quantity: 1, discountRate: 100,
-        amount: '0.00', remark: ''
+        amount: '0.00', remark: '',
+        _materialOptions: [],
+        _materialLoading: false
       })
     },
     removeMaterialRow(record) {
@@ -757,6 +868,193 @@ export default {
     recalcTotal() { /* 由 computed 自动处理 */ },
     toNum(v) { return parseFloat(v) || 0 },
 
+    /** 表格/弹窗内下拉挂到 body，避免被 overflow 裁剪或点击无法触发 */
+    getSelectPopupContainer() {
+      return document.body
+    },
+    /** 接口主表商品 id（兼容 snake_case） */
+    pickMaterialMainId(row) {
+      if (!row) return null
+      if (row.materialId != null) return row.materialId
+      if (row.material_id != null) return row.material_id
+      return null
+    },
+    /** 与 a-select-option :value 一致：优先扩展表 meId，否则仅种子项时有主表 id */
+    materialOptionValue(opt) {
+      if (!opt) return undefined
+      if (opt.id != null) return opt.id
+      const mid = this.pickMaterialMainId(opt)
+      return mid != null ? mid : undefined
+    },
+    materialOptionKey(opt) {
+      const v = this.materialOptionValue(opt)
+      return v != null ? String(v) : '0'
+    },
+    findMaterialOptionByValue(record, val) {
+      if (val === undefined || val === null) return null
+      return (record._materialOptions || []).find(o => {
+        const ov = this.materialOptionValue(o)
+        return ov != null && String(ov) === String(val)
+      })
+    },
+    /** 商品名称下拉绑定值：有扩展行 id 时用 meId，否则用主表 materialId（详情回填种子选项） */
+    materialSelectValue(record) {
+      if (!record) return undefined
+      if (record.materialExtendId != null) return record.materialExtendId
+      if (record.materialId != null) return record.materialId
+      return undefined
+    },
+    formatStock(s) {
+      if (s === null || s === undefined || s === '') return '-'
+      const n = parseFloat(s)
+      return isNaN(n) ? '-' : n
+    },
+    ensureMaterialDepot() {
+      if (this.materialDepotId != null) return Promise.resolve()
+      return getAction('/depot/findDepotByCurrentUser').then(res => {
+        if (res.code === 200 && res.data && res.data.length) {
+          this.materialDepotId = res.data[0].id
+        }
+      })
+    },
+    isLegacyProjectRow(record) {
+      const n = (record.projectName || '').trim()
+      return !!n && record.projectId == null
+    },
+    isLegacyMaterialRow(record) {
+      const n = (record.materialName || '').trim()
+      return !!n && record.materialId == null
+    },
+    clearProjectRowForReselect(record) {
+      record.projectId = null
+      record.projectName = ''
+      record.unitPrice = 0
+      record.amount = this.calcAmount(0, record.quantity, record.discountRate)
+      record._projectOptions = []
+    },
+    clearMaterialRowForReselect(record) {
+      record.materialId = null
+      record.materialExtendId = null
+      record.materialName = ''
+      record.standard = ''
+      record.model = ''
+      record.unit = ''
+      record.unitPrice = 0
+      record.amount = this.calcAmount(0, record.quantity, record.discountRate)
+      record._materialOptions = []
+    },
+    onProjectDropdownVisible(record, open) {
+      if (!open || this.isViewMode) return
+      if (!record._projectOptions || record._projectOptions.length === 0) {
+        this.fetchProjectOptions(record, '')
+      }
+    },
+    onProjectNameSearch(record, q) {
+      if (record._projSearchTimer) clearTimeout(record._projSearchTimer)
+      record._projSearchTimer = setTimeout(() => {
+        this.fetchProjectOptions(record, (q || '').trim())
+      }, 300)
+    },
+    fetchProjectOptions(record, nameQuery) {
+      record._projectLoading = true
+      const searchObj = {}
+      if (nameQuery) searchObj.name = nameQuery
+      // 注意：enabled 字段在数据库中是 bit(1) 类型，不传或传空字符串表示不筛选
+      // 如需筛选启用项目，后端 SQL 会直接比较 bit 值
+      getAction('/project/list', {
+        currentPage: 1,
+        pageSize: 50,
+        search: JSON.stringify(searchObj)
+      }).then(res => {
+        if (res.code === 200) {
+          this.$set(record, '_projectOptions', res.data.rows || [])
+        }
+      }).finally(() => {
+        record._projectLoading = false
+      })
+    },
+    onProjectSelectChange(record, val) {
+      if (val === undefined || val === null) {
+        record.projectId = null
+        record.projectName = ''
+        record.unitPrice = 0
+        record.amount = this.calcAmount(0, record.quantity, record.discountRate)
+        return
+      }
+      const opt = (record._projectOptions || []).find(r => r.id != null && String(r.id) === String(val))
+      if (!opt) return
+      record.projectId = opt.id
+      record.projectName = opt.name
+      record.unitPrice = opt.totalPrice != null ? opt.totalPrice : 0
+      this.recalcProject(record)
+    },
+    onMaterialDropdownVisible(record, open) {
+      if (!open || this.isViewMode) return
+      if (!record._materialOptions || record._materialOptions.length === 0) {
+        this.fetchMaterialOptions(record, '')
+      }
+    },
+    onMaterialNameSearch(record, q) {
+      if (record._matSearchTimer) clearTimeout(record._matSearchTimer)
+      record._matSearchTimer = setTimeout(() => {
+        this.fetchMaterialOptions(record, (q || '').trim())
+      }, 300)
+    },
+    fetchMaterialOptions(record, q) {
+      record._materialLoading = true
+      this.ensureMaterialDepot().then(() => {
+        const mpList = getMpListShort(Vue.ls.get('materialPropertyList'))
+        const params = { page: 1, rows: 50, mpList }
+        if (q) params.q = q
+        if (this.materialDepotId != null) params.depotId = this.materialDepotId
+        return getMaterialBySelect(params)
+      }).then(res => {
+        const raw = (res && res.rows) || (res && res.data && res.data.rows) || []
+        const seen = {}
+        const rows = []
+        for (const row of raw) {
+          const r = { ...row }
+          if (r.materialId == null && r.material_id != null) r.materialId = r.material_id
+          const mid = this.pickMaterialMainId(r)
+          if (mid != null && seen[mid]) continue
+          if (mid != null) seen[mid] = true
+          rows.push(r)
+        }
+        this.$set(record, '_materialOptions', rows)
+      }).finally(() => {
+        record._materialLoading = false
+      })
+    },
+    onMaterialSelectChange(record, val) {
+      if (val === undefined || val === null) {
+        record.materialId = null
+        record.materialExtendId = null
+        record.materialName = ''
+        record.standard = ''
+        record.model = ''
+        record.unit = ''
+        record.unitPrice = 0
+        record.amount = this.calcAmount(0, record.quantity, record.discountRate)
+        return
+      }
+      const opt = this.findMaterialOptionByValue(record, val)
+      if (!opt) return
+      const mainId = this.pickMaterialMainId(opt)
+      if (mainId == null) {
+        this.$message.warning('商品数据缺少主表 id（materialId），请确认已部署含 /material/findBySelect 扩展字段的后端版本')
+        return
+      }
+      record.materialId = mainId
+      record.materialExtendId = opt.id != null ? opt.id : null
+      record.materialName = opt.name || ''
+      record.standard = opt.standard || ''
+      record.model = opt.model || ''
+      record.unit = opt.unit || ''
+      const price = opt.commodityDecimal != null ? opt.commodityDecimal : (opt.commodity_decimal != null ? opt.commodity_decimal : 0)
+      record.unitPrice = price
+      this.recalcMaterial(record)
+    },
+
     // ——— 提交 —————————————————————————————————
     handleSubmit() {
       this.form.validateFields((err, values) => {
@@ -774,6 +1072,20 @@ export default {
         // 若勾选无牌且未填写车牌，在入库时统一用“无牌”占位
         if (this.orderForm.noPlate && !this.orderForm.licensePlate) {
           this.orderForm.licensePlate = '无牌'
+        }
+        for (const p of this.projectItems) {
+          const n = (p.projectName || '').trim()
+          if (n && p.projectId == null) {
+            this.$message.warning('存在未关联项目库的服务项目，请在「服务项目名称」中重新选择或清空该行')
+            return
+          }
+        }
+        for (const m of this.materialItems) {
+          const n = (m.materialName || '').trim()
+          if (n && m.materialId == null) {
+            this.$message.warning('存在未关联商品库的维修材料，请在「商品名称」中重新选择或清空该行')
+            return
+          }
         }
         const payload = {
           ...values,
@@ -849,6 +1161,7 @@ export default {
         clearTimeout(this.vehicleSearchTimer)
         this.vehicleSearchTimer = null
       }
+      this.materialDepotId = null
       this.projectItems  = []
       this.materialItems = []
       this.otherAmount   = 0

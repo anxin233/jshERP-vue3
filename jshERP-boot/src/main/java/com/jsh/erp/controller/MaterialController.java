@@ -331,6 +331,7 @@ public class MaterialController extends BaseController {
                 for (MaterialVo4Unit material : dataList) {
                     JSONObject item = new JSONObject();
                     item.put("id", material.getMeId()); //商品扩展表的id
+                    item.put("materialId", material.getId()); // jsh_material 主键（工单明细等引用）
                     String ratioStr = ""; //比例
                     Unit unit = new Unit();
                     if (material.getUnitId() == null) {
@@ -378,6 +379,7 @@ public class MaterialController extends BaseController {
                         }
                     }
                     item.put("stock", stock);
+                    item.put("commodityDecimal", material.getCommodityDecimal());
                     item.put("expand", materialService.getMaterialOtherByParam(mpArr, material));
                     item.put("otherField1", material.getOtherField1());
                     item.put("otherField2", material.getOtherField2());
