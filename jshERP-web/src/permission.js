@@ -10,6 +10,15 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/user/login', '/user/register', '/user/register-result'] // no redirect whitelist
 
+function addDynamicRoutes(routes = []) {
+  routes.forEach(route => {
+    if (route.name && router.hasRoute(route.name)) {
+      router.removeRoute(route.name)
+    }
+    router.addRoute(route)
+  })
+}
+
 router.beforeEach((to, from, next) => {
   NProgress.start() // start progress bar
   if (Vue.ls.get(USER_ID)) {
@@ -34,7 +43,7 @@ router.beforeEach((to, from, next) => {
           store.dispatch('UpdateAppRouter',  { constRoutes }).then(() => {
             // 根据roles权限生成可访问的路由表
             // 动态添加可访问路由表
-            router.addRoutes(store.getters.addRouters)
+            addDynamicRoutes(store.getters.addRouters)
             const redirect = decodeURIComponent(from.query.redirect || to.path)
             next({ path: redirect })
           })

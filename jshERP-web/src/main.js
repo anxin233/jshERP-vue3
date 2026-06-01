@@ -1,5 +1,5 @@
 import '@/config/api-base-bootstrap'
-import Vue from 'vue'
+import Vue, { createApp, h } from 'vue'
 import App from './App.vue'
 import Storage from 'vue-ls'
 import router from './router'
@@ -56,9 +56,7 @@ Vue.use(JeecgComponents)
 Vue.use(VueAreaLinkage)
 DictData.install()
 
-new Vue({
-  router,
-  store,
+const app = createApp({
   mounted () {
     // store.commit('SET_SIDEBAR_TYPE', Vue.ls.get(SIDEBAR_TYPE, true))
     store.commit('SET_SIDEBAR_TYPE', true)
@@ -73,5 +71,12 @@ new Vue({
     store.commit('SET_TOKEN', Vue.ls.get(ACCESS_TOKEN))
     store.commit('SET_MULTI_PAGE',Vue.ls.get(DEFAULT_MULTI_PAGE,config.multipage))
   },
-  render: h => h(App)
-}).$mount('#app')
+  render: () => h(App)
+})
+
+app.use(store)
+app.use(router)
+
+router.isReady().then(() => {
+  app.mount('#app')
+})
