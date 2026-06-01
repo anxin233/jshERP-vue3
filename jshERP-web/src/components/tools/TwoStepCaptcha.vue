@@ -2,7 +2,7 @@
   <!-- 两步验证 -->
   <a-modal
     centered
-    v-model="visible"
+    :visible="visible"
     @cancel="handleCancel"
     :maskClosable="false"
   >
@@ -71,7 +71,6 @@ export default {
       })
     },
     handleCancel () {
-      this.visible = false
       this.$emit('cancel')
     },
     onForgeStepCode() {

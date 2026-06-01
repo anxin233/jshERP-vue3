@@ -35,11 +35,24 @@ module.exports = {
     },
     chainWebpack: (config) => {
         config.resolve.alias
+            .set('vue', '@vue/compat')
             .set('@$', resolve('src'))
             .set('@api', resolve('src/api'))
             .set('@assets', resolve('src/assets'))
             .set('@comp', resolve('src/components'))
             .set('@views', resolve('src/views'))
+        config.module
+            .rule('vue')
+            .use('vue-loader')
+            .tap(options => ({
+                ...options,
+                compilerOptions: {
+                    ...(options.compilerOptions || {}),
+                    compatConfig: {
+                        MODE: 2
+                    }
+                }
+            }))
         // 生产环境，开启js\css压缩
         if (process.env.NODE_ENV === 'production') {
             config.plugin('compressionPlugin').use(new CompressionPlugin({

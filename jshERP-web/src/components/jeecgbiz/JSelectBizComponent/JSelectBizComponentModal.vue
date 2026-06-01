@@ -152,7 +152,11 @@
           ],
           dataSource: [],
         },
-        renderEllipsis: (value) => (<ellipsis length={this.ellipsisLength}>{value}</ellipsis>),
+        renderEllipsis: (value) => this.$createElement(Ellipsis, {
+          props: {
+            length: this.ellipsisLength
+          }
+        }, [value]),
         url: { list: this.listUrl },
         /* 分页参数 */
         ipagination: {

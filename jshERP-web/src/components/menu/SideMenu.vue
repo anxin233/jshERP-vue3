@@ -3,7 +3,7 @@
     :class="['sider', isDesktop() ? null : 'shadow', theme, fixSiderbar ? 'ant-fixed-sidemenu' : null ]"
     width="150px"
     :collapsible="collapsible"
-    v-model="collapsed"
+    :collapsed="collapsed"
     :trigger="null">
     <logo />
     <s-menu

@@ -30,8 +30,8 @@
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="属性值">
             <a-tabs v-model:activeKey="activeKey" size="small">
               <a-tab-pane key="1" tab="标签模式" forceRender>
-                <template v-for="(tag, index) in tags">
-                  <a-tag color="blue" style="margin-bottom: 10px" :key="tag" :closable="true" @close="() => handleClose(tag)">
+                <template v-for="(tag, index) in tags" :key="tag">
+                  <a-tag color="blue" style="margin-bottom: 10px" :closable="true" @close="() => handleClose(tag)">
                     {{ tag }}
                   </a-tag>
                 </template>

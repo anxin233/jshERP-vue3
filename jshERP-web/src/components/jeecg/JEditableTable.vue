@@ -67,11 +67,10 @@
             />
           </div>
           <!-- 右侧动态生成td -->
-          <template v-for="col in columns">
+          <template v-for="col in columns" :key="col.key">
             <div
               v-show="col.type !== formTypes.hidden"
               class="td"
-              :key="col.key"
               :style="buildTdStyle(col)">
               <span style="padding: 0 5px;">
                 {{ col.title }}
@@ -154,10 +153,9 @@
 
                 <div v-if="rowSelection" class="td td-cb" :style="style.tdLeft">
                   <!-- 此 v-for 只是为了拼接 id 字符串 -->
-                  <template v-for="(id,i) in [`${row.id}`]">
+                  <template v-for="(id,i) in [`${row.id}`]" :key="id">
                     <a-checkbox
                       :id="id"
-                      :key="i"
                       :checked="selectedRowIds.indexOf(id) !== -1"
                       @change="handleChangeLeftCheckbox"/>
                   </template>
@@ -168,14 +166,13 @@
                   class="td"
                   v-for="col in columns"
                   v-show="col.type !== formTypes.hidden"
-                  :key="col.key"
                   :style="buildTdStyle(col)">
 
                   <!-- 此 v-for 只是为了拼接 id 字符串 -->
-                  <template v-for="(id,i) in [`${col.key}${row.id}`]">
+                  <template v-for="(id,i) in [`${col.key}${row.id}`]" :key="id">
 
                     <!-- native input -->
-                    <label :key="i" v-if="col.type === formTypes.input || col.type === formTypes.inputNumber">
+                    <label v-if="col.type === formTypes.input || col.type === formTypes.inputNumber">
                       <a-tooltip
                         :id="id"
                         placement="top"
@@ -203,7 +200,6 @@
                     <!-- checkbox -->
                     <template v-else-if="col.type === formTypes.checkbox">
                       <a-checkbox
-                        :key="i"
                         :id="id"
                         v-bind="buildProps(row,col)"
                         :checked="checkboxValues[id]"
@@ -213,7 +209,6 @@
                     <!-- select -->
                     <template v-else-if="col.type === formTypes.select">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -228,7 +223,6 @@
 
                         <a-select
                           :id="id"
-                          :key="i"
                           v-bind="buildProps(row,col)"
                           style="width: 100%;"
                           :value="getSelectValue(id)"
@@ -256,7 +250,6 @@
                     <!-- date -->
                     <template v-else-if="col.type === formTypes.date || col.type === formTypes.datetime">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -271,7 +264,6 @@
 
                         <j-date
                           :id="id"
-                          :key="i"
                           v-bind="buildProps(row,col)"
                           style="width: 100%;"
                           :value="jdateValues[id]"
@@ -290,7 +282,6 @@
                     <!-- input_pop -->
                     <template v-else-if="col.type === formTypes.input_pop">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -302,7 +293,6 @@
                           @mouseout="()=>{handleMouseoutCommono(row,col)}">
                           <j-input-pop
                             :id="id"
-                            :key="i"
                             :width="300"
                             :height="210"
                             :pop-container="`${caseId}tbody`"
@@ -317,10 +307,9 @@
                       </a-tooltip>
                     </template>
 
-                    <div v-else-if="col.type === formTypes.upload" :key="i">
-                      <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]">
+                    <div v-else-if="col.type === formTypes.upload">
+                      <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]" :key="fileKey">
                         <a-input
-                          :key="fileKey"
                           :readOnly="true"
                           :value="file.name"
                         >
@@ -362,7 +351,6 @@
 
                       <div :hidden="uploadValues[id] != null">
                         <a-tooltip
-                          :key="i"
                           :id="id"
                           placement="top"
                           :title="(tooltips[id] || {}).title"
@@ -395,7 +383,6 @@
                     <!-- update-begin-author:taoyan date:0827 for：popup -->
                     <template v-else-if="col.type === formTypes.popup">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -410,7 +397,6 @@
 
                           <j-popup
                             :id="id"
-                            :key="i"
                             v-bind="buildProps(row,col)"
                             :placeholder="replaceProps(col, col.placeholder)"
                             style="width: 100%;"
@@ -429,7 +415,6 @@
                     <!-- update-begin-author:jsh date:20210308 for：popupJsh -->
                     <template v-else-if="col.type === formTypes.popupJsh">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -454,9 +439,9 @@
                     <!-- update-end-author:jsh date:20210308 for：popupJsh -->
 
                     <!-- update-beign-author:taoyan date:0827 for：文件/图片逻辑新增 -->
-                    <div v-else-if="col.type === formTypes.file" :key="i">
-                      <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]">
-                        <div :key="fileKey" style="position: relative;">
+                    <div v-else-if="col.type === formTypes.file">
+                      <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]" :key="fileKey">
+                        <div style="position: relative;">
                           <a-tooltip v-if="file.status==='uploading'" :title="`上传中(${Math.floor(file.percent)}%)`">
                             <a-icon type="loading" style="color:red;"/>
                             <span style="color:red;margin-left:5px">{{  file.status }}</span>
@@ -496,7 +481,6 @@
 
                       <div :hidden="uploadValues[id] != null">
                         <a-tooltip
-                          :key="i"
                           :id="id"
                           placement="top"
                           :title="(tooltips[id] || {}).title"
@@ -526,9 +510,9 @@
 
                     </div>
 
-                    <div v-else-if="col.type === formTypes.image" :key="i">
-                      <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]">
-                        <div :key="fileKey" style="position: relative;">
+                    <div v-else-if="col.type === formTypes.image">
+                      <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]" :key="fileKey">
+                        <div style="position: relative;">
                           <template v-if="!uploadValues[id] || !(uploadValues[id]['url'] || uploadValues[id]['path'] || uploadValues[id]['message'])">
                             <a-icon type="loading"/>
                           </template>
@@ -578,7 +562,6 @@
 
                       <div :hidden="uploadValues[id] != null">
                         <a-tooltip
-                          :key="i"
                           :id="id"
                           placement="top"
                           :title="(tooltips[id] || {}).title"
@@ -613,7 +596,6 @@
                     <!-- radio-begin -->
                     <template v-else-if="col.type === formTypes.radio">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -627,7 +609,6 @@
                           @mouseout="()=>{handleMouseoutCommono(row,col)}">
                           <a-radio-group
                             :id="id"
-                            :key="i"
                             v-bind="buildProps(row,col)"
                             :value="radioValues[id]"
                             @change="(e)=>handleRadioChange(e.target.value,id,row,col)">
@@ -642,7 +623,6 @@
                     <!-- select多选 -begin -->
                     <template v-else-if="col.type === formTypes.list_multi">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -657,7 +637,6 @@
 
                           <a-select
                             :id="id"
-                            :key="i"
                             mode="multiple"
                             :maxTagCount="1"
                             v-bind="buildProps(row,col)"
@@ -677,7 +656,6 @@
                     <!-- select搜索 -begin -->
                     <template v-else-if="col.type === formTypes.sel_search">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -692,7 +670,6 @@
 
                           <a-select
                             :id="id"
-                            :key="i"
                             showSearch
                             optionFilterProp="children"
                             :filterOption="filterOption"
@@ -711,9 +688,8 @@
                     <!-- select搜索 -end -->
 
 
-                    <div v-else-if="col.type === formTypes.slot" :key="i">
+                    <div v-else-if="col.type === formTypes.slot">
                       <a-tooltip
-                        :key="i"
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
@@ -744,7 +720,7 @@
                     </div>
 
                     <!-- else (normal) -->
-                    <span v-else :key="i" v-bind="buildProps(row,col)" class="td-span" :title="inputValues[rowIndex][col.key]">
+                    <span v-else v-bind="buildProps(row,col)" class="td-span" :title="inputValues[rowIndex][col.key]">
                       {{ inputValues[rowIndex][col.key] }}
                     </span>
                   </template>
@@ -776,9 +752,8 @@
             </div>
 
             <!-- 右侧动态生成td -->
-            <template v-for="col in columns">
+            <template v-for="col in columns" :key="col.key">
               <div
-                :key="col.key"
                 class="td"
                 v-show="col.type !== formTypes.hidden"
                 :style="buildTdStyle(col)"

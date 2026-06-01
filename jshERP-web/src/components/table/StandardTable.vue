@@ -4,9 +4,9 @@
       <a-alert type="info" :show-icon="true">
         <div slot="message">
           已选择&nbsp;<a style="font-weight: 600">{{ selectedRows.length }}</a>&nbsp;&nbsp;
-          <template v-for="(item, index) in needTotalList" v-if="item.needTotal">
+          <template v-for="(item, index) in needTotalList" v-if="item.needTotal" :key="index">
             {{ item.title }} 总计&nbsp;
-            <a :key="index" style="font-weight: 600">
+            <a style="font-weight: 600">
               {{ item.customRender ? item.customRender(item.total) : item.total }}
             </a>&nbsp;&nbsp;
           </template>

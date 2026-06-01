@@ -24,13 +24,11 @@
         type: Number
       }
     },
-    render () {
-      return (
-        <Col {...{props: responsive[this.col]}}>
-          <div class="term">{this.$props.term}</div>
-          <div class="content">{this.$slots.default}</div>
-        </Col>
-      )
+    render (h) {
+      return h(Col, { props: responsive[this.col] }, [
+        h('div', { class: 'term' }, [this.$props.term]),
+        h('div', { class: 'content' }, this.$slots.default)
+      ])
     }
   }
 

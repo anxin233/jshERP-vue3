@@ -259,7 +259,7 @@
 
         visible: false,
         queryParamsModel: [],
-        treeIcon: <a-icon type="file-text"/>,
+        treeIcon: null,
         // 保存查询条件的treeData
         saveTreeData: [],
         // 保存查询条件的前缀名
@@ -508,16 +508,19 @@
         item.icon = this.treeIcon
         item.originTitle = item['title']
         item.title = (fn, vNode) => {
+          const h = this.$createElement
           let { originTitle } = vNode.dataRef
-          return (
-            <div class="j-history-tree-title">
-              <span>{originTitle}</span>
-
-              <div class="j-history-tree-title-closer" onClick={e => this.handleRemoveSaveTreeItem(e, vNode)}>
-                <a-icon type="close-circle"/>
-              </div>
-            </div>
-          )
+          return h('div', { class: 'j-history-tree-title' }, [
+            h('span', [originTitle]),
+            h('div', {
+              class: 'j-history-tree-title-closer',
+              on: {
+                click: e => this.handleRemoveSaveTreeItem(e, vNode)
+              }
+            }, [
+              h('a-icon', { props: { type: 'close-circle' } })
+            ])
+          ])
         }
         return item
       },
