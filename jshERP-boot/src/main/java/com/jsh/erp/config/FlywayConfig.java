@@ -18,9 +18,9 @@ import java.sql.ResultSet;
 /**
  * Manual Flyway baseline entry for existing databases.
  *
- * <p>Spring Boot 2.0 uses Flyway 5.0.x and does not expose newer Flyway APIs
- * such as Flyway.configure() or FlywayProperties#getTable(). Keep baseline as
- * an explicit profile action instead of guessing database state at startup.</p>
+ * <p>Keep baseline as an explicit profile action instead of guessing database
+ * state at startup. The baseline version and history table come from
+ * spring.flyway.* properties managed by Spring Boot.</p>
  */
 @Configuration
 @Profile("flyway-baseline")
@@ -38,14 +38,13 @@ public class FlywayConfig {
                     DEFAULT_HISTORY_TABLE);
             String baselineVersion = environment.getProperty("spring.flyway.baseline-version", "8");
 
-            if (hasFlywayHistory(flyway.getDataSource(), historyTable)) {
+            if (hasFlywayHistory(flyway.getConfiguration().getDataSource(), historyTable)) {
                 log.info("Flyway: {} 已存在记录，跳过 baseline，直接执行 migrate()", historyTable);
                 flyway.migrate();
                 return;
             }
 
             log.info("Flyway: flyway-baseline profile 已启用，baseline 到版本 {}", baselineVersion);
-            flyway.setBaselineVersionAsString(baselineVersion);
             flyway.baseline();
             flyway.migrate();
         };
