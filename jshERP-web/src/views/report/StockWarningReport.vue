@@ -113,6 +113,7 @@
   import { queryMaterialCategoryTreeList } from '@/api/api'
   import { getMpListShort } from "@/utils/util"
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: "StockWarningReport",
     mixins:[JeecgListMixin],
@@ -132,7 +133,7 @@
         queryParam: {
           materialParam:'',
           depotId: undefined,
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList'))  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
         },
         ipagination:{
           pageSize: 11,
@@ -215,7 +216,7 @@
       },
       //动态替换扩展字段
       handleChangeOtherField(showQuery) {
-        let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+        let mpStr = getMpListShort(storage.get('materialPropertyList'))
         if(mpStr) {
           let mpArr = mpStr.split(',')
           if(mpArr.length ===3) {
@@ -240,7 +241,7 @@
       },
       exportExcel() {
         let list = []
-        let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+        let mpStr = getMpListShort(storage.get('materialPropertyList'))
         let head = '仓库,条码,名称,规格,型号,颜色,品牌,制造商,' + mpStr + ',单位,库存,最低安全库存,最高安全库存,建议入库量,建议出库量'
         for (let i = 0; i < this.dataSource.length; i++) {
           let item = []

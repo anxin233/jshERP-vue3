@@ -159,6 +159,7 @@
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import moment from 'moment'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: "InOutStockReport",
     mixins:[JeecgListMixin],
@@ -185,7 +186,7 @@
           createTimeRange: [moment(getPrevMonthFormatDate(1)), moment(getFormatDate())],
           materialParam:'',
           categoryId: undefined,
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList'))  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
         },
         ipagination:{
           pageSize: 11,
@@ -332,7 +333,7 @@
       },
       exportExcel() {
         let list = []
-        let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+        let mpStr = getMpListShort(storage.get('materialPropertyList'))
         let head = '条码,名称,规格,型号,颜色,品牌,制造商,' + mpStr + ',单位,成本价,上期结存数量,入库数量,出库数量,本期结存数量,结存金额'
         for (let i = 0; i < this.dataSource.length; i++) {
           let item = []

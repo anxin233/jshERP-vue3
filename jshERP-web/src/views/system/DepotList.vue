@@ -89,6 +89,7 @@
   import { postAction } from '@api/manage'
   import { getCurrentSystemConfig } from '@/api/api'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: "DepotList",
     mixins:[JeecgListMixin],
@@ -169,7 +170,7 @@
       },
       //加载快捷按钮：分配用户
       initQuickBtn() {
-        let btnStrList = Vue.ls.get('winBtnStrList') //按钮功能列表 JSON字符串
+        let btnStrList = storage.get('winBtnStrList') //按钮功能列表 JSON字符串
         if (btnStrList) {
           for (let i = 0; i < btnStrList.length; i++) {
             if (btnStrList[i].btnStr) {

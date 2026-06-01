@@ -451,6 +451,7 @@ import MaterialSelectModal from '@/views/project/modules/MaterialSelectModal'
 import ProjectSelectModal from './ProjectSelectModal'
 import VehicleModal from '@/views/vehicle/modules/VehicleModal'
 import DynamicOptionSelect from '@/components/biz/DynamicOptionSelect'
+import storage from '@/utils/storage'
 
 export default {
   name: 'WorkOrderModal',
@@ -1003,7 +1004,7 @@ export default {
     fetchMaterialOptions(record, q) {
       record._materialLoading = true
       this.ensureMaterialDepot().then(() => {
-        const mpList = getMpListShort(Vue.ls.get('materialPropertyList'))
+        const mpList = getMpListShort(storage.get('materialPropertyList'))
         const params = { page: 1, rows: 50, mpList }
         if (q) params.q = q
         if (this.materialDepotId != null) params.depotId = this.materialDepotId

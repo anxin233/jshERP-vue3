@@ -299,6 +299,7 @@
   import JImageUpload from '@/components/jeecg/JImageUpload'
   import JDate from '@/components/jeecg/JDate'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
 
   export default {
     name: "MaterialModal",
@@ -1223,7 +1224,7 @@
         })
       },
       loadParseMaterialProperty() {
-        let mpList = Vue.ls.get('materialPropertyList')
+        let mpList = storage.get('materialPropertyList')
         for (let i = 0; i < mpList.length; i++) {
           if (mpList[i].nativeName === "扩展1") {
             this.mpShort.otherField1.name = mpList[i].anotherName

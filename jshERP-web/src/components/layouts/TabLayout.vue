@@ -44,6 +44,7 @@
   import Vue from 'vue'
   import { CACHE_INCLUDED_ROUTES } from "@/store/mutation-types"
   import store from '../../store'
+  import storage from '@/utils/storage'
 
   export default {
     name: 'TabLayout',
@@ -81,13 +82,13 @@
         return this.$store.state.app.multipage
       },
       includedComponents() {
-        const includedRouters = Vue.ls.get(CACHE_INCLUDED_ROUTES)
+        const includedRouters = storage.get(CACHE_INCLUDED_ROUTES)
         //加入到 cache_included_routes
         if (this.$route.meta.componentName) {
-          let cacheRouterArray = Vue.ls.get(CACHE_INCLUDED_ROUTES) || []
+          let cacheRouterArray = storage.get(CACHE_INCLUDED_ROUTES) || []
           if(!cacheRouterArray.includes(this.$route.meta.componentName)){
             cacheRouterArray.push(this.$route.meta.componentName)
-            Vue.ls.set(CACHE_INCLUDED_ROUTES, cacheRouterArray)
+            storage.set(CACHE_INCLUDED_ROUTES, cacheRouterArray)
             return cacheRouterArray;
           }
         }
@@ -108,7 +109,7 @@
         this.addIndexToFirst()
       }
       let storeKey = 'route:title:' + this.$route.fullPath
-      let routeTitle = this.$ls.get(storeKey)
+      let routeTitle = storage.get(storeKey)
       if (routeTitle) {
         this.$route.meta.title = routeTitle
       }
@@ -251,14 +252,14 @@
         this.activePage = this.linkList[index]
         //update-begin--Author:scott  Date:20201015 for：路由缓存问题，关闭了tab页时再打开就不刷新 #842
         //关闭页面则从缓存cache_included_routes中删除路由，下次点击菜单会重新加载页面
-        let cacheRouterArray = Vue.ls.get(CACHE_INCLUDED_ROUTES) || []
+        let cacheRouterArray = storage.get(CACHE_INCLUDED_ROUTES) || []
         if (removeRoute && removeRoute[0]) {
           let componentName = removeRoute[0].meta.componentName
           //console.log("key: ", key);
           //console.log("componentName: ", componentName);
           if(cacheRouterArray.includes(componentName)){
             cacheRouterArray.splice(cacheRouterArray.findIndex(item => item === componentName), 1)
-            Vue.ls.set(CACHE_INCLUDED_ROUTES, cacheRouterArray)
+            storage.set(CACHE_INCLUDED_ROUTES, cacheRouterArray)
           }
         }
         //从iframe缓存中关闭对应的页面

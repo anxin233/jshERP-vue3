@@ -80,6 +80,7 @@
   import {autoJumpNextInput} from "@/utils/util"
   import {mixinDevice} from '@/utils/mixin'
   import JImageUpload from '../../../components/jeecg/JImageUpload'
+  import storage from '@/utils/storage'
   export default {
     name: "UserModal",
     mixins: [mixinDevice],
@@ -139,7 +140,7 @@
       }
     },
     created () {
-      const token = Vue.ls.get(ACCESS_TOKEN);
+      const token = storage.get(ACCESS_TOKEN);
       this.headers = {"X-Access-Token":token}
     },
     methods: {

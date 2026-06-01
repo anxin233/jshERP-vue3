@@ -74,6 +74,7 @@
   import {mixinDevice} from '@/utils/mixin'
   import { findBillDetailByNumber } from '@/api/api'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: 'DebtAccountList',
     mixins:[JeecgListMixin, mixinDevice],
@@ -93,7 +94,7 @@
           type: "",
           subType: "",
           status: "",
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList'))  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
         },
         historyText: '',
         financialType: '',

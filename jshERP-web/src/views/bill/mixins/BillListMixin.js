@@ -6,6 +6,7 @@ import { findBillDetailByNumber, findBySelectSup, findBySelectCus, findBySelectR
 import { getCheckFlag, getFormatDate, getMpListShort, getPrevMonthFormatDate } from '@/utils/util'
 import moment from 'moment'
 import pick from 'lodash.pick'
+import storage from '@/utils/storage'
 
 export const BillListMixin = {
   data () {
@@ -433,7 +434,7 @@ export const BillListMixin = {
   },
   created() {
     this.initColumnsSetting()
-    this.isShowExcel = Vue.ls.get('isShowExcel');
+    this.isShowExcel = storage.get('isShowExcel');
   },
   methods: {
     loadData(arg) {
@@ -713,7 +714,7 @@ export const BillListMixin = {
     },
     //加载初始化列
     initColumnsSetting(){
-      let columnsStr = Vue.ls.get(this.prefixNo)
+      let columnsStr = storage.get(this.prefixNo)
       if(columnsStr && columnsStr.indexOf(',')>-1) {
         this.settingDataIndex = columnsStr.split(',')
       } else {
@@ -738,7 +739,7 @@ export const BillListMixin = {
     },
     //加载快捷按钮：转入库、转出库等
     initQuickBtn() {
-      let btnStrList = Vue.ls.get('winBtnStrList') //按钮功能列表 JSON字符串
+      let btnStrList = storage.get('winBtnStrList') //按钮功能列表 JSON字符串
       if (btnStrList) {
         for (let i = 0; i < btnStrList.length; i++) {
           if (btnStrList[i].btnStr) {
@@ -890,11 +891,11 @@ export const BillListMixin = {
         return checkedValues.includes(item.dataIndex)
       })
       let columnsStr = checkedValues.join()
-      Vue.ls.set(this.prefixNo, columnsStr)
+      storage.set(this.prefixNo, columnsStr)
     },
     //恢复默认
     handleRestDefault() {
-      Vue.ls.remove(this.prefixNo)
+      storage.remove(this.prefixNo)
       this.initColumnsSetting()
     },
     //导出单据
@@ -921,7 +922,7 @@ export const BillListMixin = {
         }
         let params = {
           headerId: record.id,
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
           linkType: showType,
           isReadOnly: '0'
         }
@@ -1061,7 +1062,7 @@ export const BillListMixin = {
     },
     //动态替换扩展字段
     handleChangeOtherField() {
-      let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+      let mpStr = getMpListShort(storage.get('materialPropertyList'))
       if(mpStr) {
         let mpArr = mpStr.split(',')
         if(mpArr.length ===3) {

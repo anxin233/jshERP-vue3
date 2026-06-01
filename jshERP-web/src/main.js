@@ -1,7 +1,6 @@
 import '@/config/api-base-bootstrap'
 import Vue, { createApp, h } from 'vue'
 import App from './App.vue'
-import Storage from 'vue-ls'
 import router from './router'
 import store from './store/'
 
@@ -41,10 +40,10 @@ import '@/assets/less/JAreaLinkage.less'
 import VueAreaLinkage from 'vue-area-linkage'
 import DictData from '@/components/DictData'
 import DictTag from '@/components/DictTag'
+import storage, { installStorage } from '@/utils/storage'
 
 Vue.config.productionTip = false
 Vue.component('DictTag', DictTag)
-Vue.use(Storage, config.storageOptions)
 Vue.use(Antd)
 Vue.use(VueAxios, router)
 Vue.use(Viser)
@@ -58,22 +57,23 @@ DictData.install()
 
 const app = createApp({
   mounted () {
-    // store.commit('SET_SIDEBAR_TYPE', Vue.ls.get(SIDEBAR_TYPE, true))
+    // store.commit('SET_SIDEBAR_TYPE', storage.get(SIDEBAR_TYPE, true))
     store.commit('SET_SIDEBAR_TYPE', true)
-    store.commit('TOGGLE_THEME', Vue.ls.get(DEFAULT_THEME, config.navTheme))
-    store.commit('TOGGLE_LAYOUT_MODE', Vue.ls.get(DEFAULT_LAYOUT_MODE, config.layout))
-    store.commit('TOGGLE_FIXED_HEADER', Vue.ls.get(DEFAULT_FIXED_HEADER, config.fixedHeader))
-    store.commit('TOGGLE_FIXED_SIDERBAR', Vue.ls.get(DEFAULT_FIXED_SIDEMENU, config.fixSiderbar))
-    store.commit('TOGGLE_CONTENT_WIDTH', Vue.ls.get(DEFAULT_CONTENT_WIDTH_TYPE, config.contentWidth))
-    store.commit('TOGGLE_FIXED_HEADER_HIDDEN', Vue.ls.get(DEFAULT_FIXED_HEADER_HIDDEN, config.autoHideHeader))
-    store.commit('TOGGLE_WEAK', Vue.ls.get(DEFAULT_COLOR_WEAK, config.colorWeak))
-    store.commit('TOGGLE_COLOR', Vue.ls.get(DEFAULT_COLOR, config.primaryColor))
-    store.commit('SET_TOKEN', Vue.ls.get(ACCESS_TOKEN))
-    store.commit('SET_MULTI_PAGE',Vue.ls.get(DEFAULT_MULTI_PAGE,config.multipage))
+    store.commit('TOGGLE_THEME', storage.get(DEFAULT_THEME, config.navTheme))
+    store.commit('TOGGLE_LAYOUT_MODE', storage.get(DEFAULT_LAYOUT_MODE, config.layout))
+    store.commit('TOGGLE_FIXED_HEADER', storage.get(DEFAULT_FIXED_HEADER, config.fixedHeader))
+    store.commit('TOGGLE_FIXED_SIDERBAR', storage.get(DEFAULT_FIXED_SIDEMENU, config.fixSiderbar))
+    store.commit('TOGGLE_CONTENT_WIDTH', storage.get(DEFAULT_CONTENT_WIDTH_TYPE, config.contentWidth))
+    store.commit('TOGGLE_FIXED_HEADER_HIDDEN', storage.get(DEFAULT_FIXED_HEADER_HIDDEN, config.autoHideHeader))
+    store.commit('TOGGLE_WEAK', storage.get(DEFAULT_COLOR_WEAK, config.colorWeak))
+    store.commit('TOGGLE_COLOR', storage.get(DEFAULT_COLOR, config.primaryColor))
+    store.commit('SET_TOKEN', storage.get(ACCESS_TOKEN))
+    store.commit('SET_MULTI_PAGE',storage.get(DEFAULT_MULTI_PAGE,config.multipage))
   },
   render: () => h(App)
 })
 
+installStorage(app)
 app.use(store)
 app.use(router)
 

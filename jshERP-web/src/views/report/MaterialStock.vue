@@ -165,6 +165,7 @@
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import moment from 'moment'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: "MaterialStock",
     mixins:[JeecgListMixin],
@@ -188,7 +189,7 @@
           materialParam:'',
           position:'',
           zeroStock: '0',
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList'))  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
         },
         ipagination:{
           pageSize: 11,

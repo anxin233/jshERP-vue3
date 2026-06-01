@@ -5,6 +5,7 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { USER_ID,INDEX_MAIN_PAGE_PATH } from '@/store/mutation-types'
 import { generateIndexRouter } from "@/utils/util"
+import storage from '@/utils/storage'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -21,7 +22,7 @@ function addDynamicRoutes(routes = []) {
 
 router.beforeEach((to, from, next) => {
   NProgress.start() // start progress bar
-  if (Vue.ls.get(USER_ID)) {
+  if (storage.get(USER_ID)) {
     /* has token */
     if (to.path === '/' || to.path === '/user/login') {
       next({ path: INDEX_MAIN_PAGE_PATH })
@@ -35,7 +36,7 @@ router.beforeEach((to, from, next) => {
           }
           // 缓存用户的按钮权限
           store.dispatch('GetUserBtnList').then(res => {
-            Vue.ls.set('winBtnStrList', res.data.userBtn, 7 * 24 * 60 * 60 * 1000)
+            storage.set('winBtnStrList', res.data.userBtn, 7 * 24 * 60 * 60 * 1000)
           })
           let constRoutes = [];
           constRoutes = generateIndexRouter(menuData);

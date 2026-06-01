@@ -161,6 +161,7 @@
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import moment from 'moment'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: "SaleOutReport",
     mixins:[JeecgListMixin],
@@ -188,7 +189,7 @@
           organId: undefined,
           depotId: undefined,
           organizationId: undefined,
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList')),
+          mpList: getMpListShort(storage.get('materialPropertyList')),
         },
         ipagination:{
           pageSize: 11,
@@ -345,7 +346,7 @@
       },
       exportExcel() {
         let list = []
-        let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+        let mpStr = getMpListShort(storage.get('materialPropertyList'))
         let head = '条码,名称,规格,型号,颜色,品牌,制造商,' + mpStr + ',单位,销售数量,销售金额,退货数量,退货金额,实际销售金额'
         for (let i = 0; i < this.dataSource.length; i++) {
           let item = []

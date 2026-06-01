@@ -84,6 +84,7 @@
   import { getAction } from '@/api/manage'
   import { getEncryptedString } from '@/utils/encryption/aesEncrypt'
   import { mixinDevice } from '@/utils/mixin.js'
+  import storage from '@/utils/storage'
 
   export default {
     components: {
@@ -137,7 +138,7 @@
       this.loadInfo()
       this.checkScreen()
       this.currdatetime = new Date().getTime();
-      Vue.ls.remove(ACCESS_TOKEN)
+      storage.remove(ACCESS_TOKEN)
       this.getRouterData()
       this.getRegisterFlag()
       this.getCheckcodeFlag()
@@ -149,9 +150,9 @@
       loadInfo() {
         //从缓存中获取登录名和密码
         this.$nextTick(() => {
-          if(Vue.ls.get('cache_loginName') && Vue.ls.get('cache_password')) {
-            this.form.setFieldsValue({'loginName': Vue.ls.get('cache_loginName')})
-            this.form.setFieldsValue({'password': Vue.ls.get('cache_password')})
+          if(storage.get('cache_loginName') && storage.get('cache_password')) {
+            this.form.setFieldsValue({'loginName': storage.get('cache_loginName')})
+            this.form.setFieldsValue({'password': storage.get('cache_password')})
             this.checked = true
           }
         })
@@ -159,8 +160,8 @@
         if(this.$route.params.loginName) {
           this.$nextTick(() => {
             //先清空缓存
-            Vue.ls.remove('cache_loginName')
-            Vue.ls.remove('cache_password')
+            storage.remove('cache_loginName')
+            storage.remove('cache_password')
             this.form.setFieldsValue({'loginName':this.$route.params.loginName})
             this.form.setFieldsValue({'password': ''})
             this.checked = false
@@ -208,12 +209,12 @@
               loginParams.uuid = that.uuid
               if(that.checked) {
                 //勾选的时候进行缓存
-                Vue.ls.set('cache_loginName', values.loginName)
-                Vue.ls.set('cache_password', values.password)
+                storage.set('cache_loginName', values.loginName)
+                storage.set('cache_password', values.password)
               } else {
                 //没勾选的时候清缓存
-                Vue.ls.remove('cache_loginName')
-                Vue.ls.remove('cache_password')
+                storage.remove('cache_loginName')
+                storage.remove('cache_password')
               }
               that.Login(loginParams).then((res) => {
                 this.departConfirm(res, loginParams.loginName)
@@ -249,9 +250,9 @@
             getPlatformConfigByKey({ "platformKey": "bill_excel_url" }).then((res) => {
               if (res && res.code === 200) {
                 if(res.data.platformValue) {
-                  Vue.ls.set('isShowExcel', true);
+                  storage.set('isShowExcel', true);
                 } else {
-                  Vue.ls.set('isShowExcel', false);
+                  storage.set('isShowExcel', false);
                 }
               }
             })
@@ -364,7 +365,7 @@
       },
       //获取密码加密规则
       getEncrypte(){
-        var encryptedString = Vue.ls.get(ENCRYPTED_STRING);
+        var encryptedString = storage.get(ENCRYPTED_STRING);
         if(encryptedString == null){
           getEncryptedString().then((data) => {
             this.encryptedString = data
@@ -379,7 +380,7 @@
           if(res && res.code === 200){
             if(res.data) {
               let thisRows = res.data; //属性列表
-              Vue.ls.set('materialPropertyList', thisRows, 7 * 24 * 60 * 60 * 1000);
+              storage.set('materialPropertyList', thisRows, 7 * 24 * 60 * 60 * 1000);
             }
           }
         })

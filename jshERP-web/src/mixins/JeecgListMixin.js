@@ -9,6 +9,7 @@ import Vue from 'vue'
 import VueDraggableResizable from 'vue-draggable-resizable'
 import { ACCESS_TOKEN } from "@/store/mutation-types"
 import {mixinDevice} from '@/utils/mixin.js'
+import storage from '@/utils/storage'
 
 export const JeecgListMixin = {
   mixins: [mixinDevice],
@@ -18,7 +19,7 @@ export const JeecgListMixin = {
   data(){
     return {
       //token header
-      tokenHeader: {'X-Access-Token': Vue.ls.get(ACCESS_TOKEN)},
+      tokenHeader: {'X-Access-Token': storage.get(ACCESS_TOKEN)},
       /*卡片样式 */
       cardStyle: '',
       /* 查询条件-请不要在queryParam中声明非字符串值的属性 */
@@ -292,7 +293,7 @@ export const JeecgListMixin = {
     },
     //加载初始化列
     initColumnsSetting(){
-      let columnsStr = Vue.ls.get(this.pageName)
+      let columnsStr = storage.get(this.pageName)
       if(columnsStr && columnsStr.indexOf(',')>-1) {
         this.settingDataIndex = columnsStr.split(',')
       } else {
@@ -308,11 +309,11 @@ export const JeecgListMixin = {
         return checkedValues.includes(item.dataIndex)
       })
       let columnsStr = checkedValues.join()
-      Vue.ls.set(this.pageName, columnsStr)
+      storage.set(this.pageName, columnsStr)
     },
     //恢复默认
     handleRestDefault() {
-      Vue.ls.remove(this.pageName)
+      storage.remove(this.pageName)
       this.initColumnsSetting()
     },
     /* 导出 */
@@ -425,7 +426,7 @@ export const JeecgListMixin = {
     },
     /* 按钮权限 */
     initActiveBtnStr() {
-      let btnStrList = Vue.ls.get('winBtnStrList'); //按钮功能列表 JSON字符串
+      let btnStrList = storage.get('winBtnStrList'); //按钮功能列表 JSON字符串
       this.btnEnableList = ""; //按钮列表
       if (this.urlPath && btnStrList) {
         for (let i = 0; i < btnStrList.length; i++) {
@@ -537,7 +538,7 @@ export const JeecgListMixin = {
     },
     //动态替换扩展字段
     handleChangeOtherField(showQuery) {
-      let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+      let mpStr = getMpListShort(storage.get('materialPropertyList'))
       if(mpStr) {
         let mpArr = mpStr.split(',')
         if(mpArr.length ===3) {

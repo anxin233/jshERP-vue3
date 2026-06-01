@@ -4,6 +4,7 @@ import { ACCESS_TOKEN, USER_NAME,USER_INFO,UI_CACHE_DB_DICT_DATA,USER_ID,USER_LO
 import { welcome } from "@/utils/util"
 import { queryPermissionsByUser, getUserBtnByCurrentUser } from '@/api/api'
 import { getAction } from '@/api/manage'
+import storage from '@/utils/storage'
 
 const user = {
   state: {
@@ -45,9 +46,9 @@ const user = {
           if(response.success){
             const result = response.result
             const userInfo = result.userInfo
-            Vue.ls.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
-            Vue.ls.set(USER_NAME, userInfo.username, 7 * 24 * 60 * 60 * 1000)
-            Vue.ls.set(USER_INFO, userInfo, 7 * 24 * 60 * 60 * 1000)
+            storage.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
+            storage.set(USER_NAME, userInfo.username, 7 * 24 * 60 * 60 * 1000)
+            storage.set(USER_INFO, userInfo, 7 * 24 * 60 * 60 * 1000)
             commit('SET_TOKEN', result.token)
             commit('SET_INFO', userInfo)
             commit('SET_NAME', { username: userInfo.username,realname: userInfo.realname, welcome: welcome() })
@@ -68,11 +69,11 @@ const user = {
           if(response.code === 200){
             if(response.data.msgTip === 'user can login'){
               const result = response.data
-              Vue.ls.set(USER_ID, result.user.id, 7 * 24 * 60 * 60 * 1000);
-              Vue.ls.set(USER_LOGIN_NAME, result.user.loginName, 7 * 24 * 60 * 60 * 1000);
+              storage.set(USER_ID, result.user.id, 7 * 24 * 60 * 60 * 1000);
+              storage.set(USER_LOGIN_NAME, result.user.loginName, 7 * 24 * 60 * 60 * 1000);
               //前端7天有效期，后端默认1天，只要用户在1天内有访问页面就可以一直续期直到7天结束
-              Vue.ls.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
-              Vue.ls.set(USER_INFO, result.user, 7 * 24 * 60 * 60 * 1000)
+              storage.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
+              storage.set(USER_INFO, result.user, 7 * 24 * 60 * 60 * 1000)
               commit('SET_TOKEN', result.token)
             }
             commit('SET_INFO', userInfo)
@@ -88,8 +89,8 @@ const user = {
     // 获取用户信息
     GetPermissionList({ commit }) {
       return new Promise((resolve, reject) => {
-        //let v_token = Vue.ls.get(ACCESS_TOKEN);
-        let params = {pNumber:0,userId: Vue.ls.get(USER_ID)};
+        //let v_token = storage.get(ACCESS_TOKEN);
+        let params = {pNumber:0,userId: storage.get(USER_ID)};
         queryPermissionsByUser(params).then(response => {
           const menuData = response;
           if (menuData && menuData.length > 0) {
@@ -121,11 +122,11 @@ const user = {
         //let logoutToken = state.token;
         commit('SET_TOKEN', '')
         commit('SET_PERMISSIONLIST', [])
-        Vue.ls.remove(USER_ID)
-        Vue.ls.remove(USER_LOGIN_NAME)
-        Vue.ls.remove(USER_INFO)
-        Vue.ls.remove(UI_CACHE_DB_DICT_DATA)
-        Vue.ls.remove(CACHE_INCLUDED_ROUTES)
+        storage.remove(USER_ID)
+        storage.remove(USER_LOGIN_NAME)
+        storage.remove(USER_INFO)
+        storage.remove(UI_CACHE_DB_DICT_DATA)
+        storage.remove(CACHE_INCLUDED_ROUTES)
         logout().then(() => {
           resolve()
         }).catch(() => {
@@ -140,9 +141,9 @@ const user = {
           if(response.code =='200'){
             const result = response.result
             const userInfo = result.userInfo
-            Vue.ls.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
-            Vue.ls.set(USER_NAME, userInfo.username, 7 * 24 * 60 * 60 * 1000)
-            Vue.ls.set(USER_INFO, userInfo, 7 * 24 * 60 * 60 * 1000)
+            storage.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
+            storage.set(USER_NAME, userInfo.username, 7 * 24 * 60 * 60 * 1000)
+            storage.set(USER_INFO, userInfo, 7 * 24 * 60 * 60 * 1000)
             commit('SET_TOKEN', result.token)
             commit('SET_INFO', userInfo)
             commit('SET_NAME', { username: userInfo.username,realname: userInfo.realname, welcome: welcome() })

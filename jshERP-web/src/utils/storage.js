@@ -1,78 +1,58 @@
-/**
- * Set storage
- *
- * @param name
- * @param content
- * @param maxAge
- */
-export const setStore = (name, content, maxAge = null) => {
-  if (!global.window || !name) {
-    return;
-  }
+import Vue from 'vue'
+import VueStorage from 'vue-ls'
+import config from '@/defaultSettings'
 
-  if (typeof content !== 'string') {
-    content = JSON.stringify(content)
-  }
+let storageInstance = null
 
-  let storage = global.window.localStorage
-
-  storage.setItem(name, content)
-  if (maxAge && !isNaN(parseInt(maxAge))) {
-    let timeout = parseInt(new Date().getTime() / 1000)
-    storage.setItem(`${name}_expire`, timeout + maxAge)
-  }
-};
-
-/**
- * Get storage
- *
- * @param name
- * @returns {*}
- */
-export const getStore = name => {
-  if (!global.window || !name) {
-    return;
-  }
-
-  let content = window.localStorage.getItem(name)
-  let _expire = window.localStorage.getItem(`${name}_expire`)
-
-  if (_expire) {
-    let now = parseInt(new Date().getTime() / 1000)
-    if (now > _expire) {
-      return;
+function getStorageInstance() {
+  if (!storageInstance) {
+    if (!Vue.ls) {
+      Vue.use(VueStorage, config.storageOptions)
     }
+    storageInstance = Vue.ls
   }
-
-  try {
-    return JSON.parse(content)
-  } catch (e) {
-    return content
-  }
-};
-
-/**
- * Clear storage
- *
- * @param name
- */
-export const clearStore = name => {
-  if (!global.window || !name) {
-    return;
-  }
-
-  window.localStorage.removeItem(name)
-  window.localStorage.removeItem(`${name}_expire`)
-};
-
-/**
- * Clear all storage
- */
-export const clearAll = () => {
-  if (!global.window || !name) {
-    return;
-  }
-
-  window.localStorage.clear()
+  return storageInstance
 }
 
+const storage = {
+  get(name, def = null) {
+    return getStorageInstance().get(name, def)
+  },
+  set(name, value, expire = null) {
+    return getStorageInstance().set(name, value, expire)
+  },
+  remove(name) {
+    return getStorageInstance().remove(name)
+  },
+  clear() {
+    return getStorageInstance().clear()
+  },
+  on(name, callback) {
+    return getStorageInstance().on(name, callback)
+  },
+  off(name, callback) {
+    return getStorageInstance().off(name, callback)
+  }
+}
+
+export function installStorage(app) {
+  const instance = getStorageInstance()
+  if (app && app.config && app.config.globalProperties) {
+    app.config.globalProperties.$ls = instance
+    app.config.globalProperties.$storage = storage
+  }
+  return instance
+}
+
+export const setStore = (name, content, maxAge = null) => {
+  const expire = maxAge && !isNaN(parseInt(maxAge)) ? parseInt(maxAge) * 1000 : null
+  return storage.set(name, content, expire)
+}
+
+export const getStore = name => storage.get(name)
+
+export const clearStore = name => storage.remove(name)
+
+export const clearAll = () => storage.clear()
+
+export default storage

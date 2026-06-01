@@ -205,6 +205,7 @@
   import JSelectDepart from '@/components/jeecgbiz/JSelectDepart'
   import JSelectMultiUser from '@/components/jeecgbiz/JSelectMultiUser'
   import JAreaLinkage from '@comp/jeecg/JAreaLinkage'
+  import storage from '@/utils/storage'
 
   export default {
     name: 'JSuperQuery',
@@ -289,7 +290,7 @@
       fullSaveCode: {
         immediate: true,
         handler() {
-          let list = this.$ls.get(this.fullSaveCode)
+          let list = storage.get(this.fullSaveCode)
           if (list instanceof Array) {
             this.saveTreeData = list.map(i => this.renderSaveTreeData(i))
           }
@@ -467,7 +468,7 @@
       // 将查询保存到 LocalStore 里
       saveToLocalStore() {
         let saveValue = this.saveTreeData.map(({ originTitle, matchType, records }) => ({ title: originTitle, matchType, records }))
-        this.$ls.set(this.fullSaveCode, saveValue)
+        storage.set(this.fullSaveCode, saveValue)
       },
 
       isNullArray(array) {

@@ -29,6 +29,7 @@
   import { ACCESS_TOKEN } from "@/store/mutation-types"
   import { getFileAccessHttpUrl } from '@/api/manage'
   import { fileSizeLimit } from '@/api/api'
+  import storage from '@/utils/storage'
 
   const uidGenerator=()=>{
     return '-'+parseInt(Math.random()*10000+1,10);
@@ -93,7 +94,7 @@
     },
     created(){
       this.initFileSizeLimit()
-      const token = Vue.ls.get(ACCESS_TOKEN);
+      const token = storage.get(ACCESS_TOKEN);
       this.headers = {"X-Access-Token":token}
     },
     methods:{

@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import storage from '@/utils/storage'
 const enhance = {
   state: {
     enhanceJs:{
@@ -25,7 +26,7 @@ const enhance = {
       while(arr.length>16){
         arr.shift()
       }
-      Vue.ls.set('enhance_'+record['code'], arr)
+      storage.set('enhance_'+record['code'], arr)
     }
   },
   actions: {

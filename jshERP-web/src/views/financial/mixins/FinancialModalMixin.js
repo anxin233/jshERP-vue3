@@ -4,6 +4,7 @@ import { getAction } from '@/api/manage'
 import { getCheckFlag, getNowFormatDateTime } from "@/utils/util"
 import { USER_INFO } from "@/store/mutation-types"
 import Vue from 'vue'
+import storage from '@/utils/storage'
 
 export const FinancialModalMixin = {
   data() {
@@ -446,7 +447,7 @@ export const FinancialModalMixin = {
     },
     //加载快捷按钮：供应商、客户、结算账户、经手人
     initQuickBtn() {
-      let btnStrList = Vue.ls.get('winBtnStrList') //按钮功能列表 JSON字符串
+      let btnStrList = storage.get('winBtnStrList') //按钮功能列表 JSON字符串
       if (btnStrList) {
         for (let i = 0; i < btnStrList.length; i++) {
           if (btnStrList[i].btnStr) {

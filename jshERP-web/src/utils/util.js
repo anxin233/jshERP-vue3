@@ -2,6 +2,7 @@ import { isURL } from '@/utils/validate'
 import { downFilePost} from '@/api/manage'
 import Vue from 'vue'
 import introJs from 'intro.js'
+import storage from '@/utils/storage'
 
 export function timeFix() {
   const time = new Date()
@@ -706,7 +707,7 @@ export function handleIntroJs(module, cur_version) {
     let idElement = '#' + module
     introJsObj = introJs(idElement)
   }
-  if (Vue.ls.get('intro_cache_' + module) === cur_version) {
+  if (storage.get('intro_cache_' + module) === cur_version) {
     return;
   }
   introJsObj.setOptions({
@@ -716,10 +717,10 @@ export function handleIntroJs(module, cur_version) {
     exitOnOverlayClick: false //点击空白区域是否关闭提示组件
   }).oncomplete(function(){
     //点击跳过按钮后执行的事件(这里保存对应的版本号到缓存,并且设置有效期为100天）
-    Vue.ls.set('intro_cache_' + module, cur_version, 100 * 24 * 60 * 60 * 1000);
+    storage.set('intro_cache_' + module, cur_version, 100 * 24 * 60 * 60 * 1000);
   }).onexit(function(){
     //点击结束按钮后， 执行的事件
-    Vue.ls.set('intro_cache_' + module, cur_version, 100 * 24 * 60 * 60 * 1000);
+    storage.set('intro_cache_' + module, cur_version, 100 * 24 * 60 * 60 * 1000);
   }).start()
 }
 

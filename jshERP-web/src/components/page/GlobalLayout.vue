@@ -94,6 +94,7 @@
   import { mapState, mapActions } from 'vuex'
   import { mixin, mixinDevice } from '@/utils/mixin.js'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
 
   export default {
     name: 'GlobalLayout',
@@ -156,7 +157,7 @@
         this.findMenuBykey(this.menus,value.key)
         this.$emit("dynamicRouterShow",value.key, this.activeMenu.id, this.activeMenu.text, this.activeMenu.component)
         let storeKey = 'route:title:' + this.activeMenu.url
-        this.$ls.set(storeKey, this.activeMenu.text)
+        storage.set(storeKey, this.activeMenu.text)
       },
       findMenuBykey(menus,key){
         for(let i of menus){

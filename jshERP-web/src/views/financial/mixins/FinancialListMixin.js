@@ -3,6 +3,7 @@ import { findFinancialDetailByNumber, findBySelectSup, findBySelectCus, findBySe
 import { getCheckFlag, getFormatDate, getPrevMonthFormatDate } from '@/utils/util'
 import Vue from 'vue'
 import moment from 'moment'
+import storage from '@/utils/storage'
 
 export const FinancialListMixin = {
   data () {
@@ -45,7 +46,7 @@ export const FinancialListMixin = {
     }
   },
   created() {
-    this.isShowExcel = Vue.ls.get('isShowExcel');
+    this.isShowExcel = storage.get('isShowExcel');
   },
   methods: {
     myHandleAdd() {

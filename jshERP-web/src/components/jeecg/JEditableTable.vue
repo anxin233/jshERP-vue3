@@ -786,6 +786,7 @@
   import JInputPop from '@/components/jeecg/minipop/JInputPop'
   import JFilePop from '@/components/jeecg/minipop/JFilePop'
   import JSelectList from '@/components/jeecgbiz/JSelectList'
+  import storage from '@/utils/storage'
 
   // 行高，需要在实例加载完成前用到
   let rowHeight = 42
@@ -993,7 +994,7 @@
         return count > 0
       },
       accessToken() {
-        return Vue.ls.get(ACCESS_TOKEN)
+        return storage.get(ACCESS_TOKEN)
       },
       realTrWidth() {
         let splice = ' + '

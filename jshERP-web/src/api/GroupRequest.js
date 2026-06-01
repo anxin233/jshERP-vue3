@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import storage from '@/utils/storage'
 
 /**
  * 将一个请求分组
@@ -13,16 +14,16 @@ export function httpGroupRequest(getPromise, groupId, expire = 1000 * 30) {
     return getPromise()
   }
 
-  if (Vue.ls.get(groupId)) {
+  if (storage.get(groupId)) {
     console.log("---------popup--------getFrom  Cache--------groupId = " + groupId)
-    return Promise.resolve(Vue.ls.get(groupId));
+    return Promise.resolve(storage.get(groupId));
   } else {
     console.log("--------popup----------getFrom  DB---------groupId = " + groupId)
   }
 
   // 还没有发出请求，就发出第一次的请求
   return getPromise().then(res => {
-    Vue.ls.set(groupId, res, expire);
+    storage.set(groupId, res, expire);
     return Promise.resolve(res);
   })
 }

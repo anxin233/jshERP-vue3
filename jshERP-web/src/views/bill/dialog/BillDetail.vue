@@ -1193,6 +1193,7 @@
   import FinancialDetail from '../../financial/dialog/FinancialDetail'
   import JUpload from '@/components/jeecg/JUpload'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
   export default {
     name: 'BillDetail',
     components: {
@@ -1749,7 +1750,7 @@
       },
       //动态替换扩展字段
       handleChangeOtherField() {
-        let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+        let mpStr = getMpListShort(storage.get('materialPropertyList'))
         if(mpStr) {
           let mpArr = mpStr.split(',')
           if(mpArr.length ===3) {
@@ -1853,7 +1854,7 @@
             }
             let params = {
               headerId: this.model.id,
-              mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+              mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
               linkType: showType,
               isReadOnly: isReadOnly
             }

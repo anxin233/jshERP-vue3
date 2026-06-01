@@ -1,6 +1,7 @@
 import { getAction } from '@/api/manage'
 import { ENCRYPTED_STRING } from "@/store/mutation-types"
 import Vue from 'vue'
+import storage from '@/utils/storage'
 
 /**
  * 获取加密字符串，并对结果进行缓存
@@ -10,7 +11,7 @@ export function getEncryptedString() {
     let encryptedString = {};
     encryptedString.key = res.result.key;
     encryptedString.iv = res.result.iv;
-    Vue.ls.set(ENCRYPTED_STRING, encryptedString, 7 * 24 * 60 * 60 * 1000);
+    storage.set(ENCRYPTED_STRING, encryptedString, 7 * 24 * 60 * 60 * 1000);
     return encryptedString;
   });
 }

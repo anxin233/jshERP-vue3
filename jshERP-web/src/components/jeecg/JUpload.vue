@@ -46,6 +46,7 @@
   import { ACCESS_TOKEN } from "@/store/mutation-types"
   import { getFileAccessHttpUrl } from '@/api/manage';
   import { fileSizeLimit } from '@/api/api'
+  import storage from '@/utils/storage'
 
   const FILE_TYPE_ALL = "all"
   const FILE_TYPE_IMG = "image"
@@ -165,7 +166,7 @@
     },
     created(){
       this.initFileSizeLimit()
-      const token = Vue.ls.get(ACCESS_TOKEN);
+      const token = storage.get(ACCESS_TOKEN);
       //---------------------------- begin 图片左右换位置 -------------------------------------
       this.headers = {"X-Access-Token":token};
       this.containerId = 'container-ty-'+new Date().getTime();

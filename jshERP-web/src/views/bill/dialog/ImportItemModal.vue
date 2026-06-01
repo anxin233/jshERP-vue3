@@ -33,6 +33,7 @@
 <script>
   import { ACCESS_TOKEN } from '@/store/mutation-types'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
 
   export default {
     name: "ImportItemModal",
@@ -45,7 +46,7 @@
         prefixNo: '',
         tmpUrl: '',
         model: {},
-        tokenHeader: {'X-Access-Token': Vue.ls.get(ACCESS_TOKEN)},
+        tokenHeader: {'X-Access-Token': storage.get(ACCESS_TOKEN)},
         labelCol: {
           xs: { span: 24 },
           sm: { span: 5 },

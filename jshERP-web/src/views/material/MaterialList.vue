@@ -230,6 +230,7 @@
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import JDate from '@/components/jeecg/JDate'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
 
   export default {
     name: "MaterialList",
@@ -277,7 +278,7 @@
           enableBatchNumber: undefined,
           position: '',
           remark:'',
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList'))  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
         },
         urlPath: '/material/material',
         ipagination:{
@@ -368,7 +369,7 @@
     methods: {
       //加载初始化列
       initColumnsSetting(){
-        let columnsStr = Vue.ls.get('materialColumns')
+        let columnsStr = storage.get('materialColumns')
         if(columnsStr && columnsStr.indexOf(',')>-1) {
           this.settingDataIndex = columnsStr.split(',')
         } else {
@@ -384,11 +385,11 @@
           return checkedValues.includes(item.dataIndex)
         })
         let columnsStr = checkedValues.join()
-        Vue.ls.set('materialColumns', columnsStr)
+        storage.set('materialColumns', columnsStr)
       },
       //恢复默认
       handleRestDefault() {
-        Vue.ls.remove('materialColumns')
+        storage.remove('materialColumns')
         this.initColumnsSetting()
       },
       loadTreeData(){
@@ -517,7 +518,7 @@
       },
       searchReset() {
         this.queryParam = {
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList'))  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
         }
         this.loadData(1);
       }

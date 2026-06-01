@@ -4,6 +4,7 @@ import store from '@/store'
 import { VueAxios } from './axios'
 import {Modal, notification} from 'ant-design-vue'
 import { ACCESS_TOKEN } from "@/store/mutation-types"
+import storage from '@/utils/storage'
 
 /**
  * 【指定 axios的 baseURL】
@@ -22,7 +23,7 @@ const service = axios.create({
 const err = (error) => {
   if (error.response) {
     let data = error.response.data
-    const token = Vue.ls.get(ACCESS_TOKEN)
+    const token = storage.get(ACCESS_TOKEN)
     switch (error.response.status) {
       case 403:
         notification.error({ message: '系统提示', description: '拒绝访问',duration: 4})
@@ -35,7 +36,7 @@ const err = (error) => {
             okText: '重新登录',
             mask: false,
             onOk: () => {
-              Vue.ls.remove(ACCESS_TOKEN)
+              storage.remove(ACCESS_TOKEN)
               window.location.reload()
             }
           })
@@ -71,7 +72,7 @@ const err = (error) => {
 
 // request interceptor
 service.interceptors.request.use(config => {
-  const token = Vue.ls.get(ACCESS_TOKEN)
+  const token = storage.get(ACCESS_TOKEN)
   if (token) {
     config.headers[ 'X-Access-Token' ] = token // 让每个请求携带自定义 token 请根据实际情况自行修改
   }

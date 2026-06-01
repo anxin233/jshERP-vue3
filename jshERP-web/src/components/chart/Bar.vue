@@ -13,6 +13,7 @@
   import { triggerWindowResizeEvent } from '@/utils/util'
   import { DEFAULT_COLOR } from "@/store/mutation-types"
   import Vue from 'vue'
+  import storage from '@/utils/storage'
 
   export default {
     name: 'Bar',
@@ -37,7 +38,7 @@
     data() {
       return {
         padding: ['auto', 'auto', '40', '50'],
-        color: Vue.ls.get(DEFAULT_COLOR)
+        color: storage.get(DEFAULT_COLOR)
       }
     },
     computed: {

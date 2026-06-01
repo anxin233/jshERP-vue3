@@ -54,6 +54,7 @@
   import { triggerWindowResizeEvent, handleIntroJs } from "@/utils/util"
   import {mixinDevice} from '@/utils/mixin'
   import Vue from 'vue'
+  import storage from '@/utils/storage'
 
   export default {
     name: 'JModal',
@@ -174,7 +175,7 @@
       /** 新手引导 */
       handleHelp() {
         let element = 'intro_cache_' + this.prefixNo
-        Vue.ls.remove(element)
+        storage.remove(element)
         handleIntroJs(this.prefixNo, 1)
       },
 

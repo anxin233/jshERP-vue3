@@ -5,6 +5,7 @@ import { getAction } from '@/api/manage'
 import { getCheckFlag, getMpListShort, getNowFormatDateTime } from '@/utils/util'
 import { USER_INFO } from '@/store/mutation-types'
 import Vue from 'vue'
+import storage from '@/utils/storage'
 
 export const BillModalMixin = {
   data() {
@@ -406,7 +407,7 @@ export const BillModalMixin = {
           barCode: barCodes,
           organId: this.form.getFieldValue('organId'),
           depotId: depotId,
-          mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+          mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
           prefixNo: this.prefixNo
         }
         getMaterialByBarCode(param).then((res) => {
@@ -490,7 +491,7 @@ export const BillModalMixin = {
           param = {
             barCode: value,
             organId: this.form.getFieldValue('organId'),
-            mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+            mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
             prefixNo: this.prefixNo
           }
           getMaterialByBarCode(param).then((res) => {
@@ -942,7 +943,7 @@ export const BillModalMixin = {
           let param = {
             barCode: barCodeStr,
             organId: organId,
-            mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+            mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
             prefixNo: this.prefixNo
           }
           getMaterialByBarCode(param).then((res) => {
@@ -1027,7 +1028,7 @@ export const BillModalMixin = {
           let param = {
             barCode: this.scanBarCode.trim(),
             organId: this.form.getFieldValue('organId'),
-            mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+            mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
             prefixNo: this.prefixNo
           }
           getMaterialByBarCode(param).then((res) => {
@@ -1241,7 +1242,7 @@ export const BillModalMixin = {
     },
     //加载快捷按钮：供应商、客户、会员、结算账户、仓库
     initQuickBtn() {
-      let btnStrList = Vue.ls.get('winBtnStrList') //按钮功能列表 JSON字符串
+      let btnStrList = storage.get('winBtnStrList') //按钮功能列表 JSON字符串
       if (btnStrList) {
         for (let i = 0; i < btnStrList.length; i++) {
           if (btnStrList[i].btnStr) {
@@ -1256,7 +1257,7 @@ export const BillModalMixin = {
     },
     //动态替换扩展字段
     handleChangeOtherField() {
-      let mpStr = getMpListShort(Vue.ls.get('materialPropertyList'))
+      let mpStr = getMpListShort(storage.get('materialPropertyList'))
       if(mpStr) {
         let mpArr = mpStr.split(',')
         if(mpArr.length ===3) {

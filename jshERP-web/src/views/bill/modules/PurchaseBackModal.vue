@@ -194,6 +194,7 @@
   import JDate from '@/components/jeecg/JDate'
   import Vue from 'vue'
   import { getCurrentSystemConfig, findBySelectSup } from '@/api/api'
+  import storage from '@/utils/storage'
   export default {
     name: "PurchaseBackModal",
     mixins: [JEditableTableMixin, BillModalMixin],
@@ -354,7 +355,7 @@
           // 加载子表数据
           let params = {
             headerId: this.model.id,
-            mpList: getMpListShort(Vue.ls.get('materialPropertyList')),  //扩展属性
+            mpList: getMpListShort(storage.get('materialPropertyList')),  //扩展属性
             linkType: 'basic'
           }
           let url = this.readOnly ? this.url.detailList : this.url.detailList;
