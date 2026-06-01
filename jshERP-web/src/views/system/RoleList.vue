@@ -48,7 +48,7 @@
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
             <span slot="action" slot-scope="text, record">
-              <a @click="handleSetFunction(record)">分配功能</a>
+              <a @click="handleSetFunction(record)">分配菜单</a>
               <a-divider type="vertical" />
               <a @click="handleSetPushBtn(record.id, record.name)">分配按钮</a>
               <a-divider type="vertical" />
@@ -57,13 +57,13 @@
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-              <a-modal v-model="roleModalVisible" title="操作提示" @ok="handleRoleTip(record)">
-                <p>保存角色已经操作成功！现在继续<b>分配功能</b>吗？</p>
+              <a-modal v-model="roleModalVisible" title="操作提示" @ok="handleRoleTip">
+                <p>保存角色已经操作成功！现在继续<b>分配菜单</b>吗？</p>
               </a-modal>
             </span>
             <span slot="typeTitle">
               数据类型
-              <a-tooltip title="1、全部数据-该角色对应的用户可以看到全部单据；2、本机构数据-该角色对应的用户可以看到自己所在机构的全部单据；
+              <a-tooltip title="1、全部数据-该角色对应的用户可以看到全部单据；2、本部门数据-该角色对应的用户可以看到自己所在部门的全部单据；
                 3、个人数据-该角色对应的用户只可以看到自己的单据。单据是指采购入库、销售出库等">
                 <a-icon type="question-circle" />
               </a-tooltip>
@@ -87,7 +87,7 @@
         <role-function-modal ref="roleFunctionModal" @ok="roleFunctionModalFormOk"></role-function-modal>
         <role-push-btn-modal ref="rolePushBtnModal" @ok="modalFormOk"></role-push-btn-modal>
         <a-modal v-model="roleFunctionModalVisible" title="操作提示" @ok="handleRoleFunctionTip">
-          <p>分配功能已经操作成功！现在继续<b>分配按钮</b>吗？</p>
+          <p>分配菜单已经操作成功！现在继续<b>分配按钮</b>吗？</p>
         </a-modal>
       </a-card>
     </a-col>
@@ -144,7 +144,7 @@
             title: '操作',
             dataIndex: 'action',
             align:"center",
-            width: 180,
+            width: 200,
             scopedSlots: { customRender: 'action' },
           },
           {
@@ -182,7 +182,7 @@
     methods: {
       handleSetFunction(record) {
         this.$refs.roleFunctionModal.edit(record);
-        this.$refs.roleFunctionModal.title = "分配功能给：" + record.name + "【分配之后请继续分配按钮】"
+        this.$refs.roleFunctionModal.title = "分配菜单给：" + record.name + "【分配之后请继续分配按钮】"
         this.$refs.roleFunctionModal.disableSubmit = false;
       },
       handleSetPushBtn(roleId, roleName) {
@@ -201,10 +201,24 @@
         this.roleFunctionModalVisible = true
         this.currentRoleId = id
       },
-      handleRoleTip(record) {
-        if(record) {
+      handleRoleTip() {
+        let roleInfo
+        if(this.currentRoleId) {
+          //编辑的情况下
+          for (let i = 0; i < this.dataSource.length; i++) {
+            if(this.currentRoleId === this.dataSource[i].id) {
+              roleInfo = this.dataSource[i]
+            }
+          }
+        } else {
+          //在新增的情况下
+          if(this.dataSource.length) {
+            roleInfo = this.dataSource[0]
+          }
+        }
+        if(roleInfo) {
           this.roleModalVisible = false
-          this.handleSetFunction(record)
+          this.handleSetFunction(roleInfo)
         }
       },
       handleRoleFunctionTip() {
@@ -212,7 +226,7 @@
           this.roleFunctionModalVisible = false
           let roleName = ''
           for (let i = 0; i < this.dataSource.length; i++) {
-            if(this.dataSource[i].id == this.currentRoleId) {
+            if(this.currentRoleId === this.dataSource[i].id) {
               roleName = this.dataSource[i].name
             }
           }
@@ -220,13 +234,15 @@
         }
       },
       handleAdd: function () {
+        this.currentRoleId = ''
         this.$refs.modalForm.add();
-        this.$refs.modalForm.title = "新增【保存之后请继续分配功能】";
+        this.$refs.modalForm.title = "新增【保存之后请继续分配菜单】";
         this.$refs.modalForm.disableSubmit = false;
       },
       handleEdit: function (record) {
+        this.currentRoleId = record.id
         this.$refs.modalForm.edit(record);
-        this.$refs.modalForm.title = "编辑【保存之后请继续分配功能】";
+        this.$refs.modalForm.title = "编辑【保存之后请继续分配菜单】";
         this.$refs.modalForm.disableSubmit = false;
         if(this.btnEnableList.indexOf(1)===-1) {
           this.$refs.modalForm.isReadOnly = true

@@ -1716,6 +1716,126 @@ public class DepotHeadExample {
             return (Criteria) this;
         }
 
+        public Criteria andDebtIsNull() {
+            addCriterion("debt is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtIsNotNull() {
+            addCriterion("debt is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtEqualTo(BigDecimal value) {
+            addCriterion("debt =", value, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtNotEqualTo(BigDecimal value) {
+            addCriterion("debt <>", value, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtGreaterThan(BigDecimal value) {
+            addCriterion("debt >", value, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtGreaterThanOrEqualTo(BigDecimal value) {
+            addCriterion("debt >=", value, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtLessThan(BigDecimal value) {
+            addCriterion("debt <", value, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtLessThanOrEqualTo(BigDecimal value) {
+            addCriterion("debt <=", value, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtIn(List<BigDecimal> values) {
+            addCriterion("debt in", values, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtNotIn(List<BigDecimal> values) {
+            addCriterion("debt not in", values, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("debt between", value1, value2, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andDebtNotBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("debt not between", value1, value2, "debt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtIsNull() {
+            addCriterion("last_debt is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtIsNotNull() {
+            addCriterion("last_debt is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtEqualTo(BigDecimal value) {
+            addCriterion("last_debt =", value, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtNotEqualTo(BigDecimal value) {
+            addCriterion("last_debt <>", value, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtGreaterThan(BigDecimal value) {
+            addCriterion("last_debt >", value, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtGreaterThanOrEqualTo(BigDecimal value) {
+            addCriterion("last_debt >=", value, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtLessThan(BigDecimal value) {
+            addCriterion("last_debt <", value, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtLessThanOrEqualTo(BigDecimal value) {
+            addCriterion("last_debt <=", value, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtIn(List<BigDecimal> values) {
+            addCriterion("last_debt in", values, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtNotIn(List<BigDecimal> values) {
+            addCriterion("last_debt not in", values, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("last_debt between", value1, value2, "lastDebt");
+            return (Criteria) this;
+        }
+
+        public Criteria andLastDebtNotBetween(BigDecimal value1, BigDecimal value2) {
+            addCriterion("last_debt not between", value1, value2, "lastDebt");
+            return (Criteria) this;
+        }
+
         public Criteria andStatusIsNull() {
             addCriterion("status is null");
             return (Criteria) this;

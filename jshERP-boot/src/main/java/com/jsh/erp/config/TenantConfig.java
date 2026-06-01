@@ -53,6 +53,7 @@ public class TenantConfig {
                 String token = request.getHeader("X-Access-Token");
                 Long tenantId = Tools.getTenantIdByToken(token);
                 if (tenantId!=0L) {
+<<<<<<< HEAD
                     // 这里可以判断是否过滤表（不加租户字段的表）
                     if ("jsh_sequence".equals(tableName)
                             || "jsh_function".equals(tableName)
@@ -64,6 +65,12 @@ public class TenantConfig {
                             // 选项中心需要合并系统级(tenant_id IS NULL)和租户级数据，自行在 SQL 过滤
                             || "jsh_option_group".equals(tableName)
                             || "jsh_option_item".equals(tableName)) {
+=======
+                    // 这里可以判断是否过滤表
+                    if ("jsh_sequence".equals(tableName) || "jsh_function".equals(tableName)
+                            || "jsh_platform_config".equals(tableName) || "jsh_tenant".equals(tableName)
+                            || "jsh_sys_dict_data".equals(tableName) || "jsh_sys_dict_type".equals(tableName)) {
+>>>>>>> 5e87c454426584028dd997c2d11e72ceb45ca4b5
                         res = true;
                     } else {
                         res = false;
@@ -93,6 +100,8 @@ public class TenantConfig {
                 } else if ("com.jsh.erp.datasource.mappers.LogMapperEx.insertLogWithUserId".equals(ms.getId())) {
                     return true;
                 } else if ("com.jsh.erp.datasource.mappers.UserBusinessMapperEx.getBasicDataByKeyIdAndType".equals(ms.getId())) {
+                    return true;
+                } else if ("com.jsh.erp.datasource.mappers.SysDictDataMapper.selectDictDataList".equals(ms.getId())) {
                     return true;
                 }
                 return false;

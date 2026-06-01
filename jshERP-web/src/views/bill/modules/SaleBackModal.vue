@@ -333,7 +333,7 @@
           this.$nextTick(() => {
             if(this.transferParam && this.transferParam.number) {
               let tp = this.transferParam
-              this.linkBillListOk(tp.list, tp.number, tp.organId, tp.discountMoney, tp.deposit, tp.remark, this.defaultDepotId, tp.accountId, tp.salesMan)
+              this.linkBillListOk(tp.list, tp.number, tp.organId, tp.discount, tp.deposit, tp.remark, this.defaultDepotId, tp.accountId, tp.salesMan)
             }
           })
         } else {
@@ -418,7 +418,7 @@
         this.$refs.linkBillList.show('出库', '销售', '客户', "1,2,3")
         this.$refs.linkBillList.title = "请选择销售出库"
       },
-      linkBillListOk(selectBillDetailRows, linkNumber, organId, discountMoney, deposit, remark, depotId, accountId, salesMan) {
+      linkBillListOk(selectBillDetailRows, linkNumber, organId, discount, deposit, remark, depotId, accountId, salesMan) {
         this.rowCanEdit = false
         this.materialTable.columns[1].type = FormTypes.normal
         this.changeFormTypes(this.materialTable.columns, 'preNumber', 1)
@@ -432,8 +432,14 @@
               info.operNumber = info.preNumber - info.finishNumber
               info.allPrice = info.operNumber * info.unitPrice-0
               let taxRate = info.taxRate-0
-              info.taxMoney = (info.allPrice*taxRate/100).toFixed(2)-0
-              info.taxLastMoney = (info.allPrice + info.taxMoney).toFixed(2)-0
+              if(this.materialPriceTaxFlag) {
+                let realAllPrice = (info.allPrice/(1+taxRate*0.01)).toFixed(2)-0
+                info.taxMoney = (realAllPrice*taxRate*0.01).toFixed(2)-0
+                info.taxLastMoney = info.allPrice
+              } else {
+                info.taxMoney = (info.allPrice*taxRate/100).toFixed(2)-0
+                info.taxLastMoney = (info.allPrice + info.taxMoney).toFixed(2)-0
+              }
             }
             info.linkId = info.id
             allTaxLastMoney += info.taxLastMoney
@@ -443,11 +449,16 @@
             }
           }
           this.materialTable.dataSource = listEx
+          if(listEx.length === 0) {
+            this.$nextTick(() => {
+              this.$message.warning('原单据的明细已经全部关联完成');
+            })
+          }
           ///给优惠后金额重新赋值
           allTaxLastMoney = allTaxLastMoney?allTaxLastMoney:0
-          let discount = 0
+          let discountMoney = 0
           if(allTaxLastMoney!==0) {
-            discount = (discountMoney/allTaxLastMoney*100).toFixed(2)-0
+            discountMoney = (discount/100*allTaxLastMoney).toFixed(2)-0
           }
           let discountLastMoney = (allTaxLastMoney - discountMoney).toFixed(2)-0
           this.$nextTick(() => {

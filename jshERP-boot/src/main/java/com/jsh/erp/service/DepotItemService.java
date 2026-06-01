@@ -393,7 +393,7 @@ public class DepotItemService {
             //针对组装单、拆卸单校验是否存在组合件和普通子件
             checkAssembleWithMaterialType(rowArr, depotHead.getSubType());
             //校验多行明细当中是否存在重复的序列号
-            checkSerialNumberRepeat(rowArr);
+            checkSerialNumberRepeatWithCurrent(rowArr);
             List<DepotItem> depotItemList = new ArrayList<>();
             for (int i = 0; i < rowArr.size(); i++) {
                 DepotItem depotItem = new DepotItem();
@@ -846,10 +846,18 @@ public class DepotItemService {
             User userInfo = userService.getCurrentUser();
             if(BusinessConstants.DEPOTHEAD_TYPE_IN.equals(depotHead.getType())){
                 //入库逻辑
-                String number = depotHead.getNumber();
-                SerialNumberExample example = new SerialNumberExample();
-                example.createCriteria().andInBillNoEqualTo(number);
-                serialNumberService.deleteByExample(example);
+                //判断如果有序列号被出库了就不允许修改该单据
+                List<SerialNumber> snList = serialNumberMapperEx.getIsSellListByInBillNo(depotHead.getNumber());
+                if(!snList.isEmpty()){
+                    String sn = snList.get(0).getSerialNumber();
+                    throw new BusinessRunTimeException(ExceptionConstants.DEPOT_HEAD_SN_NOT_ALLOW_UPDATE_CODE,
+                            String.format(ExceptionConstants.DEPOT_HEAD_SN_NOT_ALLOW_UPDATE_MSG, sn));
+                } else {
+                    String number = depotHead.getNumber();
+                    SerialNumberExample example = new SerialNumberExample();
+                    example.createCriteria().andInBillNoEqualTo(number);
+                    serialNumberService.deleteByExample(example);
+                }
             } else if(BusinessConstants.DEPOTHEAD_TYPE_OUT.equals(depotHead.getType())){
                 //出库逻辑
                 DepotItemExample example = new DepotItemExample();
@@ -894,7 +902,7 @@ public class DepotItemService {
      * 校验多行明细当中是否存在重复的序列号
      * @param rowArr
      */
-    public void checkSerialNumberRepeat(JSONArray rowArr) {
+    public void checkSerialNumberRepeatWithCurrent(JSONArray rowArr) {
         List<String> allSnArr = new ArrayList<>();
         for (int i = 0; i < rowArr.size(); i++) {
             JSONObject rowObj = JSONObject.parseObject(rowArr.getString(i));
@@ -1206,17 +1214,37 @@ public class DepotItemService {
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public BigDecimal getFinishPurchaseNumber(Long meId, Long id, Long headerId, Unit unitInfo, String materialUnit, String linkType) {
+        BigDecimal count = BigDecimal.ZERO;
+        Long linkId = id;
+        DepotHead depotHead =depotHeadMapper.selectByPrimaryKey(headerId);
+        String linkStr = depotHead.getNumber(); //订单号
+        // 针对以销定购的情况
+        if(BusinessConstants.SUB_TYPE_SALES_ORDER.equals(depotHead.getSubType())) {
+            String goToType = BusinessConstants.SUB_TYPE_PURCHASE_ORDER;
+            String noType = "normal";
+            count = depotItemMapperEx.getFinishNumber(meId, linkId, linkStr, noType, goToType);
+            //根据多单位情况进行数量的转换
+            if(materialUnit.equals(unitInfo.getOtherUnit()) && unitInfo.getRatio()!=null && unitInfo.getRatio().compareTo(BigDecimal.ZERO)!=0) {
+                count = count.divide(unitInfo.getRatio(),2,BigDecimal.ROUND_HALF_UP);
+            }
+            if(materialUnit.equals(unitInfo.getOtherUnitTwo()) && unitInfo.getRatioTwo()!=null && unitInfo.getRatioTwo().compareTo(BigDecimal.ZERO)!=0) {
+                count = count.divide(unitInfo.getRatioTwo(),2,BigDecimal.ROUND_HALF_UP);
+            }
+            if(materialUnit.equals(unitInfo.getOtherUnitThree()) && unitInfo.getRatioThree()!=null && unitInfo.getRatioThree().compareTo(BigDecimal.ZERO)!=0) {
+                count = count.divide(unitInfo.getRatioThree(),2,BigDecimal.ROUND_HALF_UP);
+            }
+        }
+        return count;
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public BigDecimal getFinishNumber(Long meId, Long id, Long headerId, Unit unitInfo, String materialUnit, String linkType) {
         Long linkId = id;
         String goToType = "";
         DepotHead depotHead =depotHeadMapper.selectByPrimaryKey(headerId);
         String linkStr = depotHead.getNumber(); //订单号
-        if("purchase".equals(linkType)) {
-            //针对以销定购的情况
-            if(BusinessConstants.SUB_TYPE_SALES_ORDER.equals(depotHead.getSubType())) {
-                goToType = BusinessConstants.SUB_TYPE_PURCHASE_ORDER;
-            }
-        } else if("other".equals(linkType)) {
+        if("other".equals(linkType)) {
             //采购入库、采购退货、销售出库、销售退货都转其它入库
             if(BusinessConstants.SUB_TYPE_PURCHASE.equals(depotHead.getSubType())
                     || BusinessConstants.SUB_TYPE_PURCHASE_RETURN.equals(depotHead.getSubType())
@@ -1224,7 +1252,7 @@ public class DepotItemService {
                     || BusinessConstants.SUB_TYPE_SALES_RETURN.equals(depotHead.getSubType())) {
                 goToType = BusinessConstants.SUB_TYPE_OTHER;
             }
-        } else if("basic".equals(linkType)) {
+        } else if("basic".equals(linkType)||"purchase".equals(linkType)) {
             //采购订单转采购入库
             if(BusinessConstants.SUB_TYPE_PURCHASE_ORDER.equals(depotHead.getSubType())) {
                 goToType = BusinessConstants.SUB_TYPE_PURCHASE;
@@ -1424,10 +1452,21 @@ public class DepotItemService {
                         allPrice = unitPrice.multiply(operNumber).setScale(2, BigDecimal.ROUND_HALF_UP);
                     }
                     BigDecimal taxMoney = BigDecimal.ZERO;
-                    if(taxRate.compareTo(BigDecimal.ZERO) != 0) {
-                        taxMoney = taxRate.multiply(allPrice).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal taxLastMoney = BigDecimal.ZERO;
+                    if(systemConfigService.getMaterialPriceTaxFlag()) {
+                        //商品价格含税-开启
+                        if(taxRate.compareTo(BigDecimal.ZERO) != 0) {
+                            BigDecimal taxRatePercent = taxRate.divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                            taxMoney = allPrice.divide(BigDecimal.ONE.add(taxRatePercent), 2, BigDecimal.ROUND_HALF_UP)
+                                    .multiply(taxRatePercent).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        }
+                        taxLastMoney = allPrice;
+                    } else {
+                        if(taxRate.compareTo(BigDecimal.ZERO) != 0) {
+                            taxMoney = taxRate.multiply(allPrice).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                        }
+                        taxLastMoney = allPrice.add(taxMoney);
                     }
-                    BigDecimal taxLastMoney = allPrice.add(taxMoney);
                     item.put("allPrice", allPrice);
                     item.put("taxRate", taxRate);
                     item.put("taxMoney", taxMoney);

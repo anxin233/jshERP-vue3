@@ -19,6 +19,7 @@ import jxl.Workbook;
 import jxl.write.WritableWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -79,6 +80,9 @@ public class DepotHeadService {
     @Resource
     private LogService logService;
 
+    @Value(value="${file.exportTmp}")
+    private String fileExportTmp;
+
     public DepotHead getDepotHead(long id)throws Exception {
         DepotHead result=null;
         try{
@@ -101,7 +105,7 @@ public class DepotHeadService {
         return list;
     }
 
-    public List<DepotHeadVo4List> select(String type, String subType, String hasDebt, String status, String purchaseStatus, String number, String linkApply, String linkNumber,
+    public List<DepotHeadVo4List> select(String type, String subType, String hasDebt, String hasLastDebt, String status, String purchaseStatus, String number, String linkApply, String linkNumber,
            String beginTime, String endTime, String materialParam, Long organId, Long creator, Long depotId, Long accountId, String salesMan, String remark) throws Exception {
         List<DepotHeadVo4List> list = new ArrayList<>();
         try{
@@ -121,7 +125,7 @@ public class DepotHeadService {
             beginTime = Tools.parseDayToTime(beginTime,BusinessConstants.DAY_FIRST_TIME);
             endTime = Tools.parseDayToTime(endTime,BusinessConstants.DAY_LAST_TIME);
             PageUtils.startPage();
-            list = depotHeadMapperEx.selectByConditionDepotHead(type, subType, creatorArray, hasDebt,
+            list = depotHeadMapperEx.selectByConditionDepotHead(type, subType, creatorArray, hasDebt, hasLastDebt,
                     statusArray, purchaseStatusArray, number, linkApply, linkNumber, beginTime, endTime,
                     materialParam, organId, organArray, creator, depotId, depotArray, accountId, salesMan, remark);
             if (null != list) {
@@ -181,11 +185,8 @@ public class DepotHeadService {
                     BigDecimal debt = discountLastMoney.add(otherMoney).subtract((deposit.add(changeAmount)));
                     dh.setDebt(roleService.parseBillPriceByLimit(debt, billCategory, priceLimit, request));
                     //最终欠款的金额
-                    if(financialBillPriceMap!=null) {
-                        BigDecimal financialBillPrice = financialBillPriceMap.get(dh.getId())!=null?financialBillPriceMap.get(dh.getId()):BigDecimal.ZERO;
-                        BigDecimal lastDebt = debt.subtract(financialBillPrice);
-                        dh.setLastDebt(roleService.parseBillPriceByLimit(lastDebt, billCategory, priceLimit, request));
-                    }
+                    BigDecimal lastDebt = dh.getLastDebt()!=null?dh.getLastDebt():BigDecimal.ZERO;
+                    dh.setLastDebt(roleService.parseBillPriceByLimit(lastDebt, billCategory, priceLimit, request));
                     //是否有退款单
                     if(billSizeMap!=null) {
                         Integer billListSize = billSizeMap.get(dh.getNumber());
@@ -267,7 +268,7 @@ public class DepotHeadService {
     }
 
     /**
-     * 获取机构数组
+     * 获取部门数组
      * @return
      */
     public String[] getOrganArray(String subType, String purchaseStatus) throws Exception {
@@ -668,6 +669,44 @@ public class DepotHeadService {
             }
         }
         return result;
+    }
+
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int batchSetLastDebt(String ids, HttpServletRequest request) throws Exception {
+        int result = 0;
+        StringBuilder billNoStr = new StringBuilder();
+        List<Long> idList = StringUtil.strToLongList(ids);
+        for(Long id: idList) {
+            DepotHead dh = getDepotHead(id);
+            BigDecimal debt = getDebtByBill(dh);
+            if(debt.compareTo(BigDecimal.ZERO)!=0) {
+                //更新最终欠款
+                updateLastDebtByBillId(debt, id);
+                billNoStr.append(dh.getNumber()).append(" ");
+            }
+            result = 1;
+        }
+        //记录日志
+        String billNos = billNoStr.toString();
+        if(StringUtil.isNotEmpty(billNos)) {
+            logService.insertLog("单据", "修正最终欠款：" + billNos,
+                    ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
+        }
+        return result;
+    }
+
+    /**
+     * 获取单据的本次欠款
+     * @param dh
+     * @return
+     */
+    public BigDecimal getDebtByBill(DepotHead dh) {
+        BigDecimal discountLastMoney = dh.getDiscountLastMoney()!=null? dh.getDiscountLastMoney():BigDecimal.ZERO;
+        BigDecimal otherMoney = dh.getOtherMoney()!=null? dh.getOtherMoney():BigDecimal.ZERO;
+        BigDecimal deposit = dh.getDeposit()!=null? dh.getDeposit():BigDecimal.ZERO;
+        BigDecimal changeAmount = dh.getChangeAmount()!=null? dh.getChangeAmount().abs():BigDecimal.ZERO;
+        //本次欠款
+        return discountLastMoney.add(otherMoney).subtract((deposit.add(changeAmount)));
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
@@ -1230,6 +1269,8 @@ public class DepotHeadService {
             Long headId = list.get(0).getId();
             /**入库和出库处理单据子表信息*/
             depotItemService.saveDetials(rows,headId, "add",request);
+            /**更新最终欠款*/
+            updateLastDebtByBillId(depotHead.getDebt(), headId);
         }
         String statusStr = depotHead.getStatus().equals("1")?"[审核]":"";
         logService.insertLog("单据",
@@ -1336,6 +1377,8 @@ public class DepotHeadService {
         }
         /**入库和出库处理单据子表信息*/
         depotItemService.saveDetials(rows,depotHead.getId(), "update",request);
+        /**更新最终欠款*/
+        updateLastDebtByBillId(depotHead.getDebt(), depotHead.getId());
         String statusStr = depotHead.getStatus().equals("1")?"[审核]":"";
         logService.insertLog("单据",
                 new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_EDIT).append(depotHead.getNumber()).append(statusStr).toString(),
@@ -1355,6 +1398,22 @@ public class DepotHeadService {
                     String.format(ExceptionConstants.DEPOT_HEAD_SUBMIT_REPEAT_FAILED_MSG));
         } else {
             redisService.storageKeyWithTime(keyNo, depotHead.getNumber(), 2L);
+        }
+    }
+
+    /**
+     * 更新最终欠款
+     * @param billId
+     * @return
+     */
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public void updateLastDebtByBillId(BigDecimal debt, Long billId) throws Exception {
+        BigDecimal financialBillPrice = accountHeadService.getFinancialBillPriceByBillId(billId);
+        if(debt!=null && financialBillPrice!=null) {
+            DepotHead dh = new DepotHead();
+            dh.setId(billId);
+            dh.setLastDebt(debt.subtract(financialBillPrice));
+            depotHeadMapper.updateByPrimaryKeySelective(dh);
         }
     }
 
@@ -1526,7 +1585,7 @@ public class DepotHeadService {
             }
             //生成Excel文件
             String fileName = "单据信息";
-            File file = new File("/opt/"+ fileName);
+            File file = new File(fileExportTmp + fileName);
             WritableWorkbook wtwb = Workbook.createWorkbook(file);
             String oneTip = "";
             String sheetOneStr = "";
@@ -1869,5 +1928,35 @@ public class DepotHeadService {
         logService.insertLog("单据",
                 new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_BATCH_ADD).append(sb).toString(),
                 ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
+    }
+
+    /**
+     * 快捷编辑单据
+     * @param id 单据id
+     * @param remark 备注内容
+     * @param request 请求对象
+     */
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public void quickEditDepotHead(Long id, String remark, HttpServletRequest request) throws Exception {
+        try {
+            // 查询单据获取编号
+            DepotHead oldDepotHead = depotHeadMapper.selectByPrimaryKey(id);
+            if (oldDepotHead == null) {
+                throw new BusinessRunTimeException(ExceptionConstants.DEPOT_HEAD_EDIT_FAILED_CODE,
+                        ExceptionConstants.DEPOT_HEAD_EDIT_FAILED_MSG);
+            }
+            DepotHead depotHead = new DepotHead();
+            depotHead.setId(id);
+            depotHead.setRemark(remark);
+            depotHeadMapper.updateByPrimaryKeySelective(depotHead);
+            // 记录日志，使用单据编号
+            String oldRemark = StringUtil.isNotEmpty(oldDepotHead.getRemark())? "，原备注为:"+oldDepotHead.getRemark():"";
+            logService.insertLog("单据",
+                    new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_EDIT).append("备注，单据编号:")
+                            .append(oldDepotHead.getNumber()).append(oldRemark).toString(),
+                    request);
+        } catch (Exception e) {
+            JshException.writeFail(logger, e);
+        }
     }
 }

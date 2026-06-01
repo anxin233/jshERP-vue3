@@ -141,7 +141,7 @@
         organId: '',
         accountId: '',
         salesMan: '',
-        discountMoney: '',
+        discount: '',
         deposit: '',
         remark: '',
         defaultDepotId: '',
@@ -305,7 +305,7 @@
             this.organId = record.organId
             this.accountId = record.accountId
             this.salesMan = record.salesMan
-            this.discountMoney = record.discountMoney
+            this.discount = record.discount
             this.deposit = record.changeAmount - record.finishDeposit
             this.remark = record.remark
             this.initListColumns()
@@ -316,7 +316,7 @@
         } else {
           if(this.selectedDetailRowKeys.length) {
             this.getSelectBillDetailRows()
-            this.$emit('ok', this.selectBillDetailRows, this.linkNumber, this.organId, this.discountMoney, this.deposit, this.remark, this.defaultDepotId, this.accountId, this.salesMan)
+            this.$emit('ok', this.selectBillDetailRows, this.linkNumber, this.organId, this.discount, this.deposit, this.remark, this.defaultDepotId, this.accountId, this.salesMan)
             this.close()
           } else {
             this.$message.warning('抱歉，请选择单据明细！')
@@ -364,6 +364,10 @@
               let listEx = []
               for(let j=0; j<list.length; j++){
                 let info = list[j];
+                if(this.queryParam.subType === '销售订单' && this.showType === 'purchase') {
+                  //此时是销售订单转采购订单的场景
+                  info.finishNumber = info.finishPurchaseNumber
+                }
                 if(info.finishNumber < info.preNumber) {
                   //去掉已经全部转换的明细，只加载未转换完的明细
                   listEx.push(info)

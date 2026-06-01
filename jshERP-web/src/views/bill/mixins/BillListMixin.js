@@ -16,6 +16,8 @@ export const BillListMixin = {
       isShowExcel: false,
       //以销定购的场景开关
       purchaseBySaleFlag: false,
+      //商品价格含税开关
+      materialPriceTaxFlag: false,
       setTimeFlag: null,
       waitTotal: 0,
       dateFormat: 'YYYY-MM-DD',
@@ -200,6 +202,7 @@ export const BillListMixin = {
         { title: '单位', dataIndex: 'unit'},
         { title: '多属性', dataIndex: 'sku'},
         { title: '数量', dataIndex: 'operNumber'},
+        { title: '已采购', dataIndex: 'finishPurchaseNumber'},
         { title: '已销售', dataIndex: 'finishNumber'},
         { title: '单价', dataIndex: 'unitPrice'},
         { title: '金额', dataIndex: 'allPrice'},
@@ -571,6 +574,35 @@ export const BillListMixin = {
         });
       }
     },
+    //批量修正最终欠款
+    batchSetLastDebt() {
+      if (this.selectedRowKeys.length <= 0) {
+        this.$message.warning('请选择一条记录！')
+      } else {
+        let ids = "";
+        for (let a = 0; a < this.selectedRowKeys.length; a++) {
+          ids += this.selectedRowKeys[a] + ","
+        }
+        let that = this
+        this.$confirm({
+          title: "确认修正欠款",
+          content: "是否对选的数据修正欠款?",
+          onOk: function () {
+            that.loading = true
+            postAction(that.url.batchSetLastDebtUrl, {ids: ids}).then((res) => {
+              if(res.code === 200){
+                that.loadData()
+                that.$message.success('修正欠款完成')
+              } else {
+                that.$message.warning(res.data.message)
+              }
+            }).finally(() => {
+              that.loading = false
+            });
+          }
+        });
+      }
+    },
     handleApprove(record) {
       this.$refs.modalForm.action = "approve";
       this.$refs.modalForm.edit(record);
@@ -604,6 +636,7 @@ export const BillListMixin = {
           this.checkFlag = getCheckFlag(multiBillType, multiLevelApprovalFlag, this.prefixNo)
           this.purchaseBySaleFlag = res.data.purchaseBySaleFlag==='1'?true:false
           this.inOutManageFlag = res.data.inOutManageFlag==='1'?true:false
+          this.materialPriceTaxFlag = res.data.materialPriceTaxFlag==='1'?true:false
         }
       })
       getPlatformConfigByKey({ "platformKey": "bill_excel_url" }).then((res) => {
@@ -758,6 +791,20 @@ export const BillListMixin = {
         })
       },500)
     },
+    handleQuickEdit() {
+      if (this.selectedRowKeys.length === 0) {
+        this.$message.warning('请选择一条数据')
+        return
+      }
+      if (this.selectedRowKeys.length > 1) {
+        this.$message.warning('只能选择一条数据进行快捷编辑')
+        return
+      }
+      const record = this.dataSource.find(item => item.id === this.selectedRowKeys[0])
+      if (record) {
+        this.$refs.quickEditModal.show(record)
+      }
+    },
     getDepotByCurrentUser() {
       getAction('/depot/findDepotByCurrentUser').then((res) => {
         if (res.code === 200) {
@@ -800,13 +847,17 @@ export const BillListMixin = {
                 list: res.data.rows,
                 number: info.number,
                 organId: info.organId,
-                discountMoney: info.discountMoney,
+                discount: info.discount,
                 deposit: deposit,
                 remark: info.remark,
                 accountId: info.accountId,
                 salesMan: info.salesMan
               }
               if(type === '转采购订单-以销定购') {
+                let list = transferParam.list
+                list.forEach(item => {
+                  item.finishNumber = item.finishPurchaseNumber
+                })
                 this.$refs.transferPurchaseModalForm.action = "add"
                 this.$refs.transferPurchaseModalForm.transferParam = transferParam
                 this.$refs.transferPurchaseModalForm.defaultDepotId = this.defaultDepotId
@@ -819,6 +870,7 @@ export const BillListMixin = {
                 this.$refs.transferModalForm.action = "add"
                 this.$refs.transferModalForm.transferParam = transferParam
                 this.$refs.transferModalForm.defaultDepotId = this.defaultDepotId
+                this.$refs.transferModalForm.materialPriceTaxFlag = this.materialPriceTaxFlag
                 this.$refs.transferModalForm.add()
                 this.$refs.transferModalForm.title = type
                 if(quickBtnStr.indexOf(2)===-1) {
@@ -970,34 +1022,16 @@ export const BillListMixin = {
         }
       }
       let currentCol = []
-      if(record.status === '3') {
+      if(record.status === '3' || record.purchaseStatus === '3') {
         //部分采购|部分销售的时候显示全部列
         for(let i=0; i<this.defDetailColumns.length; i++){
           currentCol.push(this.defDetailColumns[i])
         }
         this.detailColumns = currentCol
-      } else if(record.purchaseStatus === '3') {
-        //将已出库的标题转为已采购，针对销售订单转采购订单的场景
-        for(let i=0; i<this.defDetailColumns.length; i++){
-          let info = {}
-          info.title = this.defDetailColumns[i].title
-          info.dataIndex = this.defDetailColumns[i].dataIndex
-          if(this.defDetailColumns[i].width) {
-            info.width = this.defDetailColumns[i].width
-          }
-          if(this.defDetailColumns[i].dataIndex === 'finishNumber') {
-            info.title = '已采购'
-          }
-          if(this.defDetailColumns[i].dataIndex === 'barCode') {
-            info.scopedSlots = { customRender: 'customBarCode' }
-          }
-          currentCol.push(info)
-        }
-        this.detailColumns = currentCol
       } else {
         for(let i=0; i<this.defDetailColumns.length; i++){
           //移除列
-          let needRemoveKeywords = ['finishNumber','snList','batchNumber','expirationDate','sku','weight','position',
+          let needRemoveKeywords = ['finishNumber','finishPurchaseNumber','snList','batchNumber','expirationDate','sku','weight','position',
             'brand','mfrs','otherField1','otherField2','otherField3','taxRate','remark']
           if(needRemoveKeywords.indexOf(this.defDetailColumns[i].dataIndex)===-1) {
             let info = {}

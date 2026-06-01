@@ -21,7 +21,7 @@ const getUserList = (params)=>getAction("/user/getUserList",params);
 const getUserBtnByCurrentUser = (params)=>getAction("/user/getUserBtnByCurrentUser",params);
 const queryPermissionsByUser = (params)=>postAction("/function/findMenuByPNumber",params);
 const resetPwd = (params)=>postAction("/user/resetPwd",params);
-//机构管理
+//部门管理
 const queryOrganizationTreeList = (params)=>getAction("/organization/getOrganizationTree",params);
 const getAllOrganizationTreeByUser = (params)=>getAction("/organization/getAllOrganizationTreeByUser",params);
 const queryOrganizationById = (params)=>getAction("/organization/findById",params);
@@ -102,6 +102,13 @@ const editSystemConfig = (params)=>putAction("/systemConfig/update",params);
 const checkSystemConfig = (params)=>getAction("/systemConfig/checkIsNameExist",params);
 const getCurrentSystemConfig = (params)=>getAction("/systemConfig/getCurrentInfo",params);
 const fileSizeLimit = (params)=>getAction("/systemConfig/fileSizeLimit",params);
+//字典管理
+const addDictType = (params)=>postAction("/dict/type/add",params);
+const editDictType = (params)=>putAction("/dict/type/update",params);
+const addDictData = (params)=>postAction("/dict/data/add",params);
+const editDictData= (params)=>putAction("/dict/data/update",params);
+const getDictOptionselect = (params)=>getAction("/dict/type/optionselect",params);
+const getDicts = (dictType)=>getAction("/dict/data/type/"+ dictType);
 //平台参数
 const addPlatformConfig = (params)=>postAction("/platformConfig/add",params);
 const editPlatformConfig = (params)=>putAction("/platformConfig/update",params);
@@ -129,6 +136,7 @@ const findBillDetailByNumber = (params)=>getAction("/depotHead/getDetailByNumber
 const waitBillCount = (params)=>getAction("/depotHead/waitBillCount",params);
 const getNeedCount = (params)=>getAction("/depotHead/getNeedCount",params);
 const batchAddDepotHeadAndDetail = (params)=>postAction("/depotHead/batchAddDepotHeadAndDetail",params);
+const quickEditDepotHead = (params)=>putAction("/depotHead/quickEdit",params);
 const findStockByDepotAndBarCode = (params)=>getAction("/depotItem/findStockByDepotAndBarCode",params);
 const getBatchNumberList = (params)=>getAction("/depotItem/getBatchNumberList",params);
 const findFinancialDetailByNumber = (params)=>getAction("/accountHead/getDetailByNumber",params);
@@ -202,6 +210,12 @@ export {
   checkSystemConfig,
   getCurrentSystemConfig,
   fileSizeLimit,
+  addDictType,
+  editDictType,
+  addDictData,
+  editDictData,
+  getDictOptionselect,
+  getDicts,
   addPlatformConfig,
   editPlatformConfig,
   getPlatformConfigByKey,
@@ -224,6 +238,7 @@ export {
   waitBillCount,
   getNeedCount,
   batchAddDepotHeadAndDetail,
+  quickEditDepotHead,
   findStockByDepotAndBarCode,
   getBatchNumberList,
   findFinancialDetailByNumber,
