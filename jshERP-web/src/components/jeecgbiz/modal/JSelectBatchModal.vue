@@ -13,7 +13,7 @@
         <!-- 查询区域 -->
         <div class="table-page-search-wrapper">
           <!-- 搜索区域 -->
-          <a-form layout="inline" @keyup.enter.native="onSearch">
+          <a-form layout="inline" @keyup.enter="onSearch">
             <a-row :gutter="24">
               <a-col :md="12" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="批号">

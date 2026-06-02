@@ -14,7 +14,7 @@
         <!-- 查询区域 -->
         <div class="table-page-search-wrapper">
           <!-- 搜索区域 -->
-          <a-form layout="inline" @keyup.enter.native="onSearch">
+          <a-form layout="inline" @keyup.enter="onSearch">
             <a-row :gutter="24">
               <a-col :md="6" :sm="8">
                 <a-form-item label="关键词" :labelCol="labelCol" :wrapperCol="wrapperCol">

@@ -3,7 +3,7 @@
     <a-input-group v-if="kind === 'material'" compact style="width:100%;top:0px;display:flex;">
       <a-select placeholder="输入条码或名称" :dropdownMatchSelectWidth="false" showSearch :showArrow="false"
                 v-model="names" optionFilterProp="children" style="flex:1; min-width:0;" notFoundContent="需在商品管理先新增才能使用"
-                @search="handleSearch" @change="handleChange" @keyup.enter.native="handleEnter">
+                @search="handleSearch" @change="handleChange" @keyup.enter="handleEnter">
         <div slot="dropdownRender" slot-scope="menu">
           <v-nodes :vnodes="menu" />
           <a-divider v-if="materialData.length===20" style="margin: 4px 0;" />

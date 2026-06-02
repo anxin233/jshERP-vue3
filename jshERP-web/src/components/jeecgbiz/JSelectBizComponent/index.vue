@@ -12,7 +12,7 @@
           :open="selectOpen"
           style="width: 100%;"
           @dropdownVisibleChange="handleDropdownVisibleChange"
-          @click.native="visible=(buttons?visible:true)"
+          @click="visible=(buttons?visible:true)"
         />
       </slot>
     </a-col>

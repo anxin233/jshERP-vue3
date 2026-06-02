@@ -11,7 +11,7 @@
     <a-row :gutter="24">
       <a-col :md="24" :sm="24">
         <div>
-          <a-form layout="inline" @keyup.enter.native="onAdd">
+          <a-form layout="inline" @keyup.enter="onAdd">
             <a-tabs default-active-key="1" tab-position="left">
               <a-tab-pane key="1" tab="单个序列号" forceRender>
                 <a-row :gutter="24">

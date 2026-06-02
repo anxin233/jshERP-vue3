@@ -4,7 +4,7 @@
       <a-card :style="cardStyle" :bordered="false">
         <!-- 查询区域 -->
         <div class="table-page-search-wrapper">
-          <a-form layout="inline" @keyup.enter.native="searchQuery">
+          <a-form layout="inline" @keyup.enter="searchQuery">
             <a-row :gutter="16">
               <a-col :md="5" :sm="24">
                 <a-form-item label="工单号" :labelCol="{span:6}" :wrapperCol="{span:18}">

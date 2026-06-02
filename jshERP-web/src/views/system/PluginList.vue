@@ -5,7 +5,7 @@
         <!-- 查询区域 -->
         <div class="table-page-search-wrapper">
           <!-- 搜索区域 -->
-          <a-form layout="inline" @keyup.enter.native="searchQuery">
+          <a-form layout="inline" @keyup.enter="searchQuery">
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">

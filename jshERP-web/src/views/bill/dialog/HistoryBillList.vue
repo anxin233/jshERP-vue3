@@ -18,7 +18,7 @@
       <!-- 查询区域 -->
       <div class="table-page-search-wrapper">
         <!-- 搜索区域 -->
-        <a-form layout="inline" @keyup.enter.native="searchQuery">
+        <a-form layout="inline" @keyup.enter="searchQuery">
           <a-row :gutter="24">
             <a-col :md="4" :sm="24" v-if="organLabel">
               <a-form-item :label="organLabel" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">

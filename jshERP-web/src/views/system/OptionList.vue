@@ -4,7 +4,7 @@
       <a-card :bordered="false">
         <!-- 查询区域：按选项组筛选 -->
         <div class="table-page-search-wrapper">
-          <a-form layout="inline" @keyup.enter.native="searchQuery">
+          <a-form layout="inline" @keyup.enter="searchQuery">
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="选项组编码" :labelCol="labelCol" :wrapperCol="wrapperCol">

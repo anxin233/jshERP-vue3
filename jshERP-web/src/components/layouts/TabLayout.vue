@@ -2,7 +2,7 @@
   <global-layout @dynamicRouterShow="dynamicRouterShow">
     <contextmenu :itemList="menuItemList" :visible.sync="menuVisible" style="z-index: 9999;" @select="onMenuSelect"/>
     <a-tabs
-      @contextmenu.native="e => onContextmenu(e)"
+      @contextmenu="e => onContextmenu(e)"
       v-if="multipage"
       :active-key="activePage"
       class="tab-layout-tabs"

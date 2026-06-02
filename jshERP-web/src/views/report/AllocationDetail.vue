@@ -9,7 +9,7 @@
         projectIdto 调入仓库
         -->
         <div class="table-page-search-wrapper">
-          <a-form layout="inline" @keyup.enter.native="searchQuery">
+          <a-form layout="inline" @keyup.enter="searchQuery">
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="商品信息" :labelCol="labelCol" :wrapperCol="wrapperCol">

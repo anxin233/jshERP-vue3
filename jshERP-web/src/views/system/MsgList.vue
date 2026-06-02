@@ -14,7 +14,7 @@
     </template>
     <!-- 查询区域 -->
     <div class="table-page-search-wrapper">
-      <a-form layout="inline" @keyup.enter.native="searchQuery">
+      <a-form layout="inline" @keyup.enter="searchQuery">
         <a-row :gutter="24">
           <a-col :span="12">
             <a-form-item label="标题">
