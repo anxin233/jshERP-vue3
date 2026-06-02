@@ -6,11 +6,11 @@
     :style="{ padding: '0' }">
 
     <div v-if="mode === 'sidemenu'" class="header" :class="theme">
-      <a-icon
+      <legacy-icon
         v-if="device==='mobile'"
         class="trigger"
         :type="collapsed ? 'menu-fold' : 'menu-unfold'"
-        @click="toggle"></a-icon>
+        @click="toggle"></legacy-icon>
 
       <span v-if="device === 'desktop'" class="company-name">{{ companyName }}</span>
       <span v-else>{{ systemTitle }}</span>
@@ -28,11 +28,11 @@
               :menu="menus"
               :theme="theme"></s-menu>
           </div>
-          <a-icon
+          <legacy-icon
             v-else
             class="trigger"
             :type="collapsed ? 'menu-fold' : 'menu-unfold'"
-            @click="toggle"></a-icon>
+            @click="toggle"></legacy-icon>
         </div>
         <user-menu class="header-index-right" :theme="theme" :style="topMenuStyle.headerIndexRight"/>
       </div>

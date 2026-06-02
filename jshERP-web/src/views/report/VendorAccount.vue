@@ -14,7 +14,7 @@
                     <div slot="dropdownRender" slot-scope="menu">
                       <v-nodes :vnodes="menu" />
                       <a-divider style="margin: 4px 0;" />
-                      <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier"><a-icon type="reload" /> 刷新列表</div>
+                      <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier"><legacy-icon type="reload" /> 刷新列表</div>
                     </div>
                     <a-select-option v-for="(item,index) in supList" :key="index" :value="item.id">
                       {{ item.supplier }}
@@ -40,7 +40,7 @@
                   <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
-                    <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
+                    <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
                 </span>
               </a-col>
@@ -102,7 +102,7 @@
                     </a-row>
                   </a-checkbox-group>
                 </template>
-                <a-icon type="setting" />
+                <legacy-icon type="setting" />
               </a-popover>
             </span>
             <span slot="action" slot-scope="text, record">
@@ -111,7 +111,7 @@
             <span slot="allNeedTitle">
               期末应付
               <a-tooltip title="期末应付=期初应付+本期欠款-本期付款">
-                <a-icon type="question-circle" />
+                <legacy-icon type="question-circle" />
               </a-tooltip>
             </span>
           </a-table>

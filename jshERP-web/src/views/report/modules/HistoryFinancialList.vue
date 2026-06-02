@@ -49,7 +49,7 @@
                 <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                 <a @click="handleToggleSearch" style="margin-left: 8px">
                   {{ toggleSearchStatus ? '收起' : '展开' }}
-                  <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
+                  <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                 </a>
               </a-col>
             </span>

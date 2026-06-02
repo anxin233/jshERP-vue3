@@ -35,7 +35,7 @@
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
-                    <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
+                    <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
                 </a-col>
               </span>
@@ -48,7 +48,7 @@
                       <div slot="dropdownRender" slot-scope="menu">
                         <v-nodes :vnodes="menu" />
                         <a-divider style="margin: 4px 0;" />
-                        <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier(0)"><a-icon type="reload" /> 刷新列表</div>
+                        <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier(0)"><legacy-icon type="reload" /> 刷新列表</div>
                       </div>
                       <a-select-option v-for="(item,index) in supList" :key="index" :value="item.id">
                         {{ item.supplier }}
@@ -164,7 +164,7 @@
           <a-tooltip placement="left" title="采购入库单可以由采购订单转过来，也可以单独创建。
           采购入库单据中的仓库列表只显示当前用户有权限的仓库。采购入库单可以使用多账户付款。
           勾选单据之后可以进行批量操作（删除、审核、反审核）" slot="action">
-            <a-icon v-if="btnEnableList.indexOf(1)>-1" type="question-circle" style="font-size:20px;float:right;" />
+            <legacy-icon v-if="btnEnableList.indexOf(1)>-1" type="question-circle" style="font-size:20px;float:right;" />
           </a-tooltip>
         </div>
         <!-- table区域-begin -->

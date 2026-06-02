@@ -4,11 +4,11 @@
     <div slot="title">
       <span>{{ title }}</span>
       <span style="float: right" title="关闭">
-        <a-icon type="close" @click="visible=false"/>
+        <legacy-icon type="close" @click="visible=false"/>
       </span>
     </div>
     <a-input :value="inputContent" @change="handleInputChange" :placeholder="placeholder">
-      <a-icon slot="suffix" type="fullscreen" @click.stop="pop" />
+      <legacy-icon slot="suffix" type="fullscreen" @click.stop="pop" />
     </a-input>
     <div slot="content">
       <textarea :value="inputContent" @input="handleInputChange" :placeholder="placeholder" :style="{ height: height + 'px', width: width + 'px' }"></textarea>

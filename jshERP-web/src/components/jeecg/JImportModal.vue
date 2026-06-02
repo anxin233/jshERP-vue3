@@ -14,7 +14,7 @@
       :remove="handleRemove"
       :beforeUpload="beforeUpload">
       <a-button>
-        <a-icon type="upload" />
+        <legacy-icon type="upload" />
         选择导入文件
       </a-button>
     </a-upload>

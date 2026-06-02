@@ -43,7 +43,7 @@
               type="text"
               default-value=""
               placeholder="请输入验证码">
-              <a-icon slot="prefix" type="smile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <legacy-icon slot="prefix" type="smile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
           </a-form-item>
         </a-col>

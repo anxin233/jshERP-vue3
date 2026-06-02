@@ -83,7 +83,7 @@
                 </a-row>
               </a-checkbox-group>
             </template>
-            <a-icon type="setting" />
+            <legacy-icon type="setting" />
           </a-popover>
         </span>
       </a-table>

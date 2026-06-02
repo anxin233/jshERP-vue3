@@ -69,7 +69,7 @@
             </a-row>
             <a-row :gutter="24" style="float:left;padding-bottom: 5px;">
               <a-col :md="24" :sm="24">
-                <a-button style="margin-left: 8px" @click="handleHistoryBillList"><a-icon type="history" />历史单据</a-button>
+                <a-button style="margin-left: 8px" @click="handleHistoryBillList"><legacy-icon type="history" />历史单据</a-button>
               </a-col>
             </a-row>
             <a-row v-if="rowCanEdit" :gutter="24" style="float:left;padding-bottom: 5px;padding-left:20px;">

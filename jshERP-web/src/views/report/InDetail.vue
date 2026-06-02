@@ -30,7 +30,7 @@
                   <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
-                    <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
+                    <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
                 </span>
               </a-col>
@@ -54,7 +54,7 @@
                       <div slot="dropdownRender" slot-scope="menu">
                         <v-nodes :vnodes="menu" />
                         <a-divider style="margin: 4px 0;" />
-                        <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initOrgan"><a-icon type="reload" /> 刷新列表</div>
+                        <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initOrgan"><legacy-icon type="reload" /> 刷新列表</div>
                       </div>
                       <a-select-option v-for="(item,index) in organList" :key="index" :value="item.id">
                         {{ item.supplier }}
@@ -145,7 +145,7 @@
                     </a-row>
                   </a-checkbox-group>
                 </template>
-                <a-icon type="setting" />
+                <legacy-icon type="setting" />
               </a-popover>
             </span>
             <span slot="numberCustomRender" slot-scope="text, record">

@@ -21,7 +21,7 @@
               <div class="setting-drawer-index-item" @click="handleMenuTheme('dark')">
                 <img src="../../assets/dark.svg" alt="dark">
                 <div class="setting-drawer-index-selectIcon" v-if="navTheme === 'dark'">
-                  <a-icon type="check"/>
+                  <legacy-icon type="check"/>
                 </div>
               </div>
             </a-tooltip>
@@ -33,7 +33,7 @@
               <div class="setting-drawer-index-item" @click="handleMenuTheme('light')">
                 <img src="../../assets/light.svg" alt="light">
                 <div class="setting-drawer-index-selectIcon" v-if="navTheme !== 'dark'">
-                  <a-icon type="check"/>
+                  <legacy-icon type="check"/>
                 </div>
               </div>
             </a-tooltip>
@@ -49,7 +49,7 @@
                 {{ item.key }}
               </template>
               <a-tag :color="item.color" @click="changeColor(item.color)">
-                <a-icon type="check" v-if="item.color === primaryColor"></a-icon>
+                <legacy-icon type="check" v-if="item.color === primaryColor"></legacy-icon>
               </a-tag>
             </a-tooltip>
 
@@ -183,7 +183,7 @@
         </div>
       </div>
       <div class="setting-drawer-index-handle" @click="toggle" v-if="visible">
-        <a-icon type="close" />
+        <legacy-icon type="close" />
       </div>
     </a-drawer>
   </div>

@@ -65,13 +65,13 @@
               数据类型
               <a-tooltip title="1、全部数据-该角色对应的用户可以看到全部单据；2、本部门数据-该角色对应的用户可以看到自己所在部门的全部单据；
                 3、个人数据-该角色对应的用户只可以看到自己的单据。单据是指采购入库、销售出库等">
-                <a-icon type="question-circle" />
+                <legacy-icon type="question-circle" />
               </a-tooltip>
             </span>
             <span slot="priceLimitTitle">
               价格屏蔽
               <a-tooltip title="价格屏蔽支持多选，主要用于控制首页和单据的价格屏蔽">
-                <a-icon type="question-circle" />
+                <legacy-icon type="question-circle" />
               </a-tooltip>
             </span>
             <!-- 状态渲染模板 -->

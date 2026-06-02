@@ -25,7 +25,7 @@
         key="__add_new__"
         value="__add_new__"
         class="dynamic-option-add-entry">
-        <a-icon type="plus-circle" style="color:#1890ff;margin-right:6px" />
+        <legacy-icon type="plus-circle" style="color:#1890ff;margin-right:6px" />
         <span style="color:#1890ff">{{ addEntryLabel }}</span>
       </a-select-option>
     </a-select>

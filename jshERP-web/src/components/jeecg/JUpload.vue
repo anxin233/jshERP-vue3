@@ -4,8 +4,8 @@
     <!--  ---------------------------- begin 图片左右换位置 ------------------------------------- -->
     <div class="movety-container" :style="{top:top+'px',left:left+'px',display:moveDisplay}" style="padding:0 8px;position: absolute;z-index: 91;height: 32px;width: 104px;text-align: center;">
       <div :id="containerId+'-mover'" :class="showMoverTask?'uploadty-mover-mask':'movety-opt'" style="margin-top: 12px">
-        <a @click="moveLast" style="margin: 0 5px;"><a-icon type="arrow-left" style="color: #fff;font-size: 16px"/></a>
-        <a @click="moveNext" style="margin: 0 5px;"><a-icon type="arrow-right" style="color: #fff;font-size: 16px"/></a>
+        <a @click="moveLast" style="margin: 0 5px;"><legacy-icon type="arrow-left" style="color: #fff;font-size: 16px"/></a>
+        <a @click="moveNext" style="margin: 0 5px;"><legacy-icon type="arrow-right" style="color: #fff;font-size: 16px"/></a>
       </div>
     </div>
     <!--  ---------------------------- end 图片左右换位置 ------------------------------------- -->
@@ -26,11 +26,11 @@
       :class="{'uploadty-disabled':disabled}">
       <template>
         <div v-if="isImageComp">
-          <a-icon type="plus" />
+          <legacy-icon type="plus" />
           <div class="ant-upload-text">{{ text }}</div>
         </div>
         <a-button v-else-if="buttonVisible">
-         <a-icon type="upload" />{{ text }}
+         <legacy-icon type="upload" />{{ text }}
         </a-button>
       </template>
     </a-upload>

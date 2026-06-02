@@ -33,7 +33,7 @@
                 :style="{position: 'fixed', left: contextMenuX + 'px', top: contextMenuY + 'px', zIndex: 1000}"
                 class="context-menu">
               <li @click="handleAddChild">
-                <a-icon type="plus" /> 新增子类别
+                <legacy-icon type="plus" /> 新增子类别
               </li>
             </ul>
           </a-col>

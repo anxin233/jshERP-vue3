@@ -1,6 +1,6 @@
 <template>
   <div v-bind="fullScreenParentProps">
-    <a-icon v-if="fullScreen" class="full-screen-icon" :type="iconType" @click="()=>fullCoder=!fullCoder"/>
+    <legacy-icon v-if="fullScreen" class="full-screen-icon" :type="iconType" @click="()=>fullCoder=!fullCoder"/>
 
     <div class="code-editor-cust full-screen-child">
       <textarea ref="textarea"></textarea>

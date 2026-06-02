@@ -47,7 +47,7 @@
                   @keyup.enter="handleInputConfirm"
                 />
                 <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput">
-                  <a-icon type="plus" /> 请输入属性值
+                  <legacy-icon type="plus" /> 请输入属性值
                 </a-tag>
               </a-tab-pane>
               <a-tab-pane key="2" tab="文字模式" forceRender>

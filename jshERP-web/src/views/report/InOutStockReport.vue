@@ -30,7 +30,7 @@
                   <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
-                    <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
+                    <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
                 </span>
               </a-col>
@@ -107,7 +107,7 @@
                     </a-row>
                   </a-checkbox-group>
                 </template>
-                <a-icon type="setting" />
+                <legacy-icon type="setting" />
               </a-popover>
             </span>
             <template slot="customPic" slot-scope="text, record">

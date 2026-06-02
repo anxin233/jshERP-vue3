@@ -23,7 +23,7 @@
           <a-avatar style="backgroundColor:#87d068" icon="gold" />
         </a-tooltip>
         <a-select v-model="departSelected" :class="{'valid-error':validate_status=='error'}" placeholder="请选择登录部门" style="margin-left:10px;width: 80%">
-          <a-icon slot="suffixIcon" type="gold" />
+          <legacy-icon slot="suffixIcon" type="gold" />
           <a-select-option
             v-for="d in departList"
             :key="d.id"

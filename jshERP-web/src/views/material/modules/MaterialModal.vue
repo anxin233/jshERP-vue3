@@ -48,7 +48,7 @@
                           <v-nodes :vnodes="menu" />
                           <a-divider style="margin: 4px 0;" />
                           <div style="padding: 4px 8px; cursor: pointer;"
-                               @mousedown="e => e.preventDefault()" @click="addUnit"><a-icon type="plus" /> 新增多单位</div>
+                               @mousedown="e => e.preventDefault()" @click="addUnit"><legacy-icon type="plus" /> 新增多单位</div>
                         </div>
                         <a-select-option v-for="(item,index) in unitList"
                           :key="index" :value="item.id">
@@ -167,7 +167,7 @@
                         <v-nodes :vnodes="menu" />
                         <a-divider style="margin: 4px 0;" />
                         <div style="padding: 4px 8px; cursor: pointer;"
-                             @mousedown="e => e.preventDefault()" @click="initMaterialAttribute">没找到？点此刷新列表 <a-icon type="reload" /></div>
+                             @mousedown="e => e.preventDefault()" @click="initMaterialAttribute">没找到？点此刷新列表 <legacy-icon type="reload" /></div>
                       </div>
                       <a-select-option v-for="(item,index) in materialAttributeList" :key="index" :value="item.value" :disabled="item.disabled">
                         {{ item.name }}

@@ -1,8 +1,8 @@
 <template>
   <div class="components-input-demo-presuffix">
     <a-input @click="openModal" placeholder="corn表达式" v-model="cron" @change="handleOK">
-      <a-icon slot="prefix" type="schedule" title="corn控件"/>
-      <a-icon v-if="cron" slot="suffix" type="close-circle" @click="handleEmpty" title="清空"/>
+      <legacy-icon slot="prefix" type="schedule" title="corn控件"/>
+      <legacy-icon v-if="cron" slot="suffix" type="close-circle" @click="handleEmpty" title="清空"/>
     </a-input>
     <JCronModal ref="innerVueCron" :data="cron" @ok="handleOK"></JCronModal>
   </div>

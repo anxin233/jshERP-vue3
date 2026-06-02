@@ -10,7 +10,7 @@
     <div class="card-container">
       <a-tabs type="card">
         <a-tab-pane key="1" type="card">
-          <span slot="tab"><a-icon type="schedule" /> 秒</span>
+          <span slot="tab"><legacy-icon type="schedule" /> 秒</span>
           <a-radio-group v-model="result.second.cronEvery">
             <a-row>
               <a-radio value="1">每一秒钟</a-radio>
@@ -40,7 +40,7 @@
           </a-radio-group>
         </a-tab-pane>
         <a-tab-pane key="2">
-          <span slot="tab"><a-icon type="schedule" />分</span>
+          <span slot="tab"><legacy-icon type="schedule" />分</span>
           <div class="tabBody">
             <a-radio-group v-model="result.minute.cronEvery">
               <a-row>
@@ -72,7 +72,7 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="3">
-          <span slot="tab"><a-icon type="schedule" /> 时</span>
+          <span slot="tab"><legacy-icon type="schedule" /> 时</span>
           <div class="tabBody">
             <a-radio-group v-model="result.hour.cronEvery">
               <a-row>
@@ -104,7 +104,7 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="4">
-          <span slot="tab"><a-icon type="schedule" />  天</span>
+          <span slot="tab"><legacy-icon type="schedule" />  天</span>
           <div class="tabBody">
             <a-radio-group v-model="result.day.cronEvery">
               <a-row>
@@ -180,7 +180,7 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="5">
-          <span slot="tab"><a-icon type="schedule" /> 月</span>
+          <span slot="tab"><legacy-icon type="schedule" /> 月</span>
           <div class="tabBody">
             <a-radio-group v-model="result.month.cronEvery">
               <a-row>
@@ -212,7 +212,7 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="6">
-          <span slot="tab"><a-icon type="schedule" /> 年</span>
+          <span slot="tab"><legacy-icon type="schedule" /> 年</span>
           <div class="tabBody">
             <a-radio-group v-model="result.year.cronEvery">
               <a-row>

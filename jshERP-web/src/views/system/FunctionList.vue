@@ -28,10 +28,10 @@
           <a-button @click="batchDel" icon="delete">删除</a-button>
           <a-button-group style="margin-left: 8px">
             <a-button :type="viewMode === 'list' ? 'primary' : 'default'" @click="switchViewMode('list')">
-              <a-icon type="unordered-list" />列表
+              <legacy-icon type="unordered-list" />列表
             </a-button>
             <a-button :type="viewMode === 'tree' ? 'primary' : 'default'" @click="switchViewMode('tree')">
-              <a-icon type="apartment" />树形
+              <legacy-icon type="apartment" />树形
             </a-button>
           </a-button-group>
         </div>

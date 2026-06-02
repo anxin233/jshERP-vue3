@@ -27,7 +27,7 @@
                   <div slot="dropdownRender" slot-scope="menu">
                     <v-nodes :vnodes="menu" />
                     <a-divider style="margin: 4px 0;" />
-                    <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier"><a-icon type="reload" /> 刷新列表</div>
+                    <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier"><legacy-icon type="reload" /> 刷新列表</div>
                   </div>
                   <a-select-option v-for="(item,index) in supList" :key="index" :value="item.id">
                     {{ item.supplier }}

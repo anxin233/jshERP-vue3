@@ -119,8 +119,8 @@
                 <div v-if="dragSort" class="td td-ds" :style="style.tdLeftDs">
                   <a-dropdown :trigger="['click']" :getPopupContainer="getParentContainer">
                     <div class="td-ds-icons">
-                      <a-icon type="align-left"/>
-                      <a-icon type="align-right"/>
+                      <legacy-icon type="align-left"/>
+                      <legacy-icon type="align-right"/>
                     </div>
 
                     <a-menu slot="overlay">
@@ -316,20 +316,20 @@
 
                           <template slot="addonBefore" style="width: 30px">
                             <a-tooltip v-if="file.status==='uploading'" :title="`上传中(${Math.floor(file.percent)}%)`">
-                              <a-icon type="loading"/>
+                              <legacy-icon type="loading"/>
                             </a-tooltip>
                             <a-tooltip v-else-if="file.status==='done'" title="上传完成">
-                              <a-icon type="check-circle" style="color:#00DB00;"/>
+                              <legacy-icon type="check-circle" style="color:#00DB00;"/>
                             </a-tooltip>
                             <a-tooltip v-else title="上传失败">
-                              <a-icon type="exclamation-circle" style="color:red;"/>
+                              <legacy-icon type="exclamation-circle" style="color:red;"/>
                             </a-tooltip>
                           </template>
 
                           <template v-if="col.allowDownload!==false || col.allowRemove!==false" slot="addonAfter" style="width: 30px">
                             <a-dropdown :trigger="['click']" placement="bottomRight" :getPopupContainer="getParentContainer">
                               <a-tooltip title="操作" :getPopupContainer="getParentContainer">
-                                <a-icon
+                                <legacy-icon
                                   v-if="file.status!=='uploading'"
                                   type="setting"
                                   style="cursor: pointer;"/>
@@ -337,10 +337,10 @@
 
                               <a-menu slot="overlay">
                                 <a-menu-item v-if="col.allowDownload!==false" @click="handleClickDownloadFile(id)">
-                                  <span><a-icon type="download"/>&nbsp;下载</span>
+                                  <span><legacy-icon type="download"/>&nbsp;下载</span>
                                 </a-menu-item>
                                 <a-menu-item v-if="col.allowRemove!==false" @click="handleClickDelFile(id)">
-                                  <span><a-icon type="delete"/>&nbsp;删除</span>
+                                  <span><legacy-icon type="delete"/>&nbsp;删除</span>
                                 </a-menu-item>
                               </a-menu>
                             </a-dropdown>
@@ -443,35 +443,35 @@
                       <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]" :key="fileKey">
                         <div style="position: relative;">
                           <a-tooltip v-if="file.status==='uploading'" :title="`上传中(${Math.floor(file.percent)}%)`">
-                            <a-icon type="loading" style="color:red;"/>
+                            <legacy-icon type="loading" style="color:red;"/>
                             <span style="color:red;margin-left:5px">{{  file.status }}</span>
                           </a-tooltip>
 
                           <a-tooltip v-else-if="file.status==='done'" :title="file.name">
-                            <a-icon type="paper-clip" />
+                            <legacy-icon type="paper-clip" />
                             <span style="margin-left:5px">{{ getEllipsisWord(file.name,5) }}</span>
                           </a-tooltip>
 
                           <a-tooltip v-else :title="file.name">
-                            <a-icon type="paper-clip" style="color:red;"/>
+                            <legacy-icon type="paper-clip" style="color:red;"/>
                             <span style="color:red;margin-left:5px">{{ getEllipsisWord(file.name,5) }}</span>
                           </a-tooltip>
 
                           <template style="width: 30px">
                             <a-dropdown :trigger="['click']" placement="bottomRight" :getPopupContainer="getParentContainer" style="margin-left: 10px;">
                               <a-tooltip title="操作" :getPopupContainer="getParentContainer">
-                                <a-icon v-if="file.status!=='uploading'" type="setting" style="cursor: pointer;"/>
+                                <legacy-icon v-if="file.status!=='uploading'" type="setting" style="cursor: pointer;"/>
                               </a-tooltip>
 
                               <a-menu slot="overlay">
                                 <a-menu-item v-if="col.allowDownload!==false" @click="handleClickDownFileByUrl(id)">
-                                  <span><a-icon type="download"/>&nbsp;下载</span>
+                                  <span><legacy-icon type="download"/>&nbsp;下载</span>
                                 </a-menu-item>
                                 <a-menu-item @click="handleClickDelFile(id)">
-                                  <span><a-icon type="delete"/>&nbsp;删除</span>
+                                  <span><legacy-icon type="delete"/>&nbsp;删除</span>
                                 </a-menu-item>
                                 <a-menu-item @click="handleMoreOperation(id)">
-                                  <span><a-icon type="bars" /> 更多</span>
+                                  <span><legacy-icon type="bars" /> 更多</span>
                                 </a-menu-item>
                               </a-menu>
                             </a-dropdown>
@@ -514,30 +514,30 @@
                       <template v-if="uploadValues[id] != null" v-for="(file,fileKey) of [(uploadValues[id]||{})]" :key="fileKey">
                         <div style="position: relative;">
                           <template v-if="!uploadValues[id] || !(uploadValues[id]['url'] || uploadValues[id]['path'] || uploadValues[id]['message'])">
-                            <a-icon type="loading"/>
+                            <legacy-icon type="loading"/>
                           </template>
                           <template v-else-if="uploadValues[id]['path']">
                             <img class="j-editable-image" :src="getCellImageView(id)" alt="无图片" @click="handleMoreOperation(id,'img')"/>
                           </template>
                           <template v-else>
-                            <a-icon type="exclamation-circle" style="color: red;" @click="handleClickShowImageError(id)"/>
+                            <legacy-icon type="exclamation-circle" style="color: red;" @click="handleClickShowImageError(id)"/>
                           </template>
                           <template slot="addonBefore" style="width: 30px">
                             <a-tooltip v-if="file.status==='uploading'" :title="`上传中(${Math.floor(file.percent)}%)`">
-                              <a-icon type="loading"/>
+                              <legacy-icon type="loading"/>
                             </a-tooltip>
                             <a-tooltip v-else-if="file.status==='done'" title="上传完成">
-                              <a-icon type="check-circle" style="color:#00DB00;"/>
+                              <legacy-icon type="check-circle" style="color:#00DB00;"/>
                             </a-tooltip>
                             <a-tooltip v-else title="上传失败">
-                              <a-icon type="exclamation-circle" style="color:red;"/>
+                              <legacy-icon type="exclamation-circle" style="color:red;"/>
                             </a-tooltip>
                           </template>
 
                           <template style="width: 30px">
                             <a-dropdown :trigger="['click']" placement="bottomRight" :getPopupContainer="getParentContainer" style="margin-left: 10px;">
                               <a-tooltip title="操作" :getPopupContainer="getParentContainer">
-                                <a-icon
+                                <legacy-icon
                                   v-if="file.status!=='uploading'"
                                   type="setting"
                                   style="cursor: pointer;"/>
@@ -545,13 +545,13 @@
 
                               <a-menu slot="overlay">
                                 <a-menu-item v-if="col.allowDownload!==false" @click="handleClickDownFileByUrl(id)">
-                                  <span><a-icon type="download"/>&nbsp;下载</span>
+                                  <span><legacy-icon type="download"/>&nbsp;下载</span>
                                 </a-menu-item>
                                 <a-menu-item @click="handleClickDelFile(id)">
-                                  <span><a-icon type="delete"/>&nbsp;删除</span>
+                                  <span><legacy-icon type="delete"/>&nbsp;删除</span>
                                 </a-menu-item>
                                 <a-menu-item @click="handleMoreOperation(id,'img')">
-                                  <span><a-icon type="bars" /> 更多</span>
+                                  <span><legacy-icon type="bars" /> 更多</span>
                                 </a-menu-item>
                               </a-menu>
                             </a-dropdown>

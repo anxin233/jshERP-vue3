@@ -31,8 +31,8 @@
                 <div slot="dropdownRender" slot-scope="menu">
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
-                  <div v-if="quickBtn.vendor" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addSupplier"><a-icon type="plus" /> 新增供应商</div>
-                  <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier(0)"><a-icon type="reload" /> 刷新列表</div>
+                  <div v-if="quickBtn.vendor" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addSupplier"><legacy-icon type="plus" /> 新增供应商</div>
+                  <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier(0)"><legacy-icon type="reload" /> 刷新列表</div>
                 </div>
                 <a-select-option v-for="(item,index) in supList" :key="index" :value="item.id">
                   {{ item.supplier }}
@@ -87,12 +87,12 @@
             </a-row>
           </template>
           <template #depotBatchSet>
-            <a-icon type="down" @click="handleBatchSetDepot" />
+            <legacy-icon type="down" @click="handleBatchSetDepot" />
           </template>
           <template #depotAdd>
             <a-divider v-if="quickBtn.depot" style="margin: 4px 0;" />
-            <div v-if="quickBtn.depot" class="dropdown-btn" @click="addDepot"><a-icon type="plus" /> 新增</div>
-            <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initDepot"><a-icon type="reload" /> 刷新</div>
+            <div v-if="quickBtn.depot" class="dropdown-btn" @click="addDepot"><legacy-icon type="plus" /> 新增</div>
+            <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initDepot"><legacy-icon type="reload" /> 刷新</div>
           </template>
         </j-editable-table>
         <a-row class="form-row" :gutter="24">

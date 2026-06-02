@@ -179,10 +179,10 @@
             <div v-for="(contact, idx) in contacts" :key="idx" style="display:flex;align-items:center;margin-bottom:8px">
               <a-input v-model="contact.contactName" placeholder="姓名" style="width:200px;margin-right:8px" />
               <a-input v-model="contact.contactPhone" placeholder="手机号" style="width:200px;margin-right:8px" />
-              <a-icon type="delete" @click="removeContact(idx)" style="color:#f5222d;cursor:pointer;font-size:16px" />
+              <legacy-icon type="delete" @click="removeContact(idx)" style="color:#f5222d;cursor:pointer;font-size:16px" />
             </div>
             <a @click="addContact" style="color:#1890ff">
-              <a-icon type="plus" /> 添加新联系人
+              <legacy-icon type="plus" /> 添加新联系人
             </a>
           </a-form-item>
 

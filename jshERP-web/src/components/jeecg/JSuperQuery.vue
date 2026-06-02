@@ -13,7 +13,7 @@
       </template>
       <a-button-group>
         <a-button type="primary" @click="handleOpen">
-          <a-icon type="appstore" theme="twoTone" spin/>
+          <legacy-icon type="appstore" theme="twoTone" spin/>
           <span>高级查询</span>
         </a-button>
         <a-button v-if="izMobile" type="primary" icon="delete" @click="handleReset"/>

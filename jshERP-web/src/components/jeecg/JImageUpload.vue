@@ -15,7 +15,7 @@
     @preview="handlePreview">
     <img v-if="!isMultiple && picUrl" :src="getAvatarView()" style="height:104px;max-width:300px"/>
     <div v-else >
-      <a-icon :type="uploadLoading ? 'loading' : 'plus'" />
+      <legacy-icon :type="uploadLoading ? 'loading' : 'plus'" />
       <div class="ant-upload-text">{{ text }}</div>
     </div>
     <a-modal :visible="previewVisible" :width="1000" :footer="null" @cancel="handleCancel()">

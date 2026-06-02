@@ -30,11 +30,11 @@
               <template v-if="orderForm.vehicleId && !isViewMode">
                 <div class="vehicle-selected-bar">
                   <a-tag color="blue" style="font-size:13px;padding:2px 8px">
-                    <a-icon type="car" /> {{ orderForm.licensePlate || '无牌' }}
+                    <legacy-icon type="car" /> {{ orderForm.licensePlate || '无牌' }}
                   </a-tag>
                   <span style="margin-left:6px;color:#333">{{ orderForm.customerName }}</span>
                   <a @click="clearVehicleSelection" style="margin-left:8px;color:#f5222d;font-size:12px">
-                    <a-icon type="close-circle" /> 重新选择
+                    <legacy-icon type="close-circle" /> 重新选择
                   </a>
                 </div>
               </template>

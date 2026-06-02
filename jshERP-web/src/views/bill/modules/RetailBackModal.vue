@@ -31,8 +31,8 @@
                 <div slot="dropdownRender" slot-scope="menu">
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
-                  <div v-if="quickBtn.member" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addMember"><a-icon type="plus" /> 新增会员</div>
-                  <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initRetail(0)"><a-icon type="reload" /> 刷新列表</div>
+                  <div v-if="quickBtn.member" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addMember"><legacy-icon type="plus" /> 新增会员</div>
+                  <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initRetail(0)"><legacy-icon type="reload" /> 刷新列表</div>
                 </div>
                 <a-select-option v-for="(item,index) in retailList" :key="index" :value="item.id">
                   {{ item.supplier }}
@@ -87,12 +87,12 @@
                 </a-row>
               </template>
               <template #depotBatchSet>
-                <a-icon type="down" @click="handleBatchSetDepot" />
+                <legacy-icon type="down" @click="handleBatchSetDepot" />
               </template>
               <template #depotAdd>
                 <a-divider v-if="quickBtn.depot" style="margin: 4px 0;" />
-                <div v-if="quickBtn.depot" class="dropdown-btn" @click="addDepot"><a-icon type="plus" /> 新增</div>
-                <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initDepot"><a-icon type="reload" /> 刷新</div>
+                <div v-if="quickBtn.depot" class="dropdown-btn" @click="addDepot"><legacy-icon type="plus" /> 新增</div>
+                <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initDepot"><legacy-icon type="reload" /> 刷新</div>
               </template>
             </j-editable-table>
             <a-row class="form-row" :gutter="24">
@@ -139,8 +139,8 @@
                       <div slot="dropdownRender" slot-scope="menu">
                         <v-nodes :vnodes="menu" />
                         <a-divider style="margin: 4px 0;" />
-                        <div v-if="quickBtn.account" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addAccount"><a-icon type="plus" /> 新增</div>
-                        <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initAccount(0)"><a-icon type="reload" /> 刷新</div>
+                        <div v-if="quickBtn.account" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addAccount"><legacy-icon type="plus" /> 新增</div>
+                        <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initAccount(0)"><legacy-icon type="reload" /> 刷新</div>
                       </div>
                       <a-select-option v-for="(item,index) in accountList" :key="index" :value="item.id">
                         {{ item.name }}

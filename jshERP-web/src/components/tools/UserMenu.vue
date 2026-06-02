@@ -2,14 +2,14 @@
   <div class="user-wrapper" :class="theme">
     <span class="action" v-if="showAd">
       <a v-if="theme==='light'" class="ad_title" target="_blank" :href="payFeeUrl">
-        <a-icon type="cloud" theme="filled" style="color: yellow; font-size: 16px; line-height: 16px; padding-right: 5px" />
+        <legacy-icon type="cloud" theme="filled" style="color: yellow; font-size: 16px; line-height: 16px; padding-right: 5px" />
         <span>管伊佳ERP网络版198元1年</span>
       </a>
     </span>
     <!-- update_begin author:zhaoxin date:20191129 for: 做头部菜单栏导航 -->
     <!-- update-begin author:sunjianlei date:20191@20 for: 解决全局样式冲突的问题 -->
     <span class="action" @click="showClick">
-      <a-icon type="search"></a-icon>
+      <legacy-icon type="search"></legacy-icon>
     </span>
     <!-- update-begin author:sunjianlei date:20200219 for: 菜单搜索改为动态组件，在手机端呈现出弹出框 -->
     <component :is="searchMenuComp" v-show="searchMenuVisible || isMobile()" class="borders" :visible="searchMenuVisible" title="搜索菜单" :footer="null" @cancel="searchMenuVisible=false">
@@ -36,30 +36,30 @@
       <a-tooltip>
         <template slot="title">官方网站</template>
         <a target="_blank" :href="systemUrl">
-          <a-icon type="bank" style="font-size: 16px;" />
+          <legacy-icon type="bank" style="font-size: 16px;" />
         </a>
       </a-tooltip>
     </span>
     <header-notice class="action"/>
     <a-dropdown>
       <span v-if="isDesktop()" class="action ant-dropdown-link user-dropdown-menu">
-        <a-icon type="down-circle"/>
+        <legacy-icon type="down-circle"/>
         <span style="margin-left:4px">欢迎您，{{ nickname() }}</span>
       </span>
       <a-menu slot="overlay" class="user-dropdown-menu-wrapper">
         <a-menu-item key="3"  @click="systemSetting">
-           <a-icon type="tool"/>
+           <legacy-icon type="tool"/>
            <span>界面设置</span>
         </a-menu-item>
         <a-menu-item key="4" @click="updatePassword">
-          <a-icon type="setting"/>
+          <legacy-icon type="setting"/>
           <span>密码修改</span>
         </a-menu-item>
       </a-menu>
     </a-dropdown>
     <span class="action">
       <a class="logout_title" href="javascript:;" @click="handleLogout">
-        <a-icon type="logout"/>
+        <legacy-icon type="logout"/>
         <span>&nbsp;退出登录</span>
       </a>
     </span>

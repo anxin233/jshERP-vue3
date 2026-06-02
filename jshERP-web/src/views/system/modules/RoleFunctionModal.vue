@@ -27,7 +27,7 @@
               <a-menu-item key="6" @click="closeAll">合并所有</a-menu-item>
             </a-menu>
             <a-button>
-              树操作 <a-icon type="up" />
+              树操作 <legacy-icon type="up" />
             </a-button>
           </a-dropdown>
         </div>

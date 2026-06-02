@@ -69,7 +69,7 @@
                     </a-row>
                   </a-checkbox-group>
                 </template>
-                <a-icon type="setting" />
+                <legacy-icon type="setting" />
               </a-popover>
             </span>
             <span slot="action" slot-scope="text, record">
