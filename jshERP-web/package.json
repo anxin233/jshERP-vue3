@@ -7,6 +7,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "7.0.1",
     "@antv/data-set": "^0.11.2",
     "@tinymce/tinymce-vue": "^2.0.0",
     "@vue/compat": "3.5.35",

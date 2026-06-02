@@ -40,6 +40,7 @@ import '@/assets/less/JAreaLinkage.less'
 import VueAreaLinkage from 'vue-area-linkage'
 import DictData from '@/components/DictData'
 import DictTag from '@/components/DictTag'
+import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
 import storage, { installStorage } from '@/utils/storage'
 import { patchAntdVue2ForVue3Compat } from '@/utils/antd-vue2-compat'
 
@@ -76,6 +77,7 @@ const app = createApp({
 })
 
 installStorage(app)
+app.component('LegacyIcon', LegacyIcon)
 app.use(store)
 app.use(router)
 
