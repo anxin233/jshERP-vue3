@@ -38,7 +38,9 @@ const storage = {
 export function installStorage(app) {
   const instance = getStorageInstance()
   if (app && app.config && app.config.globalProperties) {
-    app.config.globalProperties.$ls = instance
+    if (!('$ls' in app.config.globalProperties)) {
+      app.config.globalProperties.$ls = instance
+    }
     app.config.globalProperties.$storage = storage
   }
   return instance

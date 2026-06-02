@@ -41,9 +41,11 @@ import VueAreaLinkage from 'vue-area-linkage'
 import DictData from '@/components/DictData'
 import DictTag from '@/components/DictTag'
 import storage, { installStorage } from '@/utils/storage'
+import { patchAntdVue2ForVue3Compat } from '@/utils/antd-vue2-compat'
 
 Vue.config.productionTip = false
 Vue.component('DictTag', DictTag)
+patchAntdVue2ForVue3Compat()
 Vue.use(Antd)
 Vue.use(VueAxios, router)
 Vue.use(Viser)
