@@ -1,17 +1,13 @@
 <template>
   <a-table
     :rowKey="rowKey"
-    :columns="columns"
+    :columns="resolvedColumns"
     :dataSource="dataSource"
     :expandedRowKeys="expandedRowKeys"
     v-bind="tableAttrs"
-    v-on="$listeners"
+    v-on="tableListeners"
     @expand="handleExpand"
     @expandedRowsChange="expandedRowKeys=$event">
-
-    <template v-for="(slotItem) of slots" :slot="slotItem" slot-scope="text, record, index">
-      <slot :name="slotItem" v-bind="{text,record,index}"></slot>
-    </template>
 
   </a-table>
 </template>
@@ -90,8 +86,40 @@
         }
         return slots
       },
+      resolvedColumns() {
+        return this.columns.map(column => {
+          const slotName = column.scopedSlots && column.scopedSlots.customRender
+          if (!slotName) {
+            return column
+          }
+          const { scopedSlots, ...rest } = column
+          return {
+            ...rest,
+            customRender: (text, record, index) => {
+              const slot = this.$slots[slotName]
+              return slot ? slot({ text, record, index }) : text
+            }
+          }
+        })
+      },
       tableAttrs() {
-        return Object.assign(this.$attrs, this.tableProps)
+        const attrs = Object.assign({}, this.$attrs, this.tableProps)
+        Object.keys(attrs).forEach(key => {
+          if (/^on[A-Z]/.test(key)) {
+            delete attrs[key]
+          }
+        })
+        return attrs
+      },
+      tableListeners() {
+        const listeners = {}
+        Object.keys(this.$attrs || {}).forEach(key => {
+          if (/^on[A-Z]/.test(key)) {
+            const eventName = key.slice(2)
+            listeners[eventName.charAt(0).toLowerCase() + eventName.slice(1)] = this.$attrs[key]
+          }
+        })
+        return listeners
       }
     },
     watch: {

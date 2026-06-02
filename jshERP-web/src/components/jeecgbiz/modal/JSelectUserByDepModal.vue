@@ -20,7 +20,8 @@
             :dropdownStyle="{maxHeight:'200px',overflow:'auto'}"
             :treeData="departTree"
             :expandAction="false"
-            :expandedKeys.sync="expandedKeys"
+            :expandedKeys="expandedKeys"
+            @update:expandedKeys="expandedKeys = $event"
           />
         </a-card>
       </a-col>
@@ -30,7 +31,8 @@
           <a-input-search
             :style="{width:'150px',marginBottom:'15px'}"
             placeholder="请输入账号"
-            v-model="queryParam.username"
+            :value="queryParam.username"
+            @change="handleUsernameChange"
             @search="onSearch"
           ></a-input-search>
           <a-button @click="searchReset(1)" style="margin-left: 20px" icon="redo">重置</a-button>
@@ -151,6 +153,9 @@
       this.loadData()
     },
     methods: {
+      handleUsernameChange(event) {
+        this.queryParam.username = event && event.target ? event.target.value : event
+      },
       initUserNames() {
         if (this.userIds) {
           // 这里最后加一个 , 的原因是因为无论如何都要使用 in 查询，防止后台进行了模糊匹配，导致查询结果不准确

@@ -1,36 +1,36 @@
 <!-- b y 7 5 2 7  1 8 9 2 0 -->
 <template>
   <div class="main" :style="mainStyle">
-    <a-form :form="form" class="user-layout-login" ref="formLogin" id="formLogin">
+    <a-form class="user-layout-login" ref="formLogin" id="formLogin">
       <a-form-item>
         <a-input
           size="large"
-          v-decorator="['loginName',{initialValue:'', rules: validatorRules.loginName.rules}]"
+          v-model="loginFieldsPlain.loginName"
           type="text"
-          placeholder="请输入用户名">
+          placeholder="请输入用户名"
+          @blur="onLoginNameBlur">
           <legacy-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
         </a-input>
       </a-form-item>
 
       <a-form-item>
-        <a-input-password
-          v-decorator="['password',{initialValue:'', rules: validatorRules.password.rules}]"
+        <a-input
           size="large"
+          v-model="loginFieldsPlain.password"
           type="password"
-          autocomplete="false"
+          autocomplete="off"
           placeholder="请输入密码">
           <legacy-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-        </a-input-password>
+        </a-input>
       </a-form-item>
 
       <a-row :gutter="0" v-if="checkcodeFlag==='1'">
         <a-col :span="14">
           <a-form-item>
             <a-input
-              v-decorator="['inputCode',{initialValue:'', rules: validatorRules.inputCode.rules}]"
+              v-model="loginFieldsPlain.inputCode"
               size="large"
               type="text"
-              default-value=""
               placeholder="请输入验证码">
               <legacy-icon slot="prefix" type="smile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input>
@@ -101,7 +101,6 @@
         loginType: 0,
         requiredTwoStepCaptcha: false,
         stepCaptchaVisible: false,
-        form: this.$form.createForm(this),
         encryptedString:{
           key:"",
           iv:"",
@@ -109,11 +108,6 @@
         state: {
           time: 60,
           smsSendBtn: false,
-        },
-        validatorRules:{
-          loginName:{rules: [{ required: true, message: '请输入用户名!'},{validator: this.handleLoginName}]},
-          password:{rules: [{ required: true, message: '请输入密码!',validator: 'click'}]},
-          inputCode:{rules: [{ required: true, message: '请输入验证码!',validator: 'click'}]}
         },
         verifiedCode:"",
         inputCodeContent:"", //20200510 cfm: 为方便测试，不输入验证码可 ""-->"xxxx"
@@ -128,11 +122,21 @@
         randCodeImage:'',
         registerFlag:'',
         checkcodeFlag:'',
-        mainStyle: '',
-        btnStyle: 'margin-top:16px',
+        mainStyle: {},
+        btnStyle: { marginTop: '16px' },
         requestCodeSuccess:false,
-        checked: false
+        checked: false,
+        loginFieldsPlain: {
+          loginName: '',
+          password: '',
+          inputCode: ''
+        }
       }
+    },
+    mounted () {
+      this.$nextTick(() => {
+        setTimeout(() => this.syncLoginFormFromDom(), 300)
+      })
     },
     created () {
       this.loadInfo()
@@ -151,8 +155,10 @@
         //从缓存中获取登录名和密码
         this.$nextTick(() => {
           if(storage.get('cache_loginName') && storage.get('cache_password')) {
-            this.form.setFieldsValue({'loginName': storage.get('cache_loginName')})
-            this.form.setFieldsValue({'password': storage.get('cache_password')})
+            const cachedLoginName = storage.get('cache_loginName')
+            const cachedPassword = storage.get('cache_password')
+            this.syncLoginField('loginName', cachedLoginName)
+            this.syncLoginField('password', cachedPassword)
             this.checked = true
           }
         })
@@ -162,24 +168,53 @@
             //先清空缓存
             storage.remove('cache_loginName')
             storage.remove('cache_password')
-            this.form.setFieldsValue({'loginName':this.$route.params.loginName})
-            this.form.setFieldsValue({'password': ''})
+            this.syncLoginField('loginName', this.$route.params.loginName)
+            this.syncLoginField('password', '')
             this.checked = false
           })
         }
       },
-      handleLoginName (rule, value, callback) {
+      onLoginNameBlur () {
+        const value = this.loginFieldsPlain.loginName
         const regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
-        if (regex.test(value)) {
-          this.loginType = 0
-        } else {
-          this.loginType = 1
-        }
-        callback()
+        this.loginType = regex.test(value) ? 0 : 1
       },
       //切换勾选
       handleChange(e) {
         this.checked = e.target.checked
+      },
+      getLoginFormRootEl () {
+        const root = this.$refs.formLogin
+        return root && (root.$el || root)
+      },
+      getLoginFormInputValues () {
+        const el = this.getLoginFormRootEl()
+        if (!el || !el.querySelectorAll) {
+          return { loginName: '', password: '', inputCode: '' }
+        }
+        const inputs = Array.from(el.querySelectorAll('input'))
+        const passwordInput = inputs.find(inp => inp.type === 'password')
+        const textInputs = inputs.filter(inp => inp.type !== 'password' && inp.type !== 'checkbox' && inp.type !== 'hidden')
+        return {
+          loginName: textInputs[0] ? textInputs[0].value : '',
+          inputCode: this.checkcodeFlag === '1' && textInputs[1] ? textInputs[1].value : '',
+          password: passwordInput ? passwordInput.value : ''
+        }
+      },
+      syncLoginField (field, value) {
+        this.loginFieldsPlain[field] = value == null ? '' : String(value)
+      },
+      syncLoginFormFromDom () {
+        const { loginName, password, inputCode } = this.getLoginFormInputValues()
+        if (loginName) {
+          this.syncLoginField('loginName', loginName)
+        }
+        if (password) {
+          this.syncLoginField('password', password)
+        }
+        if (inputCode) {
+          this.syncLoginField('inputCode', inputCode)
+        }
       },
       handleChangeCheckCode(){
         getAction('/user/randomImage').then(res=>{
@@ -196,36 +231,50 @@
         })
       },
       handleSubmit () {
-        let that = this
-        let loginParams = {};
-        that.loginBtn = true;
-        // 使用账户密码登陆
-        if (that.customActiveKey === 'tab1') {
-          that.form.validateFields([ 'loginName', 'password', 'inputCode' ], { force: true }, (err, values) => {
-            if (!err) {
-              loginParams.loginName = values.loginName
-              loginParams.password = md5(values.password)
-              loginParams.code = values.inputCode
-              loginParams.uuid = that.uuid
-              if(that.checked) {
-                //勾选的时候进行缓存
-                storage.set('cache_loginName', values.loginName)
-                storage.set('cache_password', values.password)
-              } else {
-                //没勾选的时候清缓存
-                storage.remove('cache_loginName')
-                storage.remove('cache_password')
-              }
-              that.Login(loginParams).then((res) => {
-                this.departConfirm(res, loginParams.loginName)
-              }).catch((err) => {
-                that.requestFailed(err);
-              })
-            }else {
-              that.loginBtn = false;
-            }
-          })
+        const that = this
+        that.loginBtn = true
+        if (that.customActiveKey !== 'tab1') {
+          that.loginBtn = false
+          return
         }
+        that.syncLoginFormFromDom()
+        const loginName = (that.loginFieldsPlain.loginName || '').trim()
+        const password = that.loginFieldsPlain.password || ''
+        const inputCode = that.loginFieldsPlain.inputCode || ''
+        if (!loginName) {
+          that.loginBtn = false
+          that.$message.warning('请输入用户名')
+          return
+        }
+        if (!password) {
+          that.loginBtn = false
+          that.$message.warning('请输入密码')
+          return
+        }
+        if (that.checkcodeFlag === '1' && !inputCode) {
+          that.loginBtn = false
+          that.$message.warning('请输入验证码')
+          return
+        }
+        that.onLoginNameBlur()
+        const loginParams = {
+          loginName,
+          password: md5(password),
+          code: inputCode,
+          uuid: that.uuid
+        }
+        if (that.checked) {
+          storage.set('cache_loginName', loginName)
+          storage.set('cache_password', password)
+        } else {
+          storage.remove('cache_loginName')
+          storage.remove('cache_password')
+        }
+        that.Login(loginParams).then((res) => {
+          that.departConfirm(res, loginParams.loginName)
+        }).catch((err) => {
+          that.requestFailed(err)
+        })
       },
       loginSuccess (res) {
         let that = this
@@ -291,7 +340,7 @@
           duration: 4,
         });
         //验证码刷新
-        this.form.setFieldsValue({'inputCode':''})
+        this.loginFieldsPlain.inputCode = ''
         this.handleChangeCheckCode()
         this.loginBtn = false;
       },
@@ -340,9 +389,7 @@
       getRouterData(){
         this.$nextTick(() => {
           if (this.$route.params.username) {
-            this.form.setFieldsValue({
-              'username': this.$route.params.username
-            });
+            this.loginFieldsPlain.loginName = this.$route.params.username
           }
         })
       },
@@ -355,11 +402,11 @@
         getAction('/platformConfig/getPlatform/checkcodeFlag').then((res) => {
           this.checkcodeFlag = res + ''
           if(this.checkcodeFlag === '1') {
-            this.mainStyle = ''
-            this.btnStyle = 'margin-top:16px'
+            this.mainStyle = {}
+            this.btnStyle = { marginTop: '16px' }
           } else {
-            this.mainStyle = 'padding-top:20px'
-            this.btnStyle = 'margin-top:26px'
+            this.mainStyle = { paddingTop: '20px' }
+            this.btnStyle = { marginTop: '26px' }
           }
         })
       },

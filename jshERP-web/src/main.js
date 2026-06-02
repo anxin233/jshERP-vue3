@@ -1,3 +1,4 @@
+import '@/config/vue-compat-bootstrap'
 import '@/config/api-base-bootstrap'
 import Vue, { createApp, h } from 'vue'
 import App from './App.vue'
@@ -8,7 +9,7 @@ import { VueAxios } from "@/utils/request"
 
 import Antd from 'ant-design-vue'
 import Viser from 'viser-vue'
-import 'ant-design-vue/dist/antd.less';  // or 'ant-design-vue/dist/antd.less'
+import 'ant-design-vue/dist/reset.css'
 
 import '@/permission' // permission control
 import '@/utils/filter' // base filter
@@ -42,12 +43,9 @@ import DictData from '@/components/DictData'
 import DictTag from '@/components/DictTag'
 import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
 import storage, { installStorage } from '@/utils/storage'
-import { patchAntdVue2ForVue3Compat } from '@/utils/antd-vue2-compat'
+import { installAntd4Compat } from '@/utils/antd4-compat'
 
 Vue.config.productionTip = false
-Vue.component('DictTag', DictTag)
-patchAntdVue2ForVue3Compat()
-Vue.use(Antd)
 Vue.use(VueAxios, router)
 Vue.use(Viser)
 Vue.use(hasPermission)
@@ -76,7 +74,15 @@ const app = createApp({
   render: () => h(App)
 })
 
+app.config.compatConfig = {
+  MODE: 2,
+  COMPONENT_ASYNC: false
+}
+
 installStorage(app)
+app.use(Antd)
+installAntd4Compat(app)
+app.component('DictTag', DictTag)
 app.component('LegacyIcon', LegacyIcon)
 app.use(store)
 app.use(router)

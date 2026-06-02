@@ -132,14 +132,21 @@ export default {
     renderSubMenu (menu) {
       const itemArr = []
       if (!menu.alwaysShow) {
-        menu.children.forEach(item => itemArr.push(this.renderItem(item)))
+        menu.children.forEach(item => {
+          const node = this.renderItem(item)
+          if (node != null) {
+            itemArr.push(node)
+          }
+        })
       }
       return (
-        <SubMenu {...{ key: menu.url }}>
-          <span slot="title">
-            {this.renderIcon(menu.icon)}
-            <span title={menu.text}>{menu.text}</span>
-          </span>
+        <SubMenu key={menu.url}>
+          {{
+            title: () => [
+              this.renderIcon(menu.icon),
+              <span title={menu.text}>{menu.text}</span>
+            ]
+          }}
           {itemArr}
         </SubMenu>
       )
@@ -176,12 +183,10 @@ export default {
       openChange: this.onOpenChange
     }
 
-    const menuTree = menu.map(item => {
-      if (item.hidden) {
-        return null
-      }
-      return this.renderItem(item)
-    })
+    const menuTree = menu
+      .filter(item => !item.hidden)
+      .map(item => this.renderItem(item))
+      .filter(node => node != null)
     // {...{ props, on: on }}
     return (
       <Menu vModel={this.selectedKeys} {...{ props, on: on }}>

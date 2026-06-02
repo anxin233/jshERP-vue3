@@ -1,146 +1,31 @@
 <script>
 import { h } from 'vue'
-import {
-  AlignLeftOutlined,
-  AlignRightOutlined,
-  ApartmentOutlined,
-  AppstoreOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  BankOutlined,
-  BarsOutlined,
-  BellOutlined,
-  CarOutlined,
-  CaretDownOutlined,
-  CaretUpOutlined,
-  CheckOutlined,
-  CheckCircleOutlined,
-  CloseOutlined,
-  CloseCircleOutlined,
-  CloudFilled,
-  CloudOutlined,
-  ClusterOutlined,
-  CheckSquareOutlined,
-  CloseSquareOutlined,
-  DashboardOutlined,
-  DeleteOutlined,
-  DownCircleOutlined,
-  DownOutlined,
-  DownloadOutlined,
-  DollarOutlined,
-  ExclamationCircleOutlined,
-  FilterOutlined,
-  FullscreenOutlined,
-  FullscreenExitOutlined,
-  GoldOutlined,
-  HistoryOutlined,
-  ImportOutlined,
-  InfoCircleOutlined,
-  LinkOutlined,
-  LoadingOutlined,
-  LockOutlined,
-  LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  MinusOutlined,
-  PaperClipOutlined,
-  PayCircleOutlined,
-  PlusCircleOutlined,
-  PlusOutlined,
-  PrinterOutlined,
-  ProfileOutlined,
-  QuestionCircleOutlined,
-  RedoOutlined,
-  ReloadOutlined,
-  ScheduleOutlined,
-  SearchOutlined,
-  SettingOutlined,
-  SmileOutlined,
-  ToolOutlined,
-  UnorderedListOutlined,
-  UpOutlined,
-  UploadOutlined,
-  UserOutlined
-} from '@ant-design/icons-vue'
+import { generate, svgBaseProps, isIconDefinition } from '@ant-design/icons-vue/es/utils'
+import { resolveIconAsn } from './legacy-icon-asn'
 
-const outlinedIcons = {
-  'align-left': AlignLeftOutlined,
-  'align-right': AlignRightOutlined,
-  apartment: ApartmentOutlined,
-  appstore: AppstoreOutlined,
-  'arrow-left': ArrowLeftOutlined,
-  'arrow-right': ArrowRightOutlined,
-  bank: BankOutlined,
-  bars: BarsOutlined,
-  bell: BellOutlined,
-  car: CarOutlined,
-  'caret-down': CaretDownOutlined,
-  'caret-up': CaretUpOutlined,
-  check: CheckOutlined,
-  'check-circle': CheckCircleOutlined,
-  'check-square': CheckSquareOutlined,
-  close: CloseOutlined,
-  'close-circle': CloseCircleOutlined,
-  'close-square': CloseSquareOutlined,
-  cloud: CloudOutlined,
-  cluster: ClusterOutlined,
-  dashboard: DashboardOutlined,
-  delete: DeleteOutlined,
-  down: DownOutlined,
-  'down-circle': DownCircleOutlined,
-  download: DownloadOutlined,
-  dollar: DollarOutlined,
-  'exclamation-circle': ExclamationCircleOutlined,
-  filter: FilterOutlined,
-  fullscreen: FullscreenOutlined,
-  'fullscreen-exit': FullscreenExitOutlined,
-  gold: GoldOutlined,
-  history: HistoryOutlined,
-  import: ImportOutlined,
-  'info-circle': InfoCircleOutlined,
-  'info-circle-o': InfoCircleOutlined,
-  loading: LoadingOutlined,
-  lock: LockOutlined,
-  logout: LogoutOutlined,
-  'menu-fold': MenuFoldOutlined,
-  'menu-unfold': MenuUnfoldOutlined,
-  minus: MinusOutlined,
-  'paper-clip': PaperClipOutlined,
-  'pay-circle': PayCircleOutlined,
-  plus: PlusOutlined,
-  'plus-circle': PlusCircleOutlined,
-  printer: PrinterOutlined,
-  profile: ProfileOutlined,
-  'question-circle': QuestionCircleOutlined,
-  redo: RedoOutlined,
-  reload: ReloadOutlined,
-  schedule: ScheduleOutlined,
-  search: SearchOutlined,
-  setting: SettingOutlined,
-  smile: SmileOutlined,
-  tool: ToolOutlined,
-  'unordered-list': UnorderedListOutlined,
-  up: UpOutlined,
-  upload: UploadOutlined,
-  user: UserOutlined
-}
-
-const filledIcons = {
-  cloud: CloudFilled
-}
-
-function normalizeType(type) {
-  return String(type || '')
-    .trim()
-    .replace(/-o$/, '')
-}
-
-function getIcon(type, theme) {
-  const normalizedType = normalizeType(type)
-  if (theme === 'filled' && filledIcons[normalizedType]) {
-    return filledIcons[normalizedType]
-  }
-  return outlinedIcons[normalizedType] || QuestionCircleOutlined
+function classNames(...items) {
+  const classes = []
+  items.forEach(item => {
+    if (!item) {
+      return
+    }
+    if (typeof item === 'string') {
+      classes.push(item)
+      return
+    }
+    if (Array.isArray(item)) {
+      classes.push(classNames(...item))
+      return
+    }
+    if (typeof item === 'object') {
+      Object.keys(item).forEach(key => {
+        if (item[key]) {
+          classes.push(key)
+        }
+      })
+    }
+  })
+  return classes.filter(Boolean).join(' ')
 }
 
 export default {
@@ -173,13 +58,33 @@ export default {
     }
   },
   render() {
-    const Icon = this.component || getIcon(this.type, this.theme)
-    return h(Icon, {
-      ...this.$attrs,
-      spin: this.spin || this.type === 'loading',
-      rotate: this.rotate,
-      twoToneColor: this.twoToneColor
+    const spin = this.spin || this.type === 'loading'
+    const iconDef = (this.component && isIconDefinition(this.component))
+      ? this.component
+      : resolveIconAsn(this.type, this.theme)
+
+    if (!iconDef || !iconDef.icon) {
+      return null
+    }
+
+    const svgStyle = this.rotate != null
+      ? { transform: `rotate(${this.rotate}deg)` }
+      : undefined
+
+    const svgNode = generate(iconDef.icon, `svg-${iconDef.name}`, {
+      ...svgBaseProps,
+      style: svgStyle
     })
+
+    return h('span', {
+      ...this.$attrs,
+      class: classNames('anticon', this.$attrs.class, {
+        'anticon-spin': spin,
+        [`anticon-${iconDef.name}`]: !!iconDef.name
+      }),
+      role: 'img',
+      'aria-label': iconDef.name
+    }, [svgNode])
   }
 }
 </script>

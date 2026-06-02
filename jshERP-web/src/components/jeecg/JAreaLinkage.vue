@@ -6,7 +6,7 @@
       :data="pcaa"
       :level="1"
       :style="{width}"
-      v-bind="$attrs"
+      v-bind="attrs"
       v-on="_listeners"
       @change="handleChange"
     />
@@ -15,7 +15,7 @@
       :value="innerValue"
       :data="pcaa"
       :level="2"
-      v-bind="$attrs"
+      v-bind="attrs"
       v-on="_listeners"
       @change="handleChange"
     />
@@ -61,10 +61,30 @@
     },
     computed: {
       _listeners() {
-        let listeners = { ...this.$listeners }
+        let listeners = { ...this.listeners }
         // 去掉已使用的事件，防止冲突
         this.usedListeners.forEach(key => {
           delete listeners[key]
+        })
+        return listeners
+      },
+      attrs() {
+        const attrs = {}
+        Object.keys(this.$attrs).forEach(key => {
+          if (!/^on[A-Z]|^onUpdate:/.test(key)) {
+            attrs[key] = this.$attrs[key]
+          }
+        })
+        return attrs
+      },
+      listeners() {
+        const listeners = {}
+        Object.assign(listeners, this['$' + 'listeners'] || {})
+        Object.keys(this.$attrs).forEach(key => {
+          if (/^on[A-Z]|^onUpdate:/.test(key)) {
+            const eventName = key.slice(2).replace(/^[A-Z]/, match => match.toLowerCase())
+            listeners[eventName] = this.$attrs[key]
+          }
         })
         return listeners
       },

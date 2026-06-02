@@ -2,21 +2,21 @@
   <div>
     <a-input-group v-if="kind === 'material'" compact style="width:100%;top:0px;display:flex;">
       <a-select placeholder="输入条码或名称" :dropdownMatchSelectWidth="false" showSearch :showArrow="false"
-                v-model="names" optionFilterProp="children" style="flex:1; min-width:0;" notFoundContent="需在商品管理先新增才能使用"
+                :value="names" optionFilterProp="children" style="flex:1; min-width:0;" notFoundContent="需在商品管理先新增才能使用"
                 @search="handleSearch" @change="handleChange" @keyup.enter="handleEnter">
-        <div slot="dropdownRender" slot-scope="menu">
-          <v-nodes :vnodes="menu" />
+        <template #dropdownRender="menu">
+          <v-nodes :vnodes="normalizeDropdownRenderMenu(menu)" />
           <a-divider v-if="materialData.length===20" style="margin: 4px 0;" />
           <div v-if="materialData.length===20" style="padding: 4px 8px; cursor: pointer;"
                @mousedown="e => e.preventDefault()">此处最多显示20条，如需更多请点击放大镜查询</div>
-        </div>
+        </template>
         <a-select-option v-for="item in materialData" :key="item.barCode">
           {{ item.materialStr }}
         </a-select-option>
       </a-select>
       <a-button icon="search" @click="onSearch" />
     </a-input-group>
-    <a-input-search v-if="kind === 'batch'||kind === 'sn'||kind === 'snAdd'" v-model="names" placeholder="请点开弹窗" readOnly @search="onSearch"></a-input-search>
+    <a-input-search v-if="kind === 'batch'||kind === 'sn'||kind === 'snAdd'" :value="names" placeholder="请点开弹窗" readOnly @search="onSearch"></a-input-search>
     <j-select-material-modal v-if="kind === 'material'" ref="selectModal" :rows="rows" :multi="multi" :bar-code="value" @ok="selectOK" @initComp="initComp"/>
     <j-select-batch-modal v-if="kind === 'batch'" ref="selectModal" :rows="rows" :multi="multi" :bar-code="value" @ok="selectOK" @initComp="initComp"/>
     <j-select-sn-modal v-if="kind === 'sn'" ref="selectModal" :rows="rows" :multi="multi" :bar-code="value" @ok="selectOK" @initComp="initComp"/>
@@ -88,6 +88,18 @@
       event: 'change'
     },
     methods: {
+      normalizeDropdownRenderMenu(menu) {
+        if (menu && menu.menuNode) {
+          return menu.menuNode
+        }
+        if (menu && menu.menu) {
+          return menu.menu
+        }
+        if (Array.isArray(menu)) {
+          return menu
+        }
+        return menu ? [menu] : []
+      },
       initComp(name) {
         this.names = name ? name : undefined
       },
@@ -111,6 +123,7 @@
         },500)
       },
       handleChange(value) {
+        this.names = value
         this.$emit("change", value)
       },
       handleEnter() {

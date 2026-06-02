@@ -1,4 +1,5 @@
-import { UserLayout, TabLayout, RouteView, BlankLayout, PageView } from '@/components/layouts'
+const UserLayout = () => import('@/components/layouts/UserLayout')
+const TabLayout = () => import('@/components/layouts/TabLayout')
 
 /**
  * 走菜单，走权限控制

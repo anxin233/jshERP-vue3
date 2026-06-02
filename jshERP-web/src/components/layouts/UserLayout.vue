@@ -1,5 +1,5 @@
 <template>
-  <div class="back-layout">
+  <div class="back-layout" :style="{ backgroundImage: `url(${publicBase}static/bgimg.png?v=1)` }">
     <div id="userLayout" :class="['user-layout-wrapper', device]">
       <div class="container">
         <div class="poster-img">
@@ -131,7 +131,6 @@
   .back-layout {
     width: 100%;
     height: 100%;
-    background-image: url(/static/bgimg.png?v=1);
     background-size: cover;
     background-repeat: no-repeat;
     position: relative;

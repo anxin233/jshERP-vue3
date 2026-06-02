@@ -1,13 +1,14 @@
 <template>
-  <!-- 两步验证 -->
   <a-modal
     centered
     :visible="visible"
     @cancel="handleCancel"
     :maskClosable="false"
   >
-    <div slot="title" :style="{ textAlign: 'center' }">两步验证</div>
-    <template slot="footer">
+    <template #title>
+      <div :style="{ textAlign: 'center' }">两步验证</div>
+    </template>
+    <template #footer>
       <div :style="{ textAlign: 'center' }">
         <a-button key="back" @click="handleCancel">返回</a-button>
         <a-button key="submit" type="primary" :loading="stepLoading" @click="handleStepOk">
@@ -17,23 +18,33 @@
     </template>
 
     <a-spin :spinning="stepLoading">
-      <a-form layout="vertical" :auto-form-create="(form)=>{this.form = form}">
+      <a-form-model ref="formRef" layout="vertical" :model="formModel" :rules="formRules">
         <div class="step-form-wrapper">
-          <p style="text-align: center" v-if="!stepLoading">请在手机中打开 Google Authenticator 或两步验证 APP<br />输入 6 位动态码</p>
-          <p style="text-align: center" v-else>正在验证..<br/>请稍后</p>
-          <a-form-item
+          <p v-if="!stepLoading" style="text-align: center">
+            请在手机中打开 Google Authenticator 或两步验证 APP<br />输入 6 位动态码
+          </p>
+          <p v-else style="text-align: center">
+            正在验证..<br />请稍后
+          </p>
+          <a-form-model-item
             :style="{ textAlign: 'center' }"
             hasFeedback
-            fieldDecoratorId="stepCode"
-            :fieldDecoratorOptions="{rules: [{ required: true, message: '请输入 6 位动态码!', pattern: /^\d{6}$/, len: 6 }]}"
+            prop="stepCode"
+            name="stepCode"
           >
-            <a-input :style="{ textAlign: 'center' }" @keyup.enter="handleStepOk" placeholder="000000" />
-          </a-form-item>
+            <a-input
+              :style="{ textAlign: 'center' }"
+              :value="formModel.stepCode"
+              @change="handleStepCodeChange"
+              @keyup.enter="handleStepOk"
+              placeholder="000000"
+            />
+          </a-form-model-item>
           <p style="text-align: center">
             <a @click="onForgeStepCode">遗失手机?</a>
           </p>
         </div>
-      </a-form>
+      </a-form-model>
     </a-spin>
   </a-modal>
 </template>
@@ -49,36 +60,60 @@ export default {
   data() {
     return {
       stepLoading: false,
-
-      form: null
-    };
+      formModel: {
+        stepCode: ''
+      },
+      formRules: {
+        stepCode: [
+          { required: true, message: '请输入 6 位动态码!', pattern: /^\d{6}$/, len: 6 }
+        ]
+      }
+    }
+  },
+  watch: {
+    visible(val) {
+      if (val) {
+        this.formModel.stepCode = ''
+        this.$nextTick(() => {
+          if (this.$refs.formRef) {
+            this.$refs.formRef.resetFields()
+          }
+        })
+      }
+    }
   },
   methods: {
+    handleStepCodeChange(event) {
+      this.formModel.stepCode = event && event.target ? event.target.value : event
+    },
     handleStepOk() {
-      const vm = this
+      const formRef = this.$refs.formRef
+      if (!formRef) {
+        return
+      }
       this.stepLoading = true
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log('values', values)
-          setTimeout( () => {
-            vm.stepLoading = false
-            vm.$emit('success', { values })
+      formRef.validate((valid) => {
+        if (valid) {
+          const values = { ...this.formModel }
+          setTimeout(() => {
+            this.stepLoading = false
+            this.$emit('success', { values })
           }, 2000)
-          return;
+          return
         }
         this.stepLoading = false
-        this.$emit('error', { err })
+        this.$emit('error', { err: this.formModel })
       })
     },
-    handleCancel () {
+    handleCancel() {
       this.$emit('cancel')
     },
     onForgeStepCode() {
-      
     }
   }
-};
+}
 </script>
+
 <style lang="less" scoped>
   .step-form-wrapper {
     margin: 0 auto;

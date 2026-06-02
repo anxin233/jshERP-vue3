@@ -123,12 +123,14 @@
                       <legacy-icon type="align-right"/>
                     </div>
 
-                    <a-menu slot="overlay">
+                    <template #overlay>
+                    <a-menu>
                       <a-menu-item key="0" :disabled="rowIndex===0" @click="_handleRowMoveUp(rowIndex)">向上移</a-menu-item>
                       <a-menu-item key="1" :disabled="rowIndex===(rows.length-1)" @click="_handleRowMoveDown(rowIndex)">向下移</a-menu-item>
                       <!-- <a-menu-divider/>
                       <a-menu-item key="3" @click="_handleRowInsertDown(rowIndex)">插入一行</a-menu-item> -->
                     </a-menu>
+                    </template>
                   </a-dropdown>
                 </div>
 
@@ -138,12 +140,14 @@
                       <span>{{ rowIndex+1 }}</span>
                     </div>
 
-                    <a-menu slot="overlay">
+                    <template #overlay>
+                    <a-menu>
                       <a-menu-item key="0" :disabled="rowIndex===0" @click="_handleRowMoveUp(rowIndex)">向上移</a-menu-item>
                       <a-menu-item key="1" :disabled="rowIndex===(rows.length-1)" @click="_handleRowMoveDown(rowIndex)">向下移</a-menu-item>
                       <!-- <a-menu-divider/>
                       <a-menu-item key="3" @click="_handleRowInsertDown(rowIndex)">插入一行</a-menu-item> -->
                     </a-menu>
+                    </template>
                   </a-dropdown>
                 </div>
 
@@ -235,11 +239,11 @@
                           @blur="(v)=>handleBlurSearch(v,id,row,col)"
                           allowClear
                         >
-                          <div slot="dropdownRender" slot-scope="menu">
-                            <v-nodes :vnodes="menu" />
+                          <template #dropdownRender="menu">
+                            <v-nodes :vnodes="normalizeDropdownRenderMenu(menu)" />
                             <slot name="depotAdd" v-if="col.key === 'depotId'" :target="getVM()"/>
                             <slot name="inOutItemAdd" v-if="col.key === 'inOutItemId'" :target="getVM()"/>
-                          </div>
+                          </template>
                           <!--<template v-for="(opt,optKey) in col.options">-->
                           <!--<a-select-option :value="opt.value" :key="optKey">{{ opt.title }}</a-select-option>-->
                           <!--</template>-->
@@ -1100,6 +1104,19 @@
 
     },
     methods: {
+
+      normalizeDropdownRenderMenu(menu) {
+        if (menu && menu.menuNode) {
+          return menu.menuNode
+        }
+        if (menu && menu.menu) {
+          return menu.menu
+        }
+        if (Array.isArray(menu)) {
+          return menu
+        }
+        return menu ? [menu] : []
+      },
 
       getElement(id, noCaseId = false) {
         if (!this.el[id]) {

@@ -13,6 +13,10 @@ module.exports = {
     productionSourceMap: false,
     configureWebpack: config => {
         config.resolve = config.resolve || {}
+        config.resolve.alias = {
+            ...(config.resolve.alias || {}),
+            // 覆盖相对路径 ./SubPopupMenu（Menu.js / SubMenu.js）与包路径两种解析方式
+        }
         config.resolve.fallback = {
             ...(config.resolve.fallback || {}),
             timers: require.resolve('timers-browserify')
@@ -49,7 +53,8 @@ module.exports = {
                 compilerOptions: {
                     ...(options.compilerOptions || {}),
                     compatConfig: {
-                        MODE: 2
+                        MODE: 2,
+                        COMPONENT_ASYNC: false
                     }
                 }
             }))
@@ -75,7 +80,16 @@ module.exports = {
                     /* less 变量覆盖，用于自定义 ant design 主题 */
                     'primary-color': '#1890FF',
                     'link-color': '#1890FF',
-                        'border-radius-base': '4px'
+                        'border-radius-base': '4px',
+                        'font-size-base': '14px',
+                        'font-size-lg': '16px',
+                        'text-color-secondary': 'rgba(0, 0, 0, 0.45)',
+                        'heading-color': 'rgba(0, 0, 0, 0.85)',
+                        'red-6': '#f5222d',
+                        'green-6': '#52c41a',
+                        'avatar-size-base': '32px',
+                        'avatar-size-lg': '40px',
+                        'avatar-size-sm': '24px'
                     },
                     javascriptEnabled: true,
                     math: 'always'

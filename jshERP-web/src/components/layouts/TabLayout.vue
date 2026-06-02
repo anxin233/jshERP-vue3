@@ -1,6 +1,6 @@
 <template>
   <global-layout @dynamicRouterShow="dynamicRouterShow">
-    <contextmenu :itemList="menuItemList" :visible.sync="menuVisible" style="z-index: 9999;" @select="onMenuSelect"/>
+    <contextmenu :itemList="menuItemList" :visible="menuVisible" style="z-index: 9999;" @update:visible="menuVisible = $event" @select="onMenuSelect"/>
     <a-tabs
       @contextmenu="e => onContextmenu(e)"
       v-if="multipage"
@@ -12,7 +12,9 @@
       @tabClick="tabCallBack"
       @edit="editPage">
       <a-tab-pane :id="page.fullPath" :key="page.fullPath" v-for="page in pageList">
-        <span slot="tab" :pagekey="page.fullPath">{{ page.meta.title }}</span>
+        <template #tab>
+          <span :pagekey="page.fullPath">{{ page.meta.title }}</span>
+        </template>
       </a-tab-pane>
     </a-tabs>
     <div style="margin: 4px 4px 0;">
@@ -43,7 +45,6 @@
   const indexKey = '/dashboard/analysis'
   import Vue from 'vue'
   import { CACHE_INCLUDED_ROUTES } from "@/store/mutation-types"
-  import store from '../../store'
   import storage from '@/utils/storage'
 
   export default {

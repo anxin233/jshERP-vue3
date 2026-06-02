@@ -11,14 +11,14 @@
       :mask="isDesktop()"
       :maskClosable="false"
       v-bind="_attrs"
-      v-on="$listeners"
+      v-on="modalListeners"
       @ok="handleOk"
       @cancel="handleCancel"
     >
 
       <slot></slot>
 
-      <template v-if="!isNoTitle" slot="title">
+      <template v-if="!isNoTitle" #title>
         <a-row class="j-modal-title-row" type="flex">
           <a-col class="left">
             <slot name="title">{{ title }}</slot>
@@ -35,13 +35,8 @@
       </template>
 
       <!-- 处理 scopedSlots -->
-      <template v-for="slotName of scopedSlotsKeys" :slot="slotName">
-        <slot :name="slotName"></slot>
-      </template>
-
-      <!-- 处理 slots -->
-      <template v-for="slotName of slotsKeys" v-slot:[slotName]>
-        <slot :name="slotName"></slot>
+      <template v-for="slotName of slotsKeys" v-slot:[slotName]="slotProps">
+        <slot :name="slotName" v-bind="slotProps || {}"></slot>
       </template>
 
     </a-modal>
@@ -53,7 +48,6 @@
   import { getClass, getStyle } from '@/utils/props-util'
   import { triggerWindowResizeEvent, handleIntroJs } from "@/utils/util"
   import {mixinDevice} from '@/utils/mixin'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
 
   export default {
@@ -98,11 +92,26 @@
       // 一些未处理的参数或特殊处理的参数绑定到 a-modal 上
       _attrs() {
         let attrs = { ...this.$attrs }
+        Object.keys(attrs).forEach(key => {
+          if (/^on[A-Z]/.test(key)) {
+            delete attrs[key]
+          }
+        })
         // 如果全屏就将宽度设为 100%
         if (this.innerFullscreen) {
           attrs['width'] = '100%'
         }
         return attrs
+      },
+      modalListeners() {
+        const listeners = {}
+        Object.keys(this.$attrs || {}).forEach(key => {
+          if (/^on[A-Z]/.test(key)) {
+            const eventName = key.slice(2)
+            listeners[eventName.charAt(0).toLowerCase() + eventName.slice(1)] = this.$attrs[key]
+          }
+        })
+        return listeners
       },
       modalClass() {
         return {
@@ -130,10 +139,10 @@
         return Object.keys(this.$slots).filter(key => !this.usedSlots.includes(key))
       },
       scopedSlotsKeys() {
-        return Object.keys(this.$scopedSlots).filter(key => !this.usedSlots.includes(key))
+        return []
       },
       allSlotsKeys() {
-        return this.slotsKeys.concat(this.scopedSlotsKeys)
+        return this.slotsKeys
       },
       // 切换全屏的按钮图标
       fullscreenButtonIcon() {

@@ -1,4 +1,4 @@
-import { cloneVNode as cloneVueVNode } from 'vue'
+import Vue, { cloneVNode as cloneVueVNode } from 'vue'
 import FormItem from 'ant-design-vue/es/form/FormItem'
 import { FIELD_DATA_PROP, FIELD_META_PROP } from 'ant-design-vue/es/form/constants'
 import { filterEmpty, getAllChildren, getEvents, getSlotOptions } from 'ant-design-vue/es/_util/props-util'
@@ -73,7 +73,7 @@ function getVue3VNodeListeners(props = {}) {
   }, {})
 }
 
-function setCompatVNodeProperty(vnode, key, value) {
+export function setCompatVNodeProperty(vnode, key, value) {
   const descriptor = Object.getOwnPropertyDescriptor(vnode, key)
   if (descriptor && !descriptor.configurable && !descriptor.writable && !descriptor.set) {
     return
@@ -89,7 +89,7 @@ function setCompatVNodeProperty(vnode, key, value) {
   }
 }
 
-function withLegacyComponentOptions(vnode) {
+export function withLegacyComponentOptions(vnode) {
   if (!vnode || !vnode.__v_isVNode || typeof vnode.type === 'string') {
     return vnode
   }
@@ -124,7 +124,7 @@ function decorateCompatField(form, fieldDecoratorId, fieldDecoratorOptions, vnod
   return form.getFieldDecorator(fieldDecoratorId, fieldDecoratorOptions)(vnode)
 }
 
-function cloneCompatVNode(vnode, data) {
+export function cloneCompatVNode(vnode, data) {
   if (!vnode) {
     return vnode
   }
@@ -143,6 +143,25 @@ function cloneCompatVNodes(vnodes = []) {
 
 function hasInputPrefixSuffix(props) {
   return !!(props.prefix || props.suffix || props.allowClear)
+}
+
+function patchNullPropsDataForVue3Compat() {
+  if (!Vue || Vue.__jshNullPropsDataPatched) {
+    return
+  }
+
+  Vue.mixin({
+    beforeCreate() {
+      if (this.$options && this.$options.propsData == null) {
+        setCompatVNodeProperty(this.$options, 'propsData', {})
+      }
+    }
+  })
+
+  Object.defineProperty(Vue, '__jshNullPropsDataPatched', {
+    value: true,
+    configurable: true
+  })
 }
 
 function patchClearableLabeledInputForVue3Compat() {
@@ -354,6 +373,7 @@ function patchTriggerForVue3Compat() {
 }
 
 export function patchAntdVue2ForVue3Compat() {
+  patchNullPropsDataForVue3Compat()
   patchClearableLabeledInputForVue3Compat()
   patchTriggerForVue3Compat()
 

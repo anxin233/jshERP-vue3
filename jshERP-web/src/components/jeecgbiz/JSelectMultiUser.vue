@@ -5,7 +5,7 @@
     :ellipsisLength="25"
     :listUrl="url.list"
     :columns="columns"
-    v-on="$listeners"
+    v-on="listeners"
     v-bind="attrs"
   />
 </template>
@@ -38,7 +38,27 @@
     },
     computed: {
       attrs() {
-        return Object.assign(this.default, this.$attrs)
+        return Object.assign({}, this.default, this.passthroughAttrs)
+      },
+      passthroughAttrs() {
+        const attrs = {}
+        Object.keys(this.$attrs).forEach(key => {
+          if (!/^on[A-Z]|^onUpdate:/.test(key)) {
+            attrs[key] = this.$attrs[key]
+          }
+        })
+        return attrs
+      },
+      listeners() {
+        const listeners = {}
+        Object.assign(listeners, this['$' + 'listeners'] || {})
+        Object.keys(this.$attrs).forEach(key => {
+          if (/^on[A-Z]|^onUpdate:/.test(key)) {
+            const eventName = key.slice(2).replace(/^[A-Z]/, match => match.toLowerCase())
+            listeners[eventName] = this.$attrs[key]
+          }
+        })
+        return listeners
       }
     }
   }

@@ -16,12 +16,13 @@ import com.jsh.erp.utils.PageUtils;
 import com.jsh.erp.utils.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -50,11 +51,10 @@ public class SysDictTypeService {
     private RedisService redisService;
 
     /**
-     * 项目启动时，初始化字典到缓存
+     * 应用就绪后初始化字典缓存（须在 Flyway 迁移之后，避免 @PostConstruct 早于建表）
      */
-    @PostConstruct
-    public void init()
-    {
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
         loadingDictCache();
     }
 

@@ -5,12 +5,13 @@
         <a-select
           mode="multiple"
           :placeholder="placeholder"
-          v-model="selectValue"
+          :value="selectValue"
           :options="selectOptions"
           allowClear
           :disabled="disabled"
           :open="selectOpen"
           style="width: 100%;"
+          @change="handleSelectValueChange"
           @dropdownVisibleChange="handleDropdownVisibleChange"
           @click="visible=(buttons?visible:true)"
         />
@@ -23,7 +24,8 @@
 
     <j-select-biz-component-modal
       v-model="selectValue"
-      :visible.sync="visible"
+      :visible="visible"
+      @update:visible="visible = $event"
       v-bind="modalProps"
       @options="handleOptions"
     />
@@ -126,6 +128,9 @@
       }
     },
     methods: {
+      handleSelectValueChange(value) {
+        this.selectValue = value || []
+      },
       handleOptions(options, dataSourceMap) {
         this.selectOptions = options
         this.dataSourceMap = dataSourceMap

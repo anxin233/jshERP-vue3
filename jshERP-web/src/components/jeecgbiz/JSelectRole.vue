@@ -10,8 +10,8 @@
     :columns="columns"
     queryParamText="角色编码"
 
-    v-on="$listeners"
-    v-bind="$attrs"
+    v-on="listeners"
+    v-bind="attrs"
   />
 </template>
 
@@ -30,6 +30,28 @@
           { title: '角色名称', dataIndex: 'roleName', align: 'center', width: 120 },
           { title: '角色编码', dataIndex: 'roleCode', align: 'center', width: 120 }
         ]
+      }
+    },
+    computed: {
+      attrs() {
+        const attrs = {}
+        Object.keys(this.$attrs).forEach(key => {
+          if (!/^on[A-Z]|^onUpdate:/.test(key)) {
+            attrs[key] = this.$attrs[key]
+          }
+        })
+        return attrs
+      },
+      listeners() {
+        const listeners = {}
+        Object.assign(listeners, this['$' + 'listeners'] || {})
+        Object.keys(this.$attrs).forEach(key => {
+          if (/^on[A-Z]|^onUpdate:/.test(key)) {
+            const eventName = key.slice(2).replace(/^[A-Z]/, match => match.toLowerCase())
+            listeners[eventName] = this.$attrs[key]
+          }
+        })
+        return listeners
       }
     }
   }

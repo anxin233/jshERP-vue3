@@ -1,5 +1,5 @@
 <template>
-  <j-select-biz-component :width="1000" v-bind="configs" v-on="$listeners"/>
+  <j-select-biz-component :width="1000" v-bind="configs" v-on="listeners"/>
 </template>
 
 <script>
@@ -28,7 +28,27 @@
     },
     computed: {
       configs() {
-        return Object.assign({ value: this.value }, this.settings, this.$attrs)
+        return Object.assign({ value: this.value }, this.settings, this.passthroughAttrs)
+      },
+      passthroughAttrs() {
+        const attrs = {}
+        Object.keys(this.$attrs).forEach(key => {
+          if (!/^on[A-Z]|^onUpdate:/.test(key)) {
+            attrs[key] = this.$attrs[key]
+          }
+        })
+        return attrs
+      },
+      listeners() {
+        const listeners = {}
+        Object.assign(listeners, this['$' + 'listeners'] || {})
+        Object.keys(this.$attrs).forEach(key => {
+          if (/^on[A-Z]|^onUpdate:/.test(key)) {
+            const eventName = key.slice(2).replace(/^[A-Z]/, match => match.toLowerCase())
+            listeners[eventName] = this.$attrs[key]
+          }
+        })
+        return listeners
       }
     }
   }

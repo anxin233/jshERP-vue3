@@ -6,107 +6,138 @@
       :visible="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
-      :maskStyle="{'top':'93px','left':'154px'}"
+      :maskStyle="{ top: '93px', left: '154px' }"
       :wrapClassName="wrapClassNameInfo()"
       :mask="isDesktop()"
       :maskClosable="false"
-      @ok="handleOk"
-      @cancel="handleCancel"
       cancelText="取消"
       okText="保存"
-      style="top:20%;height: 50%;">
+      style="top:20%;height: 50%;"
+      @ok="handleOk"
+      @cancel="handleCancel">
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form">
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="机器码">
-            <a-input v-decorator.trim="[ 'platformKey' ]" :readOnly="true"/>
-          </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="手机端激活码">
-            <a-textarea :rows="2" placeholder="请输入手机端激活码" v-decorator="[ 'platformValue' ]"/>
-          </a-form-item>
-        </a-form>
+        <a-form-model ref="formRef" :model="formModel">
+          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="机器码" prop="platformKey" name="platformKey">
+            <a-input
+              :value="formModel.platformKey"
+              :readOnly="true"
+              @change="handleFieldChange('platformKey', $event)" />
+          </a-form-model-item>
+          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="手机端激活码" prop="platformValue" name="platformValue">
+            <a-textarea
+              :rows="2"
+              placeholder="请输入手机端激活码"
+              :value="formModel.platformValue"
+              @change="handleFieldChange('platformValue', $event)" />
+          </a-form-model-item>
+        </a-form-model>
       </a-spin>
     </a-modal>
   </div>
 </template>
+
 <script>
-  import pick from 'lodash.pick'
-  import {getPlatformConfigByKey } from '@/api/api'
-  import {mixinDevice} from '@/utils/mixin'
+  import { getPlatformConfigByKey } from '@/api/api'
+  import { mixinDevice } from '@/utils/mixin'
   import { getAction, postAction } from '../../../api/manage'
+
   export default {
-    name: "PluginAppModal",
+    name: 'PluginAppModal',
     mixins: [mixinDevice],
-    data () {
+    data() {
       return {
-        title:"操作",
+        title: '操作',
         visible: false,
         model: {},
         machineCode: '',
         activationCode: '',
+        formModel: {
+          platformKey: '',
+          platformValue: ''
+        },
         labelCol: {
           xs: { span: 24 },
-          sm: { span: 5 },
+          sm: { span: 5 }
         },
         wrapperCol: {
           xs: { span: 24 },
-          sm: { span: 16 },
+          sm: { span: 16 }
         },
-        confirmLoading: false,
-        form: this.$form.createForm(this),
+        confirmLoading: false
       }
     },
-    created () {
-    },
     methods: {
-      edit () {
-        this.form.resetFields();
-        this.model = Object.assign({}, {});
-        getAction("/plugin/getMacWithSecret").then((res)=>{
-          if(res && res.code == 200) {
+      edit() {
+        this.model = {}
+        this.formModel = {
+          platformKey: '',
+          platformValue: ''
+        }
+        getAction('/plugin/getMacWithSecret').then((res) => {
+          if (res && res.code === 200) {
             this.model.platformKey = res.data
-            getPlatformConfigByKey( {"platformKey": "app_activation_code"}).then((res)=>{
-              if(res && res.code == 200) {
-                this.model.platformValue = res.data.platformValue
-                this.visible = true;
-                this.$nextTick(() => {
-                  this.form.setFieldsValue(pick(this.model, 'platformKey','platformValue'))
-                });
+            getPlatformConfigByKey({ platformKey: 'app_activation_code' }).then((configRes) => {
+              if (configRes && configRes.code === 200) {
+                this.model.platformValue = configRes.data.platformValue
+                this.formModel = {
+                  platformKey: this.model.platformKey,
+                  platformValue: this.model.platformValue
+                }
+                this.visible = true
+                this.$nextTick(this.clearValidate)
               }
             })
           }
         })
       },
-      close () {
-        this.$emit('close');
-        this.visible = false;
+      close() {
+        this.$emit('close')
+        this.visible = false
       },
-      handleOk () {
-        const that = this;
-        // 触发表单验证
-        this.form.validateFields((err, values) => {
-          if (!err) {
-            that.confirmLoading = true;
-            let formData = Object.assign(this.model, values);
-            formData.platformKey = 'app_activation_code'
-            postAction('/platformConfig/updatePlatformConfigByKey', formData).then((res)=>{
-              if(res.code === 200){
-                that.$message.info('填写成功！');
-              }else{
-                that.$message.warning(res.data.message);
-              }
-            }).finally(() => {
-              that.confirmLoading = false;
-              that.close();
-            })
+      handleOk() {
+        this.validateForm((valid) => {
+          if (!valid) {
+            return
           }
+          this.confirmLoading = true
+          const formData = Object.assign({}, this.model, this.formModel, {
+            platformKey: 'app_activation_code'
+          })
+          postAction('/platformConfig/updatePlatformConfigByKey', formData).then((res) => {
+            if (res.code === 200) {
+              this.$message.info('填写成功')
+            } else {
+              this.$message.warning(res.data.message)
+            }
+          }).finally(() => {
+            this.confirmLoading = false
+            this.close()
+          })
         })
       },
-      handleCancel () {
+      handleCancel() {
         this.close()
+      },
+      handleFieldChange(field, event) {
+        this.formModel[field] = event && event.target ? event.target.value : event
+      },
+      validateForm(callback) {
+        const formRef = this.$refs.formRef
+        if (!formRef || !formRef.validate) {
+          callback(true)
+          return
+        }
+        formRef.validate(callback)
+      },
+      clearValidate() {
+        const formRef = this.$refs.formRef
+        if (formRef && formRef.clearValidate) {
+          formRef.clearValidate()
+        }
       }
     }
   }
 </script>
-<style scoped>
 
+<style scoped>
 </style>

@@ -13,19 +13,20 @@
       @ok="handleOk"
       @cancel="handleCancel"
       cancelText="关闭"
-      style="top:20%;height: 50%;">
+      style="top:20%;height: 50%;"
+    >
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form">
-          <a-form-item label="旧密码" :labelCol="labelCol" :wrapperCol="wrapperCol">
-            <a-input-password type="password" placeholder="请输入旧密码" v-decorator="[ 'oldpassword', validatorRules.oldpassword]" />
-          </a-form-item>
-          <a-form-item label="新密码" :labelCol="labelCol" :wrapperCol="wrapperCol">
-            <a-input-password type="password" placeholder="新密码至少6位，区分大小写" v-decorator="[ 'password', validatorRules.password]" />
-          </a-form-item>
-          <a-form-item label="确认新密码" :labelCol="labelCol" :wrapperCol="wrapperCol">
-            <a-input-password type="password"  placeholder="请确认新密码" v-decorator="[ 'confirmPassword', validatorRules.confirmPassword]"/>
-          </a-form-item>
-        </a-form>
+        <a-form-model ref="formRef" :model="formModel" :rules="formRules">
+          <a-form-model-item label="旧密码" prop="oldpassword" name="oldpassword" :label-col="labelCol" :wrapper-col="wrapperCol">
+            <a-input-password type="password" placeholder="请输入旧密码" :value="formModel.oldpassword" @change="handleFieldChange('oldpassword', $event)" />
+          </a-form-model-item>
+          <a-form-model-item label="新密码" prop="password" name="password" :label-col="labelCol" :wrapper-col="wrapperCol">
+            <a-input-password type="password" placeholder="新密码至少6位，区分大小写" :value="formModel.password" @change="handleFieldChange('password', $event)" />
+          </a-form-model-item>
+          <a-form-model-item label="确认新密码" prop="confirmPassword" name="confirmPassword" :label-col="labelCol" :wrapper-col="wrapperCol">
+            <a-input-password type="password" placeholder="请确认新密码" :value="formModel.confirmPassword" @change="handleFieldChange('confirmPassword', $event)" />
+          </a-form-model-item>
+        </a-form-model>
       </a-spin>
     </a-modal>
   </div>
@@ -33,117 +34,131 @@
 
 <script>
   import { putAction } from '@/api/manage'
-  import {mixinDevice} from '@/utils/mixin'
+  import { mixinDevice } from '@/utils/mixin'
   import md5 from 'md5'
+
   export default {
-    name: "UserPassword",
+    name: 'UserPassword',
     mixins: [mixinDevice],
-    data () {
+    data() {
       return {
-        title:"修改密码",
-        modalWidth:800,
+        title: '修改密码',
+        modalWidth: 800,
         visible: false,
         confirmLoading: false,
-        validatorRules:{
-          oldpassword:{
-            rules: [{
-              required: true, message: '请输入旧密码!',
-            }],
-          },
-          password:{
-            rules: [
-              { required: true, message: '请输入新密码!'},
-              { validator: this.handlePassword }
-            ],
-            validateTrigger: ['change', 'blur'],
-            validateFirst: true
-          },
-          confirmPassword:{
-            rules: [
-              { required: true, message: '请确认新密码!' },
-              { validator: this.handleConfirmPassword }
-            ],
-            validateTrigger: ['change', 'blur'],
-            validateFirst: true
-          }
+        formModel: {
+          oldpassword: '',
+          password: '',
+          confirmPassword: ''
         },
-        confirmDirty:false,
+        formRules: {
+          oldpassword: [
+            { required: true, message: '请输入旧密码!' }
+          ],
+          password: [
+            { required: true, message: '请输入新密码!' },
+            { validator: this.handlePassword }
+          ],
+          confirmPassword: [
+            { required: true, message: '请确认新密码!' },
+            { validator: this.handleConfirmPassword }
+          ]
+        },
+        confirmDirty: false,
         labelCol: {
           xs: { span: 24 },
-          sm: { span: 5 },
+          sm: { span: 5 }
         },
         wrapperCol: {
           xs: { span: 24 },
-          sm: { span: 16 },
+          sm: { span: 16 }
         },
-        form:this.$form.createForm(this),
-        url: "/user/updatePwd",
-        userId:"",
+        url: '/user/updatePwd',
+        userId: ''
       }
     },
     methods: {
-      show(userId){
-        if(!userId){
-          this.$message.warning("当前系统无登陆用户!");
-        }else{
-          this.userId = userId
-          this.form.resetFields();
-          this.visible = true;
+      show(userId) {
+        if (!userId) {
+          this.$message.warning('当前系统无登录用户')
+          return
         }
+        this.userId = userId
+        this.formModel = {
+          oldpassword: '',
+          password: '',
+          confirmPassword: ''
+        }
+        this.$nextTick(() => {
+          if (this.$refs.formRef) {
+            this.$refs.formRef.resetFields()
+          }
+        })
+        this.visible = true
       },
-      handleCancel () {
+      handleFieldChange(field, event) {
+        this.formModel[field] = event && event.target ? event.target.value : event
+      },
+      handleCancel() {
         this.close()
       },
-      close () {
-        this.$emit('close');
-        this.visible = false;
-        this.disableSubmit = false;
+      close() {
+        this.$emit('close')
+        this.visible = false
+        this.disableSubmit = false
       },
-      handleOk () {
-        const that = this;
-        // 触发表单验证
-        this.form.validateFields((err, values) => {
-          if (!err) {
-            that.confirmLoading = true
-            values.oldpassword = md5(values.oldpassword)
-            values.password = md5(values.password)
-            let params = Object.assign({userId:this.userId},values)
-            console.log("修改密码提交数据",params)
-            putAction(this.url,params).then((res)=>{
-              if(res.code === 200){
-                if(res.data.status === 2 || res.data.status === 3) {
-                  that.$message.warning(res.data.message)
-                } else {
-                  that.$message.success(res.data.message)
-                  that.close()
-                }
-              }else{
-                that.$message.warning(res.data.message)
-              }
-            }).finally(() => {
-              that.confirmLoading = false
-            })
+      handleOk() {
+        const formRef = this.$refs.formRef
+        if (!formRef) {
+          return
+        }
+        formRef.validate((valid) => {
+          if (!valid) {
+            return
           }
+          this.confirmLoading = true
+          const values = { ...this.formModel }
+          values.oldpassword = md5(values.oldpassword)
+          values.password = md5(values.password)
+          const params = Object.assign({ userId: this.userId }, values)
+          putAction(this.url, params).then((res) => {
+            if (res.code === 200) {
+              if (res.data.status === 2 || res.data.status === 3) {
+                this.$message.warning(res.data.message)
+              } else {
+                this.$message.success(res.data.message)
+                this.close()
+              }
+            } else {
+              this.$message.warning(res.data.message)
+            }
+          }).finally(() => {
+            this.confirmLoading = false
+          })
         })
       },
       handlePassword(rule, value, callback) {
-        let oldpassword = this.form.getFieldValue('oldpassword')
-        if(oldpassword === value) {
-          callback(new Error('新密码和旧密码不能相同!'))
+        const oldpassword = this.formModel.oldpassword
+        if (oldpassword && oldpassword === value) {
+          callback(new Error('新密码和旧密码不能相同'))
+          return
         }
-        let reg = /^(?=.*[a-z])(?=.*\d).{6,}$/;
-        if (!reg.test(value)) {
-          callback(new Error('用户密码至少要有数字和小写字母，并且长度至少6位!'))
+        const reg = /^(?=.*[a-z])(?=.*\d).{6,}$/
+        if (!reg.test(value || '')) {
+          callback(new Error('用户密码至少要有数字和小写字母，并且长度至少6位'))
+          return
         }
         callback()
       },
       handleConfirmPassword(rule, value, callback) {
-        let password = this.form.getFieldValue('password')
-        if (value === undefined) {
-          callback(new Error('请输入密码!'))
+        const password = this.formModel.password
+        if (value === undefined || value === '') {
+          callback(new Error('请输入密码'))
+          return
         }
         if (value && password && value.trim() !== password.trim()) {
-          callback(new Error('两次密码不一致!'))
+          callback(new Error('两次密码不一致'))
+          return
         }
         callback()
       }
@@ -152,6 +167,4 @@
 </script>
 
 <style scoped>
-
 </style>
-

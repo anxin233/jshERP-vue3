@@ -205,6 +205,13 @@ export default {
         slot: 'message'
       }, this.renderMsg(h))
     },
+    getScopedSlots() {
+      return Object.assign({}, this['$' + 'scopedSlots'] || {}, this.$slots || {})
+    },
+    getDefaultSlot() {
+      const slot = this.$slots.default
+      return typeof slot === 'function' ? slot() : slot
+    },
   },
 
   render(h) {
@@ -249,8 +256,8 @@ export default {
           on: {
             change: _vm.loadData
           },
-          scopedSlots: this.$scopedSlots
-        }, this.$slots.default)
+          scopedSlots: _vm.getScopedSlots()
+        }, _vm.getDefaultSlot())
       ]);
 
     }
@@ -261,8 +268,8 @@ export default {
       on: {
         change: _vm.loadData
       },
-      scopedSlots: this.$scopedSlots
-    }, this.$slots.default);
+      scopedSlots: _vm.getScopedSlots()
+    }, _vm.getDefaultSlot());
 
   }
 };
