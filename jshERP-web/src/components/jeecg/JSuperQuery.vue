@@ -205,12 +205,13 @@
   import JSelectDepart from '@/components/jeecgbiz/JSelectDepart'
   import JSelectMultiUser from '@/components/jeecgbiz/JSelectMultiUser'
   import JAreaLinkage from '@comp/jeecg/JAreaLinkage'
+  import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
   import storage from '@/utils/storage'
 
   export default {
     name: 'JSuperQuery',
     mixins: [mixinDevice],
-    components: { JAreaLinkage, JDate, JSelectDepart, JSelectMultiUser },
+    components: { JAreaLinkage, JDate, JSelectDepart, JSelectMultiUser, LegacyIcon },
     props: {
       /*
        fieldList: [{
@@ -519,7 +520,7 @@
                 click: e => this.handleRemoveSaveTreeItem(e, vNode)
               }
             }, [
-              h('a-icon', { props: { type: 'close-circle' } })
+              h(LegacyIcon, { props: { type: 'close-circle' } })
             ])
           ])
         }

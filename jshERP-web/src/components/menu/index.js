@@ -1,5 +1,5 @@
 import Menu from 'ant-design-vue/es/menu'
-import Icon from 'ant-design-vue/es/icon'
+import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
 
 const { Item, SubMenu } = Menu
 
@@ -148,10 +148,10 @@ export default {
       if (icon === 'none' || icon === undefined) {
         return null
       }
-      const props = {}
-      typeof (icon) === 'object' ? props.component = icon : props.type = icon
       return (
-        <Icon {... { props } }/>
+        typeof (icon) === 'object'
+          ? <LegacyIcon component={icon}/>
+          : <LegacyIcon type={icon}/>
       )
     }
   },

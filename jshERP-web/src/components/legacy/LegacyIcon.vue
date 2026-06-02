@@ -166,10 +166,14 @@ export default {
     twoToneColor: {
       type: String,
       default: undefined
+    },
+    component: {
+      type: [Object, Function],
+      default: undefined
     }
   },
   render() {
-    const Icon = getIcon(this.type, this.theme)
+    const Icon = this.component || getIcon(this.type, this.theme)
     return h(Icon, {
       ...this.$attrs,
       spin: this.spin || this.type === 'loading',
