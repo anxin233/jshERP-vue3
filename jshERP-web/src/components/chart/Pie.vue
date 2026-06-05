@@ -1,20 +1,16 @@
 <template>
-  <v-chart :forceFit="true" :height="height" :data="data" :scale="scale" :onClick="handleClick">
-    <v-tooltip :showTitle="false" dataKey="item*percent"/>
-    <v-axis/>
-    <v-legend dataKey="item"/>
-    <v-pie position="percent" color="item" :v-style="pieStyle" :label="labelConfig"/>
-    <v-coord type="theta"/>
-  </v-chart>
+  <div ref="chartContainer" :style="{ height: height + 'px', width: '100%' }"></div>
 </template>
 
 <script>
-  const DataSet = require('@antv/data-set')
+  import { Pie } from '@antv/g2plot'
+  import { DataSet } from '@antv/data-set'
   import { ChartEventMixins } from './mixins/ChartMixins'
+  import { G2PlotChartMixin } from './mixins/g2plotChartMixin'
 
   export default {
     name: 'Pie',
-    mixins: [ChartEventMixins],
+    mixins: [ChartEventMixins, G2PlotChartMixin],
     props: {
       title: {
         type: String,
@@ -35,28 +31,9 @@
         ]
       }
     },
-    data() {
-      return {
-        scale: [{
-          dataKey: 'percent',
-          min: 0,
-          formatter: '.0%'
-        }],
-        pieStyle: {
-          stroke: '#fff',
-          lineWidth: 1
-        },
-        labelConfig: ['percent', {
-          formatter: (val, item) => {
-            return item.point.item + ': ' + val
-          }
-        }]
-      }
-    },
     computed: {
-      data() {
-        let dv = new DataSet.View().source(this.dataSource)
-        // 计算数据百分比
+      chartData () {
+        const dv = new DataSet.View().source(this.dataSource)
         dv.transform({
           type: 'percent',
           field: 'count',
@@ -64,6 +41,44 @@
           as: 'percent'
         })
         return dv.rows
+      }
+    },
+    watch: {
+      chartData: {
+        deep: true,
+        handler () {
+          this.renderChart()
+        }
+      },
+      height () {
+        this.$nextTick(() => this._resizeG2PlotChart())
+      }
+    },
+    mounted () {
+      this.renderChart()
+    },
+    methods: {
+      renderChart () {
+        this._syncG2PlotChart(Pie, () => ({
+          data: this.chartData,
+          angleField: 'percent',
+          colorField: 'item',
+          height: this.height,
+          autoFit: true,
+          radius: 0.8,
+          label: {
+            type: 'outer',
+            formatter: (datum) => `${datum.item}: ${(datum.percent * 100).toFixed(0)}%`
+          },
+          legend: { position: 'bottom' },
+          tooltip: {
+            formatter: (datum) => ({
+              name: datum.item,
+              value: `${(datum.percent * 100).toFixed(1)}%`
+            })
+          },
+          interactions: [{ type: 'element-active' }]
+        }), { bindClick: true })
       }
     }
   }

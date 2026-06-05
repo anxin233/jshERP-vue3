@@ -1,10 +1,10 @@
 import { USER_AUTH,SYS_BUTTON_AUTH } from "@/store/mutation-types"
 
 const hasPermission = {
-    install (Vue, options) {
+    install (app, options) {
         //console.log(options);
-          Vue.directive('has', {
-            inserted: (el, binding, vnode)=>{
+          app.directive('has', {
+            mounted: (el, binding, vnode)=>{
                 console.log("页面权限控制----");
                 //console.time()
                 //节点权限处理，如果命中则不进行全局权限处理
@@ -23,7 +23,8 @@ const hasPermission = {
 export function filterNodePermission(el, binding, vnode) {
   let permissionList = [];
   try {
-    let obj = vnode.context.$props.formData;
+    const instance = binding && binding.instance ? binding.instance : (vnode && vnode.context)
+    let obj = instance && instance.$props ? instance.$props.formData : null;
     if (obj) {
       let bpmList = obj.permissionList;
       for (let bpm of bpmList) {
@@ -71,10 +72,7 @@ export function filterGlobalPermission(el, binding, vnode) {
   console.log("全局页面权限--Global--");
 
   let permissionList = [];
-  let allPermissionList = [];
-
-  //let authList = Vue.ls.get(USER_AUTH);
-  let authList = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
+  let allPermissionList = [];  let authList = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
   for (let auth of authList) {
     if(auth.type != '2') {
       permissionList.push(auth);

@@ -57,59 +57,51 @@ function parseStyleText(cssText = '', camel) {
   return res
 }
 
-export function getClass(ele) {
-  let data = {}
-  if (ele.data) {
-    data = ele.data
-  } else if (ele.$vnode && ele.$vnode.data) {
-    data = ele.$vnode.data
+function mergeClassNames (cls, tempCls) {
+  if (!tempCls) {
+    return cls
   }
-  const tempCls = data.class || {}
-  const staticClass = data.staticClass
-  let cls = {}
-  staticClass &&
-  staticClass.split(' ').forEach(c => {
-    cls[c.trim()] = true
-  })
   if (typeof tempCls === 'string') {
     tempCls.split(' ').forEach(c => {
-      cls[c.trim()] = true
+      const key = c.trim()
+      if (key) {
+        cls[key] = true
+      }
     })
   } else if (Array.isArray(tempCls)) {
     classNames(tempCls)
       .split(' ')
       .forEach(c => {
-        cls[c.trim()] = true
+        const key = c.trim()
+        if (key) {
+          cls[key] = true
+        }
       })
-  } else {
+  } else if (typeof tempCls === 'object') {
     cls = { ...cls, ...tempCls }
   }
   return cls
 }
 
-export function getStyle(ele, camel) {
+/** Vue 3：从组件实例 $attrs 读取 class（替代 Vue 2 的 ele.data） */
+export function getClass (ele) {
+  const attrs = ele && ele.$attrs ? ele.$attrs : {}
+  let cls = mergeClassNames({}, attrs.class)
+  return cls
+}
 
-  getClass(ele)
-
-  let data = {}
-  if (ele.data) {
-    data = ele.data
-  } else if (ele.$vnode && ele.$vnode.data) {
-    data = ele.$vnode.data
-  }
-
-  // update-begin-author:sunjianlei date:20200303 for: style 和 staticStyle 可以共存
-  let style = data.style || {}
-  let staticStyle = data.staticStyle
-  staticStyle = staticStyle ? objectCamelize(data.staticStyle) : {}
-  // update-end-author:sunjianlei date:20200303 for: style 和 staticStyle 可以共存
+/** Vue 3：从组件实例 $attrs 读取 style（替代 Vue 2 的 ele.data） */
+export function getStyle (ele, camel) {
+  const attrs = ele && ele.$attrs ? ele.$attrs : {}
+  let style = attrs.style || {}
 
   if (typeof style === 'string') {
     style = parseStyleText(style, camel)
-  } else if (camel && style) {
-    // 驼峰化
-    style = objectCamelize(style)
+  } else if (style && typeof style === 'object') {
+    style = camel ? objectCamelize(style) : { ...style }
+  } else {
+    style = {}
   }
-  return { ...staticStyle, ...style }
+  return style
 }
 

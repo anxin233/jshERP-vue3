@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :width="modalWidth"
-    :visible="visible"
+    :open="visible"
     :title="title"
     @ok="handleSubmit"
     @cancel="close"
@@ -18,7 +18,7 @@
                   <a-col :md="24" :sm="24">
                     <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="序列号">
                       <a-input ref="name" style="width:400px;" placeholder="请输入序列号并回车（只能输入数字或字母）"
-                               oninput="value=value.replace(/[\W]/g,'')" v-model="queryParam.name"></a-input>
+                               oninput="value=value.replace(/[\W]/g,'')" v-model:value="queryParam.name"></a-input>
                       <div style="float:left;">
                         <a-button type="primary" @click="onAdd">添加</a-button>
                         <a-button style="margin-left: 8px" @click="clearAllSn">清空</a-button>
@@ -34,7 +34,7 @@
                       <a-textarea style="width:400px;"
                         placeholder="多个序列号用逗号隔开，请少于2000个字符"
                         :auto-size="{ minRows: 2, maxRows: 4 }"
-                        v-model="queryParam.multiName" />
+                        v-model:value="queryParam.multiName" />
                       <div style="float:left;">
                         <a-button type="primary" @click="onBatchAdd">批量添加</a-button>
                         <a-button style="margin-left: 8px" @click="clearAllSn">清空</a-button>
@@ -59,9 +59,11 @@
           :dataSource="checkDataSource"
           :pagination="false"
           :loading="loading">
-           <span slot="action" slot-scope="text, record">
-              <a @click="removeSn(record)">移除</a>
-           </span>
+           <template #bodyCell="{ column, record }">
+             <template v-if="column.dataIndex === 'action'">
+               <a @click="removeSn(record)">删除</a>
+             </template>
+           </template>
         </a-table>
       </a-col>
     </a-row>
@@ -70,6 +72,7 @@
 
 <script>
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 
   export default {
     name: 'JSelectSnAddModal',
@@ -94,7 +97,7 @@
         categoryTree:[],
         columns: [
           {dataIndex: 'serialNumber', title: '已录入的序列号', width: 100, align: 'left'},
-          {tdataIndex: 'action', title: '操作', align:"center", width: 50, scopedSlots: { customRender: 'action' }}
+          {dataIndex: 'action', title: '操作', align:"center", width: 50}
         ],
         scrollTrigger: {y: 460},
         checkDataSource: [],
@@ -103,7 +106,8 @@
         selectIds: [],
         title: '录入序列号',
         visible: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         disableMixinCreated: true,
         loading: false,
       }

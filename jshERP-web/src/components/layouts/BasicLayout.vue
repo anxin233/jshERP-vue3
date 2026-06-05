@@ -1,11 +1,21 @@
 <template>
   <global-layout>
-    <transition name="page-transition">
-      <keep-alive v-if="keepAlive">
-        <router-view />
-      </keep-alive>
-      <router-view v-else />
-    </transition>
+    <router-view v-slot="{ Component, route }">
+      <transition name="page-transition">
+        <keep-alive v-if="keepAlive">
+          <component
+            v-if="Component"
+            :is="Component"
+            :key="route.fullPath"
+          />
+        </keep-alive>
+        <component
+          v-else-if="Component"
+          :is="Component"
+          :key="route.fullPath"
+        />
+      </transition>
+    </router-view>
   </global-layout>
 </template>
 

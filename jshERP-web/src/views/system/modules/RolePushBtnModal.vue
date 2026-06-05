@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="width"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -53,7 +53,7 @@
             :columns="columns"
             :dataSource="dataSource"
             :loading="loading">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a-checkbox v-if="record.pushBtn.indexOf(1)>-1" value="1" :checked="record.btnStr?record.btnStr.indexOf(1)>-1:false" @change="onChange(record,'1')">编辑</a-checkbox>
               <a-checkbox v-if="record.pushBtn.indexOf(2)>-1" value="2" :checked="record.btnStr?record.btnStr.indexOf(2)>-1:false" @change="onChange(record,'2')">审核</a-checkbox>
               <a-checkbox v-if="record.pushBtn.indexOf(7)>-1" value="7" :checked="record.btnStr?record.btnStr.indexOf(7)>-1:false" @change="onChange(record,'7')">反审核</a-checkbox>
@@ -61,7 +61,7 @@
               <a-checkbox v-if="record.pushBtn.indexOf(4)>-1" value="4" :checked="record.btnStr?record.btnStr.indexOf(4)>-1:false" @change="onChange(record,'4')">启用禁用</a-checkbox>
               <a-checkbox v-if="record.pushBtn.indexOf(5)>-1" value="5" :checked="record.btnStr?record.btnStr.indexOf(5)>-1:false" @change="onChange(record,'5')">打印</a-checkbox>
               <a-checkbox v-if="record.pushBtn.indexOf(6)>-1" value="6" :checked="record.btnStr?record.btnStr.indexOf(6)>-1:false" @change="onChange(record,'6')">作废</a-checkbox>
-            </span>
+            </span></template>
           </a-table>
         </div>
       </a-spin>
@@ -75,6 +75,7 @@
   import { updateBtnStrByRoleId } from '@/api/api'
   import { removeByVal } from "@/utils/util"
   import {mixinDevice} from '@/utils/mixin'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
   export default {
     name: "RolePushBtnModal",
     mixins:[JeecgListMixin, mixinDevice],
@@ -91,7 +92,8 @@
         exportChecked: false,
         disableMixinCreated: true,
         confirmLoading: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         /* 数据源 */
         dataSource:[],
         // 表头
@@ -115,7 +117,7 @@
             title: '按钮列表',
             dataIndex: 'action',
             align:"center",
-            scopedSlots: { customRender: 'action' }
+            customRender: (cell) => this.$renderColumnSlot('action', cell)
           }
         ],
         url: {

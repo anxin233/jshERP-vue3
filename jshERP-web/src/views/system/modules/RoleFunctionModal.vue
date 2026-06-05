@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="width"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -17,8 +17,9 @@
       style="top:5%;height: 95%;">
       <a-spin :spinning="confirmLoading">
         <div class="drawer-bootom-button">
-          <a-dropdown :trigger="['click']" placement="topCenter">
-            <a-menu slot="overlay">
+          <a-dropdown :trigger="['click']" placement="top">
+            <template #overlay>
+            <a-menu>
               <a-menu-item key="1" @click="switchCheckStrictly(1)">父子关联</a-menu-item>
               <a-menu-item key="2" @click="switchCheckStrictly(2)">取消关联</a-menu-item>
               <a-menu-item key="3" @click="checkALL">全部勾选</a-menu-item>
@@ -26,7 +27,8 @@
               <a-menu-item key="5" @click="expandAll">展开所有</a-menu-item>
               <a-menu-item key="6" @click="closeAll">合并所有</a-menu-item>
             </a-menu>
-            <a-button>
+          </template>
+          <a-button>
               树操作 <legacy-icon type="up" />
             </a-button>
           </a-dropdown>
@@ -55,6 +57,7 @@
   import {mixinDevice} from '@/utils/mixin'
   import {addUserBusiness,editUserBusiness,checkUserBusiness} from '@/api/api'
   import {getAction} from '../../../api/manage'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
   export default {
     name: "RoleFunctionModal",
     mixins: [mixinDevice],
@@ -80,7 +83,8 @@
           sm: { span: 16 },
         },
         confirmLoading: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
       }
     },
     created () {

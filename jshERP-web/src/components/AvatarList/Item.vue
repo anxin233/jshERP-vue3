@@ -1,6 +1,6 @@
 <template>
   <tooltip v-if="tips !== ''">
-    <template slot="title">{{ tips }}</template>
+    <template #title>{{ tips }}</template>
     <avatar :size="avatarSize" :src="src" />
   </tooltip>
   <avatar v-else :size="avatarSize" :src="src" />
@@ -27,19 +27,17 @@
         default: ''
       }
     },
-    data () {
-      return {
-        size: this.$parent.size
+    inject: {
+      avatarListSize: {
+        default: 'default'
       }
     },
     computed: {
       avatarSize () {
-        return this.size !== 'mini' && this.size || 20
-      }
-    },
-    watch: {
-      '$parent.size' (val) {
-        this.size = val
+        const size = this.avatarListSize && this.avatarListSize.value !== undefined
+          ? this.avatarListSize.value
+          : this.avatarListSize
+        return size !== 'mini' && size || 20
       }
     }
   }

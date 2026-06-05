@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="500"
-      :visible="visible"
+      :open="visible"
       :confirm-loading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -15,15 +15,13 @@
       cancelText="取消"
       okText="保存"
       style="top:30%;height: 30%;">
-      <template slot="footer">
-        <a-button key="back" v-if="isReadOnly" @click="handleCancel">
-          取消
-        </a-button>
+      <template #footer>
+        <a-button key="back" v-if="isReadOnly" @click="handleCancel">取消</a-button>
       </template>
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form">
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="请输入数量">
-            <a-input placeholder="请输入数量" v-decorator.trim="[ 'number', validatorRules.number]" />
+        <a-form ref="formRef" :model="formModel" :rules="formRules">
+          <a-form-item name="number" :labelCol="labelCol" :wrapperCol="wrapperCol" label="请输入数量">
+            <a-input placeholder="请输入数量" v-model:value="formModel.number" />
           </a-form-item>
         </a-form>
       </a-spin>
@@ -43,25 +41,14 @@
         isReadOnly: false,
         batchType: '',
         model: {},
-        labelCol: {
-          xs: { span: 24 },
-          sm: { span: 5 },
-        },
-        wrapperCol: {
-          xs: { span: 24 },
-          sm: { span: 16 },
-        },
+        formModel: { number: '' },
+        labelCol: { xs: { span: 24 }, sm: { span: 5 } },
+        wrapperCol: { xs: { span: 24 }, sm: { span: 16 } },
         confirmLoading: false,
-        form: this.$form.createForm(this),
-        validatorRules:{
-          number:{
-            rules: [
-              { required: true, message: '请输入数量!' }
-            ]}
+        formRules:{
+          number: [{ required: true, message: '请输入数量!', trigger: 'blur' }]
         }
       }
-    },
-    created () {
     },
     methods: {
       add (type) {
@@ -76,8 +63,8 @@
         this.edit({});
       },
       edit (record) {
-        this.form.resetFields();
         this.model = Object.assign({}, record);
+        this.formModel = { number: '' }
         this.visible = true;
       },
       close () {
@@ -85,17 +72,14 @@
         this.visible = false;
       },
       handleOk () {
-        let number = this.form.getFieldValue('number')
-        this.$emit('ok', number, this.batchType);
-        this.visible = false
+        const formRef = this.$refs.formRef
+        if (!formRef) return
+        formRef.validate().then(() => {
+          this.$emit('ok', this.formModel.number, this.batchType);
+          this.visible = false
+        }).catch(() => {})
       },
-      handleCancel () {
-        this.close()
-      }
+      handleCancel () { this.close() }
     }
   }
 </script>
-
-<style scoped>
-
-</style>

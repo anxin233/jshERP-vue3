@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1300"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -20,19 +20,19 @@
           <a-row :gutter="24">
             <a-col :md="6" :sm="24">
               <a-form-item label="单据编号" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入单据编号查询" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号查询" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="商品信息" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入名称、规格、型号" v-model="queryParam.materialParam"></a-input>
+                <a-input placeholder="请输入名称、规格、型号" v-model:value="queryParam.materialParam"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                 <a-range-picker
                   style="width: 100%"
-                  v-model="queryParam.createTimeRange"
+                  v-model:value="queryParam.createTimeRange"
                   format="YYYY-MM-DD"
                   :placeholder="['开始时间', '结束时间']"
                   @change="onDateChange"
@@ -62,9 +62,9 @@
         :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange, type: getType}"
         :customRow="rowAction"
         @change="handleTableChange">
-        <span slot="numberCustomRender" slot-scope="text, record">
+        <template #numberCustomRender="{ text, record }"><span>
           <a @click="myHandleDetail(record)">{{record.number}}</a>
-        </span>
+        </span></template>
       </a-table>
       <!-- table区域-end -->
       <!-- 表单区域 -->
@@ -77,9 +77,7 @@
   import BillDetail from '../../bill/dialog/BillDetail'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import {mixinDevice} from '@/utils/mixin'
-  import { findBillDetailByNumber } from '@/api/api'
-  import Vue from 'vue'
-  export default {
+  import { findBillDetailByNumber } from '@/api/api'  export default {
     name: 'DebtBillList',
     mixins:[JeecgListMixin, mixinDevice],
     components: {
@@ -115,10 +113,10 @@
           { title: '', dataIndex: 'organName',width:120, ellipsis:true},
           {
             title: '单据编号', dataIndex: 'number', width: 120,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '商品信息', dataIndex: 'materialsList',width:200, ellipsis:true,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(text) {
                 return text.replace(",","，");
               }

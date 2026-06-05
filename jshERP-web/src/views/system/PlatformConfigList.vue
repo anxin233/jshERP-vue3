@@ -15,9 +15,9 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
-            </span>
+            </span></template>
           </a-table>
         </div>
         <!-- table区域-end -->
@@ -66,7 +66,7 @@
             dataIndex: 'action',
             align:"center",
             width: 100,
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {
             title: '配置名称',
@@ -99,5 +99,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

@@ -3,8 +3,9 @@
     <a-modal
       :title="title"
       :width="1400"
-      :visible="visible"
-      :getContainer="() => $refs.container"
+      :open="visible"
+      :destroyOnClose="true"
+      :getContainer="getModalContainer"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
       :mask="isDesktop()"
@@ -12,7 +13,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <!-- 查询区域 -->
@@ -22,25 +23,24 @@
           <a-row :gutter="24">
             <a-col :md="8" :sm="24">
               <a-form-item label="单据编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-input placeholder="请输入单据编号" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                 <a-range-picker
                   style="width:100%"
-                  v-model="queryParam.createTimeRange"
+                  v-model:value="queryParam.createTimeRange"
                   format="YYYY-MM-DD"
                   :placeholder="['开始时间', '结束时间']"
                   @change="onDateChange"
-                  @ok="onDateOk"
                 />
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
               <a-button type="primary" @click="searchQuery">查询</a-button>
               <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
-              <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+              <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
             </a-col>
           </a-row>
         </a-form>
@@ -57,13 +57,13 @@
         :pagination="ipagination"
         :loading="loading"
         @change="handleTableChange">
-        <span slot="numberCustomRender" slot-scope="text, record">
+        <template #numberCustomRender="{ text, record }"><span>
           <a @click="myHandleDetail(record)">{{record.number}}</a>
-        </span>
+        </span></template>
       </a-table>
       <!-- table区域-end -->
       <!-- 表单区域 -->
-      <bill-detail ref="billDetail"></bill-detail>
+      <bill-detail v-if="billDetailVisible" ref="billDetail"></bill-detail>
     </a-modal>
   </div>
 </template>
@@ -85,7 +85,8 @@
       return {
         title:"操作",
         visible: false,
-        disableMixinCreated: false,
+        disableMixinCreated: true,
+        billDetailVisible: false,
         toFromType: '',
         currentMaterialId: '',
         // 查询条件
@@ -114,7 +115,7 @@
           },
           {
             title: '单据编号', dataIndex: 'number', width: 120,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '类型', dataIndex: 'type', width: 80},
           { title: '条码', dataIndex: 'barCode', width: 100},
@@ -141,6 +142,9 @@
     created() {
     },
     methods: {
+      getModalContainer() {
+        return this.$refs.container || document.body
+      },
       getQueryParams() {
         let param = Object.assign({}, this.queryParam, this.isorter)
         param.field = this.getQueryField()
@@ -160,6 +164,7 @@
       close () {
         this.$emit('close');
         this.visible = false;
+        this.billDetailVisible = false;
       },
       handleCancel () {
         this.close()
@@ -168,18 +173,23 @@
         this.queryParam.beginTime=dateString[0];
         this.queryParam.endTime=dateString[1];
       },
-      onDateOk(value) {
-        console.log(value);
-      },
       myHandleDetail(record) {
         let that = this
         this.toFromType = record.fromType
+        this.billDetailVisible = true
         findBillDetailByNumber({ number: record.number }).then((res) => {
           if (res && res.code === 200) {
-            this.$refs.billDetail.isCanBackCheck = false
-            that.$refs.billDetail.show(res.data, record.type);
-            that.$refs.billDetail.title="详情";
+            that.$nextTick(() => {
+              if (!that.$refs.billDetail) return
+              that.$refs.billDetail.isCanBackCheck = false
+              that.$refs.billDetail.show(res.data, record.type);
+              that.$refs.billDetail.title = "详情";
+            })
+          } else {
+            that.billDetailVisible = false
           }
+        }).catch(() => {
+          that.billDetailVisible = false
         })
       },
       exportExcel() {
@@ -198,5 +208,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

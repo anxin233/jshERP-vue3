@@ -1,43 +1,72 @@
 <template>
-  <div v-if="!reloading" class="j-area-linkage">
-    <area-cascader
-      v-if="_type === enums.type[0]"
-      :value="innerValue"
-      :data="pcaa"
-      :level="1"
-      :style="{width}"
-      v-bind="attrs"
-      v-on="_listeners"
-      @change="handleChange"
-    />
-    <area-select
-      v-else-if="_type === enums.type[1]"
-      :value="innerValue"
-      :data="pcaa"
-      :level="2"
-      v-bind="attrs"
-      v-on="_listeners"
-      @change="handleChange"
-    />
-    <div v-else>
-      <span style="color:red;"> Bad type value: {{_type}}</span>
-    </div>
-  </div>
+  <a-cascader
+    class="j-area-linkage"
+    :value="innerValue"
+    :options="areaOptions"
+    :placeholder="placeholder"
+    :style="{ width }"
+    :field-names="{ label: 'label', value: 'value', children: 'children' }"
+    :change-on-select="changeOnSelect"
+    allow-clear
+    v-bind="attrs"
+    @change="handleChange"
+  />
 </template>
 
 <script>
   import { pcaa } from 'area-data'
+
+  function buildAreaOptions() {
+    const provinces = pcaa['86'] || {}
+    return Object.keys(provinces).map(provinceCode => ({
+      value: provinceCode,
+      label: provinces[provinceCode],
+      children: buildChildren(provinceCode)
+    }))
+  }
+
+  function buildChildren(code) {
+    const children = pcaa[code] || {}
+    return Object.keys(children).map(childCode => {
+      const child = {
+        value: childCode,
+        label: children[childCode]
+      }
+      const next = buildChildren(childCode)
+      if (next.length) {
+        child.children = next
+      }
+      return child
+    })
+  }
+
+  function findPathByValue(options, value, path = []) {
+    for (const option of options) {
+      const nextPath = [...path, option.value]
+      if (option.value === value) {
+        return nextPath
+      }
+      if (option.children) {
+        const result = findPathByValue(option.children, value, nextPath)
+        if (result.length) {
+          return result
+        }
+      }
+    }
+    return []
+  }
 
   export default {
     name: 'JAreaLinkage',
     props: {
       value: {
         type: String,
-        required:false
+        default: ''
       },
-      // 组件的类型，可选值：
-      // select 下拉样式
-      // cascader 级联样式（默认）
+      modelValue: {
+        type: String,
+        default: ''
+      },
       type: {
         type: String,
         default: 'cascader'
@@ -45,28 +74,26 @@
       width: {
         type: String,
         default: '100%'
+      },
+      placeholder: {
+        type: String,
+        default: '请选择地区'
+      },
+      changeOnSelect: {
+        type: Boolean,
+        default: true
       }
     },
+    emits: ['change', 'input', 'update:value', 'update:modelValue'],
     data() {
       return {
-        pcaa,
-        innerValue: [],
-        usedListeners: ['change'],
-        enums: {
-          type: ['cascader', 'select']
-        },
-        reloading: false,
-        areaData:''
+        areaOptions: buildAreaOptions(),
+        innerValue: []
       }
     },
     computed: {
-      _listeners() {
-        let listeners = { ...this.listeners }
-        // 去掉已使用的事件，防止冲突
-        this.usedListeners.forEach(key => {
-          delete listeners[key]
-        })
-        return listeners
+      currentValue() {
+        return this.modelValue || this.value
       },
       attrs() {
         const attrs = {}
@@ -76,100 +103,31 @@
           }
         })
         return attrs
-      },
-      listeners() {
-        const listeners = {}
-        Object.assign(listeners, this['$' + 'listeners'] || {})
-        Object.keys(this.$attrs).forEach(key => {
-          if (/^on[A-Z]|^onUpdate:/.test(key)) {
-            const eventName = key.slice(2).replace(/^[A-Z]/, match => match.toLowerCase())
-            listeners[eventName] = this.$attrs[key]
-          }
-        })
-        return listeners
-      },
-      _type() {
-        if (this.enums.type.includes(this.type)) {
-          return this.type
-        } else {
-          console.error(`JAreaLinkage的type属性只能接收指定的值（${this.enums.type.join('|')}）`)
-          return this.enums.type[0]
-        }
-      },
+      }
     },
     watch: {
-      value: {
+      currentValue: {
         immediate: true,
-        handler() {
-          this.loadDataByValue(this.value)
+        handler(value) {
+          this.innerValue = value ? findPathByValue(this.areaOptions, value) : []
         }
-      },
-    },
-    created() {
-      this.initAreaData();
+      }
     },
     methods: {
-      /** 通过 value 反推 options */
-      loadDataByValue(value) {
-        if(!value || value.length==0){
-          this.innerValue = []
-          this.reloading = true;
-          setTimeout(()=>{
-            this.reloading = false
-          },100)
-        }else{
-          this.initAreaData();
-          let arr = this.areaData.getRealCode(value);
-          this.innerValue = arr
-        }
-      },
-      /** 通过地区code获取子级 */
-      loadDataByCode(value) {
-        let options = []
-        let data = pcaa[value]
-        if (data) {
-          for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-              options.push({ value: key, label: data[key], })
-            }
-          }
-          return options
-        } else {
-          return []
-        }
-      },
-      /** 判断是否有子节点 */
-      hasChildren(options) {
-        options.forEach(option => {
-          let data = this.loadDataByCode(option.value)
-          option.isLeaf = data.length === 0
-        })
-      },
       handleChange(values) {
-        let value = values[values.length - 1]
+        this.innerValue = values || []
+        const value = this.innerValue.length ? this.innerValue[this.innerValue.length - 1] : ''
         this.$emit('change', value)
-      },
-      initAreaData(){
-        if(!this.areaData){
-          this.areaData = new Area();
-        }
-      },
-
-    },
-    model: { prop: 'value', event: 'change' },
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
+      }
+    }
   }
 </script>
 
 <style lang="less" scoped>
   .j-area-linkage {
-    height:40px;
-    /deep/ .area-cascader-wrap .area-select {
-      width: 100%;
-    }
-
-    /deep/ .area-select .area-selected-trigger {
-      line-height: 1.15;
-    }
+    width: 100%;
   }
-
 </style>

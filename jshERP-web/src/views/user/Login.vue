@@ -5,22 +5,22 @@
       <a-form-item>
         <a-input
           size="large"
-          v-model="loginFieldsPlain.loginName"
+          v-model:value="loginFieldsPlain.loginName"
           type="text"
           placeholder="请输入用户名"
           @blur="onLoginNameBlur">
-          <legacy-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+          <template #prefix><legacy-icon type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/></template>
         </a-input>
       </a-form-item>
 
       <a-form-item>
         <a-input
           size="large"
-          v-model="loginFieldsPlain.password"
+          v-model:value="loginFieldsPlain.password"
           type="password"
           autocomplete="off"
           placeholder="请输入密码">
-          <legacy-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+          <template #prefix><legacy-icon type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/></template>
         </a-input>
       </a-form-item>
 
@@ -28,11 +28,11 @@
         <a-col :span="14">
           <a-form-item>
             <a-input
-              v-model="loginFieldsPlain.inputCode"
+              v-model:value="loginFieldsPlain.inputCode"
               size="large"
               type="text"
               placeholder="请输入验证码">
-              <legacy-icon slot="prefix" type="smile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <template #prefix><legacy-icon type="smile" :style="{ color: 'rgba(0,0,0,.25)' }"/></template>
             </a-input>
           </a-form-item>
         </a-col>
@@ -78,7 +78,6 @@
   import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
   import { mapActions } from 'vuex'
   import { timeFix } from '@/utils/util'
-  import Vue from 'vue'
   import { getPlatformConfigByKey} from '@/api/api'
   import { ACCESS_TOKEN, ENCRYPTED_STRING } from '@/store/mutation-types'
   import { getAction } from '@/api/manage'

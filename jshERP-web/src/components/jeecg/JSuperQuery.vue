@@ -6,7 +6,7 @@
       <!-- begin 不知道为什么不加上这段代码就无法生效 -->
       <span v-show="false">{{tooltipProps}}</span>
       <!-- end 不知道为什么不加上这段代码就无法生效 -->
-      <template slot="title">
+      <template #title>
         <span>已有高级查询条件生效</span>
         <a-divider type="vertical"/>
         <a @click="handleReset">清空</a>
@@ -16,16 +16,16 @@
           <legacy-icon type="appstore" theme="twoTone" spin/>
           <span>高级查询</span>
         </a-button>
-        <a-button v-if="izMobile" type="primary" icon="delete" @click="handleReset"/>
+        <a-button v-if="izMobile" type="primary" @click="handleReset"><template #icon><legacy-icon type="delete" /></template></a-button>
       </a-button-group>
     </a-tooltip>
-    <a-button v-else type="primary" icon="filter" @click="handleOpen">高级查询</a-button>
+    <a-button v-else type="primary" @click="handleOpen"><template #icon><legacy-icon type="filter" /></template>高级查询</a-button>
   </slot>
 
   <j-modal
     title="高级查询构造器"
     :width="1000"
-    :visible="visible"
+    :open="visible"
     @cancel="handleCancel"
     :mask="false"
     :fullscreen="izMobile"
@@ -33,7 +33,7 @@
     style="top:5%;max-height: 95%;"
   >
 
-    <template slot="footer">
+    <template #footer>
       <div style="float: left">
         <a-button :loading="loading" @click="handleReset">重置</a-button>
         <a-button :loading="loading" @click="handleSave">保存查询条件</a-button>
@@ -47,11 +47,11 @@
         <a-col :sm="24" :md="24-5">
 
           <a-empty v-if="queryParamsModel.length === 0" style="margin-bottom: 12px;">
-            <div slot="description">
+            <template #description><div>
               <span>没有任何查询条件</span>
               <a-divider type="vertical"/>
               <a @click="handleAdd">点击新增</a>
-            </div>
+            </div></template>
           </a-empty>
 
           <a-form v-else layout="inline">
@@ -59,7 +59,7 @@
             <a-row style="margin-bottom: 12px;">
               <a-col :md="12" :xs="24">
                 <a-form-item label="过滤条件匹配" :labelCol="{md: 6,xs:24}" :wrapperCol="{md: 18,xs:24}" style="width: 100%;">
-                  <a-select v-model="matchType" :getPopupContainer="node=>node.parentNode" style="width: 100%;">
+                  <a-select v-model:value="matchType" :getPopupContainer="node=>node.parentNode" style="width: 100%;">
                     <a-select-option value="and">AND（所有条件都要求匹配）</a-select-option>
                     <a-select-option value="or">OR（条件中的任意一个匹配）</a-select-option>
                   </a-select>
@@ -72,7 +72,7 @@
               <a-col :md="8" :xs="24" style="margin-bottom: 12px;">
                 <a-tree-select
                   showSearch
-                  v-model="item.field"
+                  v-model:value="item.field"
                   :treeData="fieldTreeData"
                   :dropdownStyle="{ maxHeight: '400px', overflow: 'auto' }"
                   placeholder="选择查询字段"
@@ -104,58 +104,64 @@
                 <template v-if="item.dictCode">
                   <template v-if="item.type === 'table-dict'">
                     <j-popup
-                      v-model="item.val"
+                      :value="item.val"
                       :code="item.dictTable"
                       :field="item.dictCode"
                       :orgFields="item.dictCode"
                       :destFields="item.dictCode"
+                    
+                      @input="(e,v)=>handleChangeJPopup(item,e,v)"
                     ></j-popup>
                   </template>
                   <template v-else>
-                    <j-multi-select-tag v-show="allowMultiple(item)" v-model="item.val" :dictCode="item.dictCode" placeholder="请选择"/>
-                    <j-dict-select-tag v-show="!allowMultiple(item)" v-model="item.val" :dictCode="item.dictCode" placeholder="请选择"/>
+                    <j-multi-select-tag v-show="allowMultiple(item)" :value="item.val" @change="item.val = $event" @input="item.val = $event" :dictCode="item.dictCode" placeholder="请选择"/>
+                    <j-dict-select-tag v-show="!allowMultiple(item)" :value="item.val" @change="item.val = $event" @input="item.val = $event" :dictCode="item.dictCode" placeholder="请选择"/>
                   </template>
                 </template>
                 <j-popup v-else-if="item.type === 'popup'" :value="item.val" v-bind="item.popup" group-id="superQuery" @input="(e,v)=>handleChangeJPopup(item,e,v)"/>
                 <j-select-multi-user
                   v-else-if="item.type === 'select-user' || item.type === 'sel_user'"
-                  v-model="item.val"
+                  :value="item.val"
+                  @change="item.val = $event"
                   :buttons="false"
                   :multiple="false"
                   placeholder="请选择用户"
                   :returnKeys="['id', item.customReturnField || 'username']"
+                
                 />
                 <j-select-depart
                   v-else-if="item.type === 'select-depart' || item.type === 'sel_depart'"
-                  v-model="item.val"
+                  :value="item.val"
+                  @change="item.val = $event"
                   :multi="false"
                   placeholder="请选择部门"
                   :customReturnField="item.customReturnField || 'id'"
+                
                 />
                 <a-select
                   v-else-if="item.options instanceof Array"
-                  v-model="item.val"
+                  v-model:value="item.val"
                   :options="item.options"
                   allowClear
                   placeholder="请选择"
                   :mode="allowMultiple(item)?'multiple':''"
                 />
-                <j-area-linkage v-model="item.val" v-else-if="item.type==='area-linkage' || item.type==='pca'" style="width: 100%"/>
-                <j-date v-else-if=" item.type=='date' " v-model="item.val" placeholder="请选择日期" style="width: 100%"></j-date>
-                <j-date v-else-if=" item.type=='datetime' " v-model="item.val" placeholder="请选择时间" :show-time="true" date-format="YYYY-MM-DD HH:mm:ss" style="width: 100%"></j-date>
+                <j-area-linkage :value="item.val" @change="item.val = $event" v-else-if="item.type==='area-linkage' || item.type==='pca'" style="width: 100%"/>
+                <j-date v-else-if=" item.type=='date' " v-model:value="item.val" placeholder="请选择日期" style="width: 100%"></j-date>
+                <j-date v-else-if=" item.type=='datetime' " v-model:value="item.val" placeholder="请选择时间" :show-time="true" date-format="YYYY-MM-DD HH:mm:ss" style="width: 100%"></j-date>
                 <a-time-picker v-else-if="item.type==='time'" :value="item.val ? moment(item.val,'HH:mm:ss') : null" format="HH:mm:ss" style="width: 100%" @change="(time,value)=>item.val=value"/>
-                <a-input-number v-else-if=" item.type=='int'||item.type=='number' " style="width: 100%" placeholder="请输入数值" v-model="item.val"/>
-                <a-input v-else v-model="item.val" placeholder="请输入值"/>
+                <a-input-number v-else-if=" item.type=='int'||item.type=='number' " style="width: 100%" placeholder="请输入数值" v-model:value="item.val"/>
+                <a-input v-else v-model:value="item.val" placeholder="请输入值"/>
               </a-col>
 
               <a-col :md="4" :xs="0" style="margin-bottom: 12px;">
-                <a-button @click="handleAdd" icon="plus"></a-button>&nbsp;
-                <a-button @click="handleDel( index )" icon="minus"></a-button>
+                <a-button @click="handleAdd"><template #icon><legacy-icon type="plus" /></template></a-button>&nbsp;
+                <a-button @click="handleDel( index )"><template #icon><legacy-icon type="minus" /></template></a-button>
               </a-col>
 
               <a-col :md="0" :xs="24" style="margin-bottom: 12px;text-align: right;">
-                <a-button @click="handleAdd" icon="plus"></a-button>&nbsp;
-                <a-button @click="handleDel( index )" icon="minus"></a-button>
+                <a-button @click="handleAdd"><template #icon><legacy-icon type="plus" /></template></a-button>&nbsp;
+                <a-button @click="handleDel( index )"><template #icon><legacy-icon type="minus" /></template></a-button>
               </a-col>
 
             </a-row>
@@ -166,9 +172,9 @@
           <!-- 查询记录 -->
 
           <a-card class="j-super-query-history-card" :bordered="true">
-            <div slot="title">
+            <template #title><div>
               保存的查询
-            </div>
+            </div></template>
 
             <a-empty v-if="saveTreeData.length === 0" class="j-super-query-history-empty" description="没有保存任何查询"/>
             <a-tree
@@ -189,8 +195,8 @@
 
     </a-spin>
 
-    <a-modal title="请输入保存的名称" :visible="prompt.visible" @cancel="prompt.visible=false" @ok="handlePromptOk">
-      <a-input v-model="prompt.value"></a-input>
+    <a-modal title="请输入保存的名称" :open="prompt.visible" @cancel="prompt.visible=false" @ok="handlePromptOk">
+      <a-input v-model:value="prompt.value"></a-input>
     </a-modal>
 
   </j-modal>
@@ -198,10 +204,12 @@
 </template>
 
 <script>
+  import { h } from 'vue'
   import moment from 'moment'
   import * as utils from '@/utils/util'
   import { mixinDevice } from '@/utils/mixin'
   import JDate from '@/components/jeecg/JDate.vue'
+  import JPopup from '@/components/jeecg/JPopup.vue'
   import JSelectDepart from '@/components/jeecgbiz/JSelectDepart'
   import JSelectMultiUser from '@/components/jeecgbiz/JSelectMultiUser'
   import JAreaLinkage from '@comp/jeecg/JAreaLinkage'
@@ -211,7 +219,7 @@
   export default {
     name: 'JSuperQuery',
     mixins: [mixinDevice],
-    components: { JAreaLinkage, JDate, JSelectDepart, JSelectMultiUser, LegacyIcon },
+    components: { JAreaLinkage, JDate, JPopup, JSelectDepart, JSelectMultiUser, LegacyIcon },
     props: {
       /*
        fieldList: [{
@@ -392,7 +400,7 @@
         if (popup) {
           item['popup'] = popup
         }
-        this.$set(item, 'val', undefined)
+        (item['val'] = undefined)
       },
       handleOpen() {
         this.show()
@@ -510,17 +518,14 @@
         item.icon = this.treeIcon
         item.originTitle = item['title']
         item.title = (fn, vNode) => {
-          const h = this.$createElement
           let { originTitle } = vNode.dataRef
           return h('div', { class: 'j-history-tree-title' }, [
             h('span', [originTitle]),
             h('div', {
               class: 'j-history-tree-title-closer',
-              on: {
-                click: e => this.handleRemoveSaveTreeItem(e, vNode)
-              }
+              onClick: e => this.handleRemoveSaveTreeItem(e, vNode)
             }, [
-              h(LegacyIcon, { props: { type: 'close-circle' } })
+              h(LegacyIcon, { type: 'close-circle' })
             ])
           ])
         }
@@ -534,7 +539,7 @@
 
       handleRuleChange(item, newValue) {
         let oldValue = item.rule
-        this.$set(item, 'rule', newValue)
+        (item['rule'] = newValue)
         // 上一个规则是否是 in，且type是字典或下拉
         if (oldValue === 'in') {
           if (item.dictCode || item.options instanceof Array) {
@@ -544,7 +549,7 @@
             } else if (Array.isArray(item.val)) {
               value = item.val[0]
             }
-            this.$set(item, 'val', value)
+            (item['val'] = value)
           }
         }
       },
@@ -566,30 +571,30 @@
   .j-super-query-modal {
 
     .j-super-query-history-card {
-      /deep/ .ant-card-body,
-      /deep/ .ant-card-head-title {
+      :deep(.ant-card-body),
+      :deep(.ant-card-head-title) {
         padding: 0;
       }
 
-      /deep/ .ant-card-head {
+      :deep(.ant-card-head) {
         padding: 4px 8px;
         min-height: initial;
       }
     }
 
     .j-super-query-history-empty {
-      /deep/ .ant-empty-image {
+      :deep(.ant-empty-image) {
         height: 80px;
         line-height: 80px;
         margin-bottom: 0;
       }
 
-      /deep/ img {
+      :deep(img) {
         width: 80px;
         height: 65px;
       }
 
-      /deep/ .ant-empty-description {
+      :deep(.ant-empty-description) {
         color: #afafaf;
         margin: 8px 0;
       }
@@ -630,11 +635,11 @@
 
       }
 
-      /deep/ .ant-tree-switcher {
+      :deep(.ant-tree-switcher) {
         display: none;
       }
 
-      /deep/ .ant-tree-node-content-wrapper {
+      :deep(.ant-tree-node-content-wrapper) {
         width: 100%;
       }
     }

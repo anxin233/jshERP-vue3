@@ -11,17 +11,17 @@
       <a-col>
         <!-- 操作按钮 -->
         <div v-if="actionButton" class="action-button">
-          <a-button type="primary" icon="plus" @click="handleClickAdd" :disabled="disabled">插入行</a-button>
+          <a-button type="primary" @click="handleClickAdd" :disabled="disabled"><template #icon><legacy-icon type="plus" /></template>插入行</a-button>
           <span class="gap"></span>
           <template v-if="selectedRowIds.length>0">
             <a-popconfirm
               :title="`确定要移除这 ${selectedRowIds.length} 项吗?`"
               @confirm="handleConfirmDelete">
-              <a-button type="primary" icon="minus" :disabled="disabled">移除行</a-button>
+              <a-button type="primary" :disabled="disabled"><template #icon><legacy-icon type="minus" /></template>移除行</a-button>
               <span class="gap"></span>
             </a-popconfirm>
             <template v-if="showClearSelectButton">
-              <a-button icon="delete" @click="handleClickClearSelection">清空选择</a-button>
+              <a-button @click="handleClickClearSelection"><template #icon><legacy-icon type="delete" /></template>清空选择</a-button>
               <span class="gap"></span>
             </template>
           </template>
@@ -31,7 +31,7 @@
             <a-popconfirm
               :title="`确定要移除这 ${selectedRowIds.length} 项吗?`"
               @confirm="handleConfirmDelete">
-              <a-button type="primary" icon="minus" :disabled="disabled">移除行</a-button>
+              <a-button type="primary" :disabled="disabled"><template #icon><legacy-icon type="minus" /></template>移除行</a-button>
               <span class="gap"></span>
             </a-popconfirm>
           </template>
@@ -44,7 +44,7 @@
 
     <slot name="actionButtonAfter" :target="getVM()"/>
 
-    <div :id="`${caseId}inputTable`" class="input-table" :style="{'min-width':minWidth+'px'}">
+    <div :id="`${caseId}inputTable`" ref="inputTableRef" class="input-table" :style="{'min-width':minWidth+'px'}">
       <!-- 渲染表头 -->
       <div class="thead" ref="thead">
         <div class="tr" :style="{width: this.realTrWidth}">
@@ -85,23 +85,15 @@
 
 
         <!-- 渲染主体 body -->
-        <div :id="`${caseId}tbody`" class="tbody" :style="tbodyStyle">
+        <div :id="`${caseId}tbody`" ref="tbodyRef" class="tbody" :style="tbodyStyle">
           <!-- 扩展高度 -->
           <div class="tr-expand" :style="`height:${getExpandHeight}px; z-index:${loading?'11':'9'};`"></div>
           <!-- 无数据时显示 -->
           <div v-if="rows.length===0" class="tr-nodata">
             <span>暂无数据</span>
           </div>
-          <!-- v-model="rows"-->
-          <draggable
-            :value="rows"
-            handle=".td-ds-icons"
-            @start="handleDragMoveStart"
-            @end="handleDragMoveEnd"
-          >
-
-            <!-- 动态生成tr -->
-            <template v-for="(row,rowIndex) in rows">
+          <!-- rows binding -->
+          <template v-for="(row,rowIndex) in rows">
               <!-- tr 如果超出200条，则只加载可见的和预加载的总共十条数据 -->
               <div
                 v-if="rows.length<=200 ||
@@ -113,7 +105,12 @@
                 class="tr"
                 :class="selectedRowIds.indexOf(row.id) !== -1 ? 'tr-checked' : ''"
                 :style="buildTrStyle(rowIndex)"
-                :key="row.id">
+                :key="row.id"
+                :draggable="isRowDragEnabled"
+                @dragstart="event => handleNativeDragStart(event, rowIndex)"
+                @dragover.prevent="event => handleNativeDragOver(event, rowIndex)"
+                @drop.prevent="event => handleNativeDragDrop(event, rowIndex)"
+                @dragend="handleNativeDragEnd">
                 <!-- 左侧固定td  -->
 
                 <div v-if="dragSort" class="td td-ds" :style="style.tdLeftDs">
@@ -181,7 +178,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -189,7 +186,7 @@
                         <input
                           :id="id"
                           :readonly="col.readonly"
-                          :visible="col.visible"
+                          v-show="col.visible !== false"
                           v-bind="buildProps(row,col)"
                           :data-input-number="col.type === formTypes.inputNumber"
                           :placeholder="replaceProps(col, col.placeholder)"
@@ -216,7 +213,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -257,7 +254,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -271,7 +268,7 @@
                           v-bind="buildProps(row,col)"
                           style="width: 100%;"
                           :value="jdateValues[id]"
-                          :getCalendarContainer="getParentContainer"
+                          :getPopupContainer="getParentContainer"
                           :placeholder="replaceProps(col, col.placeholder)"
                           :trigger-change="true"
                           :showTime="col.type === formTypes.datetime"
@@ -289,7 +286,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer">
                         <span
@@ -303,7 +300,7 @@
                             v-bind="buildProps(row,col)"
                             style="width: 100%;"
                             :value="jInputPopValues[id]"
-                            :getCalendarContainer="getParentContainer"
+                            :getPopupContainer="getParentContainer"
                             :placeholder="replaceProps(col, col.placeholder)"
                             @change="(v)=>handleChangeJInputPopCommon(v,id,row,col)">
                           </j-input-pop>
@@ -318,7 +315,7 @@
                           :value="file.name"
                         >
 
-                          <template slot="addonBefore" style="width: 30px">
+                          <template>
                             <a-tooltip v-if="file.status==='uploading'" :title="`上传中(${Math.floor(file.percent)}%)`">
                               <legacy-icon type="loading"/>
                             </a-tooltip>
@@ -330,7 +327,7 @@
                             </a-tooltip>
                           </template>
 
-                          <template v-if="col.allowDownload!==false || col.allowRemove!==false" slot="addonAfter" style="width: 30px">
+                          <template #addonAfter v-if="col.allowDownload!==false || col.allowRemove!==false">
                             <a-dropdown :trigger="['click']" placement="bottomRight" :getPopupContainer="getParentContainer">
                               <a-tooltip title="操作" :getPopupContainer="getParentContainer">
                                 <legacy-icon
@@ -339,14 +336,14 @@
                                   style="cursor: pointer;"/>
                               </a-tooltip>
 
-                              <a-menu slot="overlay">
+                              <template #overlay><a-menu>
                                 <a-menu-item v-if="col.allowDownload!==false" @click="handleClickDownloadFile(id)">
                                   <span><legacy-icon type="download"/>&nbsp;下载</span>
                                 </a-menu-item>
                                 <a-menu-item v-if="col.allowRemove!==false" @click="handleClickDelFile(id)">
                                   <span><legacy-icon type="delete"/>&nbsp;删除</span>
                                 </a-menu-item>
-                              </a-menu>
+                              </a-menu></template>
                             </a-dropdown>
                           </template>
 
@@ -358,7 +355,7 @@
                           :id="id"
                           placement="top"
                           :title="(tooltips[id] || {}).title"
-                          :visible="(tooltips[id] || {}).visible || false"
+                          :open="(tooltips[id] || {}).visible || false"
                           :autoAdjustOverflow="true"
                           :getPopupContainer="getParentContainer"
                         >
@@ -376,7 +373,7 @@
                               v-bind="buildProps(row,col)"
                               @change="(v)=>handleChangeUpload(v,id,row,col)"
                             >
-                              <a-button icon="upload">{{ col.placeholder }}</a-button>
+                              <a-button><template #icon><legacy-icon type="upload" /></template>{{ col.placeholder }}</a-button>
                             </a-upload>
                           </span>
                         </a-tooltip>
@@ -390,7 +387,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -422,7 +419,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -461,13 +458,13 @@
                             <span style="color:red;margin-left:5px">{{ getEllipsisWord(file.name,5) }}</span>
                           </a-tooltip>
 
-                          <template style="width: 30px">
+                          <template>
                             <a-dropdown :trigger="['click']" placement="bottomRight" :getPopupContainer="getParentContainer" style="margin-left: 10px;">
                               <a-tooltip title="操作" :getPopupContainer="getParentContainer">
                                 <legacy-icon v-if="file.status!=='uploading'" type="setting" style="cursor: pointer;"/>
                               </a-tooltip>
 
-                              <a-menu slot="overlay">
+                              <template #overlay><a-menu>
                                 <a-menu-item v-if="col.allowDownload!==false" @click="handleClickDownFileByUrl(id)">
                                   <span><legacy-icon type="download"/>&nbsp;下载</span>
                                 </a-menu-item>
@@ -477,7 +474,7 @@
                                 <a-menu-item @click="handleMoreOperation(id)">
                                   <span><legacy-icon type="bars" /> 更多</span>
                                 </a-menu-item>
-                              </a-menu>
+                              </a-menu></template>
                             </a-dropdown>
                           </template>
                         </div>
@@ -488,7 +485,7 @@
                           :id="id"
                           placement="top"
                           :title="(tooltips[id] || {}).title"
-                          :visible="(tooltips[id] || {}).visible || false"
+                          :open="(tooltips[id] || {}).visible || false"
                           :autoAdjustOverflow="true"
                           :getPopupContainer="getParentContainer"
                         >
@@ -506,7 +503,7 @@
                               v-bind="buildProps(row,col)"
                               @change="(v)=>handleChangeUpload(v,id,row,col)"
                             >
-                              <a-button icon="upload">上传文件</a-button>
+                              <a-button><template #icon><legacy-icon type="upload" /></template>上传文件</a-button>
                             </a-upload>
                           </span>
                         </a-tooltip>
@@ -526,7 +523,7 @@
                           <template v-else>
                             <legacy-icon type="exclamation-circle" style="color: red;" @click="handleClickShowImageError(id)"/>
                           </template>
-                          <template slot="addonBefore" style="width: 30px">
+                          <template>
                             <a-tooltip v-if="file.status==='uploading'" :title="`上传中(${Math.floor(file.percent)}%)`">
                               <legacy-icon type="loading"/>
                             </a-tooltip>
@@ -547,7 +544,7 @@
                                   style="cursor: pointer;"/>
                               </a-tooltip>
 
-                              <a-menu slot="overlay">
+                              <template #overlay><a-menu>
                                 <a-menu-item v-if="col.allowDownload!==false" @click="handleClickDownFileByUrl(id)">
                                   <span><legacy-icon type="download"/>&nbsp;下载</span>
                                 </a-menu-item>
@@ -557,7 +554,7 @@
                                 <a-menu-item @click="handleMoreOperation(id,'img')">
                                   <span><legacy-icon type="bars" /> 更多</span>
                                 </a-menu-item>
-                              </a-menu>
+                              </a-menu></template>
                             </a-dropdown>
                           </template>
 
@@ -569,7 +566,7 @@
                           :id="id"
                           placement="top"
                           :title="(tooltips[id] || {}).title"
-                          :visible="(tooltips[id] || {}).visible || false"
+                          :open="(tooltips[id] || {}).visible || false"
                           :autoAdjustOverflow="true"
                           :getPopupContainer="getParentContainer"
                         >
@@ -587,7 +584,7 @@
                               v-bind="buildProps(row,col)"
                               @change="(v)=>handleChangeUpload(v,id,row,col)"
                             >
-                              <a-button icon="upload">上传图片</a-button>
+                              <a-button><template #icon><legacy-icon type="upload" /></template>上传图片</a-button>
                             </a-upload>
                           </span>
                         </a-tooltip>
@@ -603,7 +600,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -630,7 +627,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -663,7 +660,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -697,7 +694,7 @@
                         :id="id"
                         placement="top"
                         :title="(tooltips[id] || {}).title"
-                        :visible="(tooltips[id] || {}).visible || false"
+                        :open="(tooltips[id] || {}).visible || false"
                         :autoAdjustOverflow="true"
                         :getPopupContainer="getParentContainer"
                       >
@@ -733,7 +730,6 @@
               <!-- -- tr end -- -->
 
             </template>
-          </draggable>
 
 
           <!-- 统计行 -->
@@ -779,9 +775,6 @@
 </template>
 
 <script>
-  import Vue from 'vue'
-  import $ from 'jquery'
-  import Draggable from 'vuedraggable'
   import { ACCESS_TOKEN } from '@/store/mutation-types'
   import { FormTypes, VALIDATE_NO_PASSED } from '@/utils/JEditableTableUtil'
   import { cloneObject, randomString, randomNumber } from '@/utils/util'
@@ -790,7 +783,9 @@
   import JInputPop from '@/components/jeecg/minipop/JInputPop'
   import JFilePop from '@/components/jeecg/minipop/JFilePop'
   import JSelectList from '@/components/jeecgbiz/JSelectList'
+  import JPopup from '@/components/jeecg/JPopup.vue'
   import storage from '@/utils/storage'
+  import { antSelectFilterOption } from '@/utils/optionText'
 
   // 行高，需要在实例加载完成前用到
   let rowHeight = 42
@@ -798,10 +793,10 @@
   export default {
     name: 'JEditableTable',
     components: {
-      JDate, Draggable, JInputPop, JFilePop, JSelectList,
+      JDate, JInputPop, JFilePop, JSelectList, JPopup,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     provide() {
@@ -899,6 +894,8 @@
           inputTable: null,
           tbody: null
         },
+        _scrollRetryTimer: null,
+        scrollListenersBound: false,
         // 存储各个div的style
         style: {
           // 'max-height': '400px'
@@ -948,6 +945,9 @@
 
         // 当前是否正在拖拽排序
         dragging: false,
+        nativeDragStartIndex: null,
+        autoJumpNextInputTarget: null,
+        autoJumpNextInputHandler: null,
         // 是否有统计列
         hasStatisticsColumn: false,
         statisticsColumns: {},
@@ -974,6 +974,9 @@
       // 是否显示统计行
       showStatisticsRow() {
         return this.hasStatisticsColumn && this.rows.length > 0
+      },
+      isRowDragEnabled() {
+        return this.dragSort || this.dragSortAndNumber
       },
       // 获取是否选择了部分
       getSelectIndeterminate() {
@@ -1082,26 +1085,21 @@
       }
     },
     mounted() {
-      let vm = this
-      /** 监听滚动条事件 */
-      this.getElement('inputTable').onscroll = function (event) {
-        vm.syncScrollBar(event.target.scrollLeft)
+      this.initScrollListeners()
+    },
+    activated() {
+      // keep-alive / 弹窗 forceRender 时 DOM 可能晚于 mounted，激活时再绑定一次
+      this.scrollListenersBound = false
+      this.initScrollListeners()
+    },
+    updated() {
+      // 弹窗从关闭到打开时 DOM 才挂载，updated 后再绑定一次
+      if (!this.scrollListenersBound) {
+        this.$nextTick(() => this.initScrollListeners())
       }
-      this.getElement('tbody').onscroll = function (event) {
-        // vm.recalcTrHiddenItem(event.target.scrollTop)
-      }
-
-      let { thead, scrollView } = this.$refs
-      scrollView.onscroll = function (event) {
-
-        // console.log(event.target.scrollTop, ' - ', event.target.scrollLeft)
-
-        thead.scrollLeft = event.target.scrollLeft
-
-        vm.recalcTrHiddenItem(event.target.scrollTop)
-
-      }
-
+    },
+    beforeUnmount() {
+      this.clearScrollRetryTimer()
     },
     methods: {
 
@@ -1119,19 +1117,85 @@
       },
 
       getElement(id, noCaseId = false) {
-        if (!this.el[id]) {
-          this.el[id] = document.getElementById((noCaseId ? '' : this.caseId) + id)
+        if (this.el[id]) {
+          return this.el[id]
         }
-        return this.el[id]
+        const found = document.getElementById((noCaseId ? '' : this.caseId) + id)
+        if (found) {
+          this.el[id] = found
+        }
+        return found
       },
 
-      getElementPromise(id, noCaseId = false) {
+      getTbodyEl() {
+        return this.$refs.tbodyRef || this.getElement('tbody')
+      },
+
+      clearScrollRetryTimer() {
+        if (this._scrollRetryTimer) {
+          clearTimeout(this._scrollRetryTimer)
+          this._scrollRetryTimer = null
+        }
+      },
+
+      /** 获取滚动相关 DOM（优先 $refs，兼容弹窗未打开时 getElementById 找不到的情况） */
+      getScrollElements() {
+        const inputTable = this.$refs.inputTableRef || this.getElement('inputTable')
+        const tbody = this.getTbodyEl()
+        const thead = this.$refs.thead
+        const scrollView = this.$refs.scrollView
+        return { inputTable, tbody, thead, scrollView }
+      },
+
+      /** 绑定表头/表体横向与纵向滚动同步（DOM 未就绪时延迟重试，不抛错） */
+      initScrollListeners() {
+        this.clearScrollRetryTimer()
+        const vm = this
+        const bind = () => {
+          const { inputTable, tbody, thead, scrollView } = this.getScrollElements()
+          // 纵向滚动同步依赖 scrollView + thead；inputTable/tbody 可选
+          if (!thead || !scrollView) {
+            return false
+          }
+          if (inputTable) {
+            inputTable.onscroll = function (event) {
+              vm.syncScrollBar(event.target.scrollLeft)
+            }
+          }
+          if (tbody) {
+            tbody.onscroll = function () {
+              // vm.recalcTrHiddenItem(event.target.scrollTop)
+            }
+          }
+          scrollView.onscroll = function (event) {
+            thead.scrollLeft = event.target.scrollLeft
+            vm.recalcTrHiddenItem(event.target.scrollTop)
+          }
+          this.scrollListenersBound = true
+          return true
+        }
+        const scheduleRetry = (attempt = 0) => {
+          if (bind() || attempt >= 120) {
+            return
+          }
+          this._scrollRetryTimer = setTimeout(() => scheduleRetry(attempt + 1), 50)
+        }
+        if (!bind()) {
+          this.$nextTick(() => scheduleRetry(0))
+        }
+      },
+
+      getElementPromise(id, noCaseId = false, maxAttempts = 300) {
         return new Promise((resolve) => {
-          let timer = setInterval(() => {
-            let element = this.getElement(id, noCaseId)
+          let attempts = 0
+          const timer = setInterval(() => {
+            const element = this.getElement(id, noCaseId)
             if (element) {
               clearInterval(timer)
               resolve(element)
+            } else if (++attempts >= maxAttempts) {
+              clearInterval(timer)
+              resolve(null)
             }
           }, 10)
         })
@@ -1139,6 +1203,7 @@
 
       /** 初始化列表 */
       initialize() {
+        this.scrollListenersBound = false
         this.visibleTrEls = []
         // 判断是否是首次进入该方法，如果是就不清空行，防止删除了预添加的数据
         if (!this.isFirst) {
@@ -1171,7 +1236,10 @@
           this.searchSelectValues = []
           this.scrollTop = 0
           this.$nextTick(() => {
-            this.getElement('tbody').scrollTop = 0
+            const tbody = this.getTbodyEl()
+            if (tbody) {
+              tbody.scrollTop = 0
+            }
           })
         } else {
           this.isFirst = false
@@ -1185,7 +1253,10 @@
       },
       /** 重置滚动条位置，参数留空则滚动到上次记录的位置 */
       resetScrollTop(top) {
-        let { scrollView } = this.$refs
+        const scrollView = this.$refs.scrollView
+        if (!scrollView) {
+          return
+        }
         if (top != null && typeof top === 'number') {
           scrollView.scrollTop = top
         } else {
@@ -1285,7 +1356,7 @@
               if (column.statistics) {
                 this.hasStatisticsColumn = true
                 if (!this.statisticsColumns[column.key]) {
-                  this.$set(this.statisticsColumns, column.key, 0)
+                  (this.statisticsColumns[column.key] = 0)
                 }
               }
 
@@ -1467,7 +1538,10 @@
           target: this
         })
         // 设置滚动条位置
-        let tbody = this.getElement('tbody')
+        let tbody = this.getTbodyEl()
+        if (!tbody) {
+          return
+        }
         let offsetHeight = tbody.offsetHeight
         let realScrollTop = tbody.scrollTop + offsetHeight
         if (forceScrollToBottom === false) {
@@ -1849,7 +1923,7 @@
       setOneValue(valuesObject, modelKey, value) {
         let key = this.valuesHasOwnProperty(valuesObject, modelKey)
         if (key) {
-          this.$set(valuesObject, key, value)
+          (valuesObject[key] = value)
           return true
         }
         return false
@@ -2010,7 +2084,7 @@
                 { title: '手机号码', value: 'm', pattern: /^1[3456789]\d{9}$/ },
                 { title: '邮政编码', value: 'p', pattern: /^[1-9]\d{5}$/ },
                 { title: '字母', value: 's', pattern: /^[A-Z|a-z]+$/ },
-                { title: '数字', value: 'n', pattern: /^-?\d+(\.?\d+|\d?)$/ },
+                { title: '数字', value: 'n', pattern: /^-?\d+(\.?\d+|\d')$/ },
                 { title: '整数', value: 'z', pattern: /^-?\d+$/ },
                 { title: '非空', value: '*', pattern: /^.+$/ },
                 { title: '金额', value: 'money', pattern: /^(([1-9][0-9]*)|([0]\.\d{0,2}|[1-9][0-9]*\.\d{0,2}))$/ },
@@ -2041,7 +2115,11 @@
 
       /** 动态更新表单的值 */
       updateFormValues() {
-        let trs = this.getElement('tbody').getElementsByClassName('tr')
+        const tbody = this.getTbodyEl()
+        if (!tbody) {
+          return
+        }
+        let trs = tbody.getElementsByClassName('tr')
         let trEls = []
         for (let tr of trs) {
           trEls.push(tr)
@@ -2165,7 +2243,7 @@
       /** 用于搜索下拉框中的内容 */
       handleSelectFilterOption(input, option, column) {
         if (column.allowSearch === true || column.allowInput === true) {
-          return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          return antSelectFilterOption(input, option)
         }
         return true
       },
@@ -2217,28 +2295,47 @@
         this.$emit('dragged', { oldIndex, newIndex, target: this })
       },
 
-      handleDragMoveStart(event) {
+      handleNativeDragStart(event, rowIndex) {
+        if (!this.isRowDragEnabled || !event.target.closest('.td-ds-icons')) {
+          event.preventDefault()
+          return
+        }
         this.dragging = true
-        this.$refs.scrollView.style.overflow = 'hidden'
+        this.nativeDragStartIndex = rowIndex
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move'
+          event.dataTransfer.setData('text/plain', String(rowIndex))
+        }
+        if (this.$refs.scrollView) {
+          this.$refs.scrollView.style.overflow = 'hidden'
+        }
       },
 
-      /** 拖动结束，交换inputValue中的值 */
-      handleDragMoveEnd(event) {
-        this.dragging = false
-        this.$refs.scrollView.style.overflow = 'auto'
+      handleNativeDragOver(event) {
+        if (this.nativeDragStartIndex == null) return
+        if (event.dataTransfer) {
+          event.dataTransfer.dropEffect = 'move'
+        }
+      },
 
-        let { oldIndex, newIndex, item: { dataset: { idx: dataIdx } } } = event
-
-        // 由于动态显示隐藏行导致index有误差，需要算出真实的index
-        let diff = Number.parseInt(dataIdx) - oldIndex
-        oldIndex += diff
-        newIndex += diff
-
+      handleNativeDragDrop(event, rowIndex) {
+        if (this.nativeDragStartIndex == null) return
+        const oldIndex = this.nativeDragStartIndex
+        const newIndex = rowIndex
+        this.handleNativeDragEnd()
+        if (oldIndex === newIndex) return
         this.rowResort(oldIndex, newIndex)
         this.emitDragged(oldIndex, newIndex)
       },
 
-      /** 行重新排序 */
+      handleNativeDragEnd() {
+        this.dragging = false
+        this.nativeDragStartIndex = null
+        if (this.$refs.scrollView) {
+          this.$refs.scrollView.style.overflow = 'auto'
+        }
+      },
+
       rowResort(oldIndex, newIndex) {
         const sort = (array) => {
           // 存储旧数据，并删除旧项目
@@ -2435,7 +2532,7 @@
         // let values = Object.assign({}, this[key])
         // values[id] = value
         // return values
-        this.$set(this[key], id, value)
+        (this[key][id] = value)
         return this[key]
       },
 
@@ -2448,7 +2545,7 @@
         let tooltip = this.tooltips[inputId] || {}
         if (tooltip.visible !== show) {
           tooltip.visible = show
-          this.$set(this.tooltips, inputId, tooltip)
+          (this.tooltips[inputId] = tooltip)
         }
       },
 
@@ -2785,7 +2882,7 @@
         this.elemValueChange(FormTypes.sel_search, row, column, value)
       },
       filterOption(input, option) {
-        return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+        return antSelectFilterOption(input, option)
       },
       getEllipsisWord(content, len){
         if(!content || content.length==0){
@@ -2798,38 +2895,58 @@
       },
       /** 回车后自动跳到下一个input **/
       autoJumpNextInputBill() {
-        let that = this
-        let inputDom = $(".ant-modal-cust-warp:visible").find("#billModal");
-        inputDom.find("input:visible:not(:checkbox)").off("keydown").on("keydown", function(e){
-          //响应回车键按下的处理
-          e = event || window.event || arguments.callee.caller.arguments[0];
-          //捕捉是否按键为回车键，可百度JS键盘事件了解更多
-          if(e && e.keyCode==13) {
-            //捕捉inputDom下的文本输入框的个数
-            let inputs = inputDom.find("input:visible:not(:checkbox)");
-            let idx = inputs.index(this); // 获取当前焦点输入框所处的位置
-            if (idx == inputs.length - 1) { // 判断是否是最后一个输入框
-              let curKey = e.which;
-              if (curKey == 13) {
-                //新增行
-                that.handleClickAdd();
-                //进行下一行的自动聚焦
-                setTimeout(function() {
-                  inputs = inputDom.find("input:visible:not(:checkbox)");
-                  inputs[idx + 1].focus(); // 设置焦点
-                  inputs[idx + 1].select(); // 选中文字
-                },100)
-              }
-            } else {
-              inputs[idx + 1].focus(); // 设置焦点
-              inputs[idx + 1].select(); // 选中文字
+        const billModal = this.findVisibleBillModal()
+        if (!billModal) return
+        this.removeAutoJumpNextInputHandler()
+        const getInputs = () => Array.from(billModal.querySelectorAll('input:not([type="checkbox"])'))
+          .filter(input => this.isElementVisible(input) && !input.disabled && !input.readOnly)
+        this.autoJumpNextInputTarget = billModal
+        this.autoJumpNextInputHandler = (event) => {
+          if (event.key !== 'Enter' && event.keyCode !== 13) return
+          const inputs = getInputs()
+          const idx = inputs.indexOf(event.target)
+          if (idx < 0) return
+          const focusInput = (input) => {
+            if (!input) return
+            input.focus()
+            if (typeof input.select === 'function') {
+              input.select()
             }
           }
-        })
+          if (idx === inputs.length - 1) {
+            this.handleClickAdd()
+            setTimeout(() => {
+              focusInput(getInputs()[idx + 1])
+            }, 100)
+          } else {
+            focusInput(inputs[idx + 1])
+          }
+        }
+        billModal.addEventListener('keydown', this.autoJumpNextInputHandler)
       },
-      /** 自动选中特殊的key **/
+      findVisibleBillModal() {
+        return Array.from(document.querySelectorAll('.ant-modal-cust-warp'))
+          .map(element => element.querySelector('#billModal'))
+          .find(element => this.isElementVisible(element))
+      },
+      isElementVisible(element) {
+        if (!element) return false
+        const style = window.getComputedStyle(element)
+        return style.display !== 'none' && style.visibility !== 'hidden' && element.offsetParent !== null
+      },
+      removeAutoJumpNextInputHandler() {
+        if (this.autoJumpNextInputTarget && this.autoJumpNextInputHandler) {
+          this.autoJumpNextInputTarget.removeEventListener('keydown', this.autoJumpNextInputHandler)
+        }
+        this.autoJumpNextInputTarget = null
+        this.autoJumpNextInputHandler = null
+      },
       autoSelectBySpecialKey(specialKey, orderNum) {
-        let trs = this.getElement('tbody').getElementsByClassName('tr')
+        const tbody = this.getTbodyEl()
+        if (!tbody) {
+          return
+        }
+        let trs = tbody.getElementsByClassName('tr')
         let trEls = []
         if(trs && trs.length && orderNum>=1) {
           trEls.push(trs[orderNum-1])
@@ -2849,7 +2966,8 @@
         })
       }
     },
-    beforeDestroy() {
+    beforeUnmount() {
+      this.removeAutoJumpNextInputHandler()
       this.destroyCleanGroupRequest = true
     },
   }

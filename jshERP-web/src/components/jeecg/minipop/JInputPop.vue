@@ -1,18 +1,18 @@
 <template>
-  <a-popover trigger="contextmenu" v-model="visible" :placement="position">
+  <a-popover trigger="contextmenu" v-model:open="visible" :placement="position">
     <!--"(node) => node.parentNode.parentNode"-->
-    <div slot="title">
+    <template #title><div>
       <span>{{ title }}</span>
       <span style="float: right" title="关闭">
         <legacy-icon type="close" @click="visible=false"/>
       </span>
-    </div>
+    </div></template>
     <a-input :value="inputContent" @change="handleInputChange" :placeholder="placeholder">
-      <legacy-icon slot="suffix" type="fullscreen" @click.stop="pop" />
+      <template #suffix><legacy-icon type="fullscreen" @click.stop="pop" /></template>
     </a-input>
-    <div slot="content">
+    <template #content><div>
       <textarea :value="inputContent" @input="handleInputChange" :placeholder="placeholder" :style="{ height: height + 'px', width: width + 'px' }"></textarea>
-    </div>
+    </div></template>
   </a-popover>
 </template>
 
@@ -72,14 +72,13 @@
         }
       },
     },
-    model: {
-      prop: 'value',
-      event: 'change'
-    },
     methods:{
       handleInputChange(event){
         this.inputContent = event.target.value
-        this.$emit('change',this.inputContent)
+        this.$emit('change', this.inputContent)
+        this.$emit('input', this.inputContent)
+        this.$emit('update:value', this.inputContent)
+        this.$emit('update:modelValue', this.inputContent)
       },
       pop(){
         this.visible=true

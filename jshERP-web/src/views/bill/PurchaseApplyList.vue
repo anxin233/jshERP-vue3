@@ -9,19 +9,19 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="单据编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入单据编号" v-model="queryParam.number"></a-input>
+                  <a-input placeholder="请输入单据编号" v-model:value="queryParam.number"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="商品信息" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model="queryParam.materialParam"></a-input>
+                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model:value="queryParam.materialParam"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-range-picker
                     style="width:100%"
-                    v-model="queryParam.createTimeRange"
+                    v-model:value="queryParam.createTimeRange"
                     format="YYYY-MM-DD"
                     :placeholder="['开始时间', '结束时间']"
                     @change="onDateChange"
@@ -44,7 +44,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="操作员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择操作员" showSearch allow-clear optionFilterProp="children" v-model="queryParam.creator">
+                    <a-select placeholder="请选择操作员" showSearch allow-clear optionFilterProp="children" v-model:value="queryParam.creator">
                       <a-select-option v-for="(item,index) in userList" :key="index" :value="item.id">
                         {{ item.userName }}
                       </a-select-option>
@@ -53,7 +53,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="单据状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择单据状态" allow-clear v-model="queryParam.status">
+                    <a-select placeholder="请选择单据状态" allow-clear v-model:value="queryParam.status">
                       <a-select-option value="0">未审核</a-select-option>
                       <a-select-option value="9" v-if="!checkFlag">审核中</a-select-option>
                       <a-select-option value="1">已审核</a-select-option>
@@ -64,7 +64,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="单据备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入单据备注" v-model="queryParam.remark"></a-input>
+                    <a-input placeholder="请输入单据备注" v-model:value="queryParam.remark"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -84,30 +84,27 @@
           <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" icon="stop" @click="batchSetStatus(0)">反审核</a-button>
           <a-button v-if="isShowExcel && btnEnableList.indexOf(3)>-1" icon="download" @click="handleExport">导出</a-button>
           <a-popover trigger="click" placement="right">
-            <template slot="content">
-              <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                <a-row style="width: 500px">
-                  <template v-for="(item,index) in defColumns">
-                    <template>
-                      <a-col :span="8">
+            <template #content>
+              <div class="column-setting-panel">
+
+              <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                <a-row class="column-setting-list" style="width: 500px">
+                  <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                    <a-col :span="8" class="column-setting-item">
                         <a-checkbox :value="item.dataIndex">
-                          <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
+                          <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
                         </a-checkbox>
                       </a-col>
-                    </template>
                   </template>
                 </a-row>
-                <a-row style="padding-top: 10px;">
-                  <a-col>
-                    恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                  </a-col>
-                </a-row>
               </a-checkbox-group>
+              <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+              </div>
             </template>
-            <a-button icon="setting">列设置</a-button>
+            <a-button><template #icon><legacy-icon type="setting" /></template>列设置</a-button>
           </a-popover>
           <a-tooltip placement="left" title="请购单只涉及数量，请购单可以转采购订单，但需要先对请购单进行审核。
-          勾选单据之后可以进行批量操作（删除、审核、反审核）" slot="action">
+          勾选单据之后可以进行批量操作（删除、审核、反审核）">
             <legacy-icon v-if="btnEnableList.indexOf(1)>-1" type="question-circle" style="font-size:20px;float:right;" />
           </a-tooltip>
         </div>
@@ -128,7 +125,7 @@
             :expandedRowKeys="expandedRowKeys"
             @expand="onExpand"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="myHandleDetail(record, '请购单', prefixNo)">查看</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a v-if="btnEnableList.indexOf(1)>-1" @click="myHandleEdit(record)">编辑</a>
@@ -138,25 +135,22 @@
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => myHandleDelete(record)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
-            <template slot="customRenderStatus" slot-scope="status">
+            </span></template>
+            <template #customRenderStatus="{ text: status }">
               <a-tag v-if="status == '0'" color="red">未审核</a-tag>
               <a-tag v-if="status == '1'" color="green">已审核</a-tag>
               <a-tag v-if="status == '2'" color="cyan">完成采购</a-tag>
               <a-tag v-if="status == '3'" color="blue">部分采购</a-tag>
               <a-tag v-if="status == '9'" color="orange">审核中</a-tag>
             </template>
-            <a-table
-              bordered
+            <template #expandedRowRender="{ record: record }"><a-table bordered
               size="small"
-              slot="expandedRowRender"
-              slot-scope="record"
               :loading="record.loading"
               :columns="detailColumns"
               :dataSource="record.childrens"
               :row-key="record => record.id"
               :pagination="false">
-            </a-table>
+            </a-table></template>
           </a-table>
         </div>
         <!-- table区域-end -->
@@ -222,7 +216,7 @@
             title: '操作',
             dataIndex: 'action',
             align:"center", width: 180,
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '单据编号', dataIndex: 'number',width:180},
           { title: '商品信息', dataIndex: 'materialsList',width:320, ellipsis:true},
@@ -231,7 +225,7 @@
           { title: '数量', dataIndex: 'materialCount',width:80},
           { title: '备注', dataIndex: 'remark',width:250},
           { title: '状态', dataIndex: 'status', width: 100, align: "center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           }
         ],
         url: {
@@ -256,5 +250,7 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+
+

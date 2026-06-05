@@ -9,13 +9,13 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="供应商" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="请选择供应商" v-model="queryParam.organId"
+                  <a-select placeholder="请选择供应商" v-model:value="queryParam.organId"
                     :dropdownMatchSelectWidth="false" showSearch allow-clear optionFilterProp="children" @search="handleSearchSupplier">
-                    <div slot="dropdownRender" slot-scope="menu">
+                    <template #dropdownRender="{ menuNode: menu }"><div>
                       <v-nodes :vnodes="menu" />
                       <a-divider style="margin: 4px 0;" />
                       <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier"><legacy-icon type="reload" /> 刷新列表</div>
-                    </div>
+                    </div></template>
                     <a-select-option v-for="(item,index) in supList" :key="index" :value="item.id">
                       {{ item.supplier }}
                     </a-select-option>
@@ -26,7 +26,7 @@
                 <a-form-item label="账单周期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-range-picker
                     style="width: 100%"
-                    v-model="queryParam.createTimeRange"
+                    v-model:value="queryParam.createTimeRange"
                     format="YYYY-MM-DD"
                     :placeholder="['开始时间', '结束时间']"
                     @change="onDateChange"
@@ -36,8 +36,8 @@
               <a-col :md="6" :sm="24">
                 <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
-                  <a-button style="margin-left: 8px" v-print="'#reportPrint'" icon="printer">打印</a-button>
-                  <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+                  <a-button style="margin-left: 8px" v-print="'#reportPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
+                  <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
@@ -54,7 +54,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="欠款情况" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select v-model="queryParam.hasDebt">
+                    <a-select v-model:value="queryParam.hasDebt">
                       <a-select-option value="1">有欠款</a-select-option>
                       <a-select-option value="0">无欠款</a-select-option>
                     </a-select>
@@ -78,43 +78,42 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="customTitle">
+            <template #headerCell="{ column }">
+              <template v-if="column.dataIndex === 'rowIndex'"><span>
               <a-popover trigger="click" placement="right">
-                <template slot="content">
-                  <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                    <a-row style="width: 600px">
-                      <template v-for="(item,index) in defColumns">
-                        <template>
-                          <a-col :span="6">
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex==='rowIndex'" disabled></a-checkbox>
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex!=='rowIndex'">
-                              <j-ellipsis :value="item.title" v-if="item.dataIndex!=='allNeed'" :length="10"></j-ellipsis>
+                <template #content>
+                  <div class="column-setting-panel">
+
+                  <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                    <a-row class="column-setting-list" style="width: 600px">
+                      <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                        <a-col :span="6" class="column-setting-item">
+                            <a-checkbox :value="item.dataIndex">
+                              <j-ellipsis :value="getColumnSettingTitle(item)" v-if="item.dataIndex!=='allNeed'" :length="10"></j-ellipsis>
                               <j-ellipsis value="期末应付" v-if="item.dataIndex==='allNeed'" :length="10"></j-ellipsis>
                             </a-checkbox>
-                          </a-col>
-                        </template>
+                        </a-col>
                       </template>
                     </a-row>
-                    <a-row style="padding-top: 10px;">
-                      <a-col>
-                        恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                      </a-col>
-                    </a-row>
                   </a-checkbox-group>
+                  <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+                  </div>
                 </template>
                 <legacy-icon type="setting" />
               </a-popover>
-            </span>
-            <span slot="action" slot-scope="text, record">
-              <a @click="showDebtAccountList(record)">{{record.id?'详情':''}}</a>
-            </span>
-            <span slot="allNeedTitle">
+            </span></template>
+              <template v-else-if="column.dataIndex === 'allNeed'"><span>
               期末应付
               <a-tooltip title="期末应付=期初应付+本期欠款-本期付款">
                 <legacy-icon type="question-circle" />
               </a-tooltip>
-            </span>
-          </a-table>
+            </span></template>
+              <template v-else>{{ column.title }}</template>
+            </template>
+            <template #action="{ text, record }"><span>
+              <a @click="showDebtAccountList(record)">{{record.id?'详情':''}}</a>
+            </span></template>
+            </a-table>
           <a-row :gutter="24" style="margin-top: 8px;text-align:right;">
             <a-col :md="24" :sm="24">
               <a-pagination @change="paginationChange" @showSizeChange="paginationShowSizeChange"
@@ -126,8 +125,8 @@
                 :page-size-options="ipagination.pageSizeOptions"
                 :total="ipagination.total"
                 :show-total="(total, range) => `共 ${total-Math.ceil(total/ipagination.pageSize)} 条`">
-                <template slot="buildOptionText" slot-scope="props">
-                  <span>{{ props.value-1 }}条/页</span>
+                <template #buildOptionText="{ value }">
+                  <span>{{ Number(value) - 1 }}条/页</span>
                 </template>
               </a-pagination>
             </a-col>
@@ -143,7 +142,7 @@
 <script>
   import DebtAccountList from './modules/DebtAccountList'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
-  import { getFormatDate, getNowFormatYear, getPrevMonthFormatDate } from '@/utils/util'
+  import { getFormatDate, getPrevMonthFormatDate, buildStatementAccountQueryParams } from '@/utils/util'
   import { getAction } from '@/api/manage'
   import {findBySelectSup} from '@/api/api'
   import JEllipsis from '@/components/jeecg/JEllipsis'
@@ -155,8 +154,8 @@
       DebtAccountList,
       JEllipsis,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -192,13 +191,13 @@
         // 默认列
         defColumns: [
           {
-            dataIndex: 'rowIndex', width:40, align:"center", slots: { title: 'customTitle' },
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
             customRender:function (t,r,index) {
               return (t !== '合计') ? (parseInt(index) + 1) : t
             }
           },
           {title: '欠款详情', dataIndex: 'action', align:"center", width: 80,
-            scopedSlots: { customRender: 'action' }
+            customRender: (cell) => this.$renderColumnSlot('action', cell)
           },
           {title: '供应商', dataIndex: 'supplier', width: 150, ellipsis:true},
           {title: '联系人', dataIndex: 'contacts', width: 100, ellipsis:true},
@@ -208,9 +207,7 @@
           {title: '期初应付', dataIndex: 'preNeed', sorter: (a, b) => a.preNeed - b.preNeed, width: 80},
           {title: '本期欠款', dataIndex: 'debtMoney', sorter: (a, b) => a.debtMoney - b.debtMoney, width: 80},
           {title: '本期付款', dataIndex: 'backMoney', sorter: (a, b) => a.backMoney - b.backMoney, width: 80},
-          {dataIndex: 'allNeed', sorter: (a, b) => a.allNeed - b.allNeed, width: 80,
-            slots: { title: 'allNeedTitle' }
-          }
+          {title: '期末应付', dataIndex: 'allNeed', sorter: (a, b) => a.allNeed - b.allNeed, width: 80}
         ],
         url: {
           list: "/depotHead/getStatementAccount",
@@ -223,11 +220,7 @@
     },
     methods: {
       getQueryParams() {
-        let param = Object.assign({}, this.queryParam, this.isorter);
-        param.field = this.getQueryField();
-        param.currentPage = this.ipagination.current;
-        param.pageSize = this.ipagination.pageSize-1;
-        return param;
+        return buildStatementAccountQueryParams(this.queryParam, this.ipagination)
       },
       initSupplier() {
         let that = this;
@@ -251,14 +244,19 @@
         },500)
       },
       onDateChange: function (value, dateString) {
-        this.queryParam.beginTime=dateString[0]
-        this.queryParam.endTime=dateString[1]
-        if(dateString[0] && dateString[1]) {
+        this.queryParam.beginTime = dateString[0]
+        this.queryParam.endTime = dateString[1]
+        if (dateString[0] && dateString[1]) {
           this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+        } else {
+          this.queryParam.createTimeRange = []
         }
       },
       loadData(arg) {
-        //加载数据 若传入参数1则加载第一页的内容
+        if (!this.queryParam.beginTime || !this.queryParam.endTime) {
+          this.loading = false
+          return
+        }
         if (arg === 1) {
           this.ipagination.current = 1;
         }
@@ -269,19 +267,22 @@
             this.dataSource = res.data.rows;
             this.ipagination.total = res.data.total;
             this.tableAddTotalRow(this.columns, this.dataSource)
-            this.firstTotal = '期初应付：' + res.data.firstMoney + "，"
+            this.firstTotal = '期初应付：' + res.data.firstMoney + '元'
             this.lastTotal = '期末应付：' + res.data.lastMoney
           } else if(res.code===510){
             this.$message.warning(res.data)
           } else {
-            this.$message.warning(res.data.message)
+            this.$message.warning(res.data && res.data.message ? res.data.message : res.data)
           }
+        }).catch(() => {
+          this.$message.error('加载数据失败')
+        }).finally(() => {
           this.loading = false;
         })
       },
       searchQuery() {
         if(this.queryParam.beginTime === '' || this.queryParam.endTime === ''){
-          this.$message.warning('请选择单据日期！')
+          this.$message.warning('请选择单据日期：')
         } else {
           this.loadData(1);
         }
@@ -307,5 +308,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

@@ -1,12 +1,12 @@
 <template>
   <div>
     <a-input-search
-      v-model="userNames"
+      v-model:value="userNames"
       placeholder="请先选择用户"
       readOnly
       unselectable="on"
       @search="onSearchDepUser">
-      <a-button slot="enterButton" :disabled="disabled">选择用户</a-button>
+      <template #enterButton><a-button :disabled="disabled">选择用户</a-button></template>
     </a-input-search>
     <j-select-user-by-dep-modal ref="selectModal" :modal-width="modalWidth" :multi="multi" @ok="selectOK" :user-ids="value" @initComp="initComp"/>
   </div>
@@ -53,10 +53,6 @@
         this.userIds = val
       }
     },
-    model: {
-      prop: 'value',
-      event: 'change'
-    },
     methods: {
       initComp(userNames) {
         this.userNames = userNames
@@ -79,6 +75,9 @@
           this.userIds = idstr
         }
         this.$emit("change", this.userIds)
+        this.$emit("input", this.userIds)
+        this.$emit("update:value", this.userIds)
+        this.$emit("update:modelValue", this.userIds)
       }
     }
   }

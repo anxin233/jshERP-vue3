@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1100"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -16,13 +16,14 @@
       okText="保存"
       style="top:3%;height:94%;">
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form" id="vehicleModal">
+        <a-form ref="formRef" :model="formModel" :rules="formRules" id="vehicleModal">
 
           <!-- ===== 车辆信息 ===== -->
           <a-divider orientation="left">车辆信息</a-divider>
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="车辆用途">
             <dynamic-option-select
-              v-decorator="['vehiclePurpose']"
+              :value="formModel.vehiclePurpose"
+              @change="v => formModel.vehiclePurpose = v"
               code="vehicle_purpose"
               placeholder="请选择车辆用途"
               allowClear />
@@ -30,13 +31,13 @@
 
           <a-row :gutter="16">
             <a-col :span="12">
-              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="车牌号">
+              <a-form-item name="licensePlateNo" :labelCol="labelCol" :wrapperCol="wrapperCol" label="车牌号">
                 <a-input-group compact>
-                  <a-select v-decorator="['licensePlateProvince']" style="width:70px" placeholder="省">
+                  <a-select v-model:value="formModel.licensePlateProvince" style="width:70px" placeholder="省">
                     <a-select-option v-for="p in provinces" :key="p" :value="p">{{ p }}</a-select-option>
                   </a-select>
                   <a-input
-                    v-decorator="['licensePlateNo', validatorRules.licensePlateNo]"
+                    v-model:value="formModel.licensePlateNo"
                     placeholder="最多7个字符"
                     :maxLength="7"
                     style="width:calc(100% - 130px)" />
@@ -48,10 +49,10 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="VIN码">
+              <a-form-item name="vin" :labelCol="labelCol" :wrapperCol="wrapperCol" label="VIN码">
                 <a-input-group compact>
                   <a-input
-                    v-decorator="['vin', validatorRules.vin]"
+                    v-model:value="formModel.vin"
                     placeholder="17位VIN码"
                     :maxLength="17"
                     style="width:calc(100% - 70px)" />
@@ -67,12 +68,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="车型">
-                <a-input placeholder="请输入车型" v-decorator="['vehicleType']" />
+                <a-input placeholder="请输入车型" v-model:value="formModel.vehicleType" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="生产年份">
-                <a-select placeholder="请选择" v-decorator="['productionYear']" allowClear>
+                <a-select placeholder="请选择" v-model:value="formModel.productionYear" allowClear>
                   <a-select-option v-for="y in productionYears" :key="y" :value="String(y)">{{ y }}</a-select-option>
                 </a-select>
               </a-form-item>
@@ -82,7 +83,7 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="燃料类型">
-                <a-select placeholder="请选择" v-decorator="['fuelType']" allowClear>
+                <a-select placeholder="请选择" v-model:value="formModel.fuelType" allowClear>
                   <a-select-option value="汽油">汽油</a-select-option>
                   <a-select-option value="柴油">柴油</a-select-option>
                   <a-select-option value="电动">电动</a-select-option>
@@ -94,7 +95,7 @@
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="车辆一级类型">
-                <a-select placeholder="请选择" v-decorator="['vehicleCategory']" allowClear>
+                <a-select placeholder="请选择" v-model:value="formModel.vehicleCategory" allowClear>
                   <a-select-option value="轿车">轿车</a-select-option>
                   <a-select-option value="SUV">SUV</a-select-option>
                   <a-select-option value="MPV">MPV</a-select-option>
@@ -111,13 +112,14 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="车身颜色">
-                <a-input placeholder="请输入车身颜色" v-decorator="['bodyColor']" />
+                <a-input placeholder="请输入车身颜色" v-model:value="formModel.bodyColor" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户来源">
                 <dynamic-option-select
-                  v-decorator="['vehicleSource']"
+                  :value="formModel.vehicleSource"
+                  @change="v => formModel.vehicleSource = v"
                   code="customer_source"
                   placeholder="请选择客户来源"
                   allowClear />
@@ -129,13 +131,13 @@
           <a-divider orientation="left">客户信息</a-divider>
           <a-row :gutter="16">
             <a-col :span="12">
-              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="手机号码">
-                <a-input placeholder="支持手机号搜索" v-decorator="['customerPhone', validatorRules.customerPhone]" />
+              <a-form-item name="customerPhone" :labelCol="labelCol" :wrapperCol="wrapperCol" label="手机号码">
+                <a-input placeholder="支持手机号搜索" v-model:value="formModel.customerPhone" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户姓名">
-                <a-input placeholder="请输入客户姓名" v-decorator="['customerName', validatorRules.customerName]" />
+              <a-form-item name="customerName" :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户姓名">
+                <a-input placeholder="请输入客户姓名" v-model:value="formModel.customerName" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -143,7 +145,7 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户等级">
-                <a-select v-decorator="['customerLevel', {initialValue: '默认客户'}]">
+                <a-select v-model:value="formModel.customerLevel">
                   <a-select-option value="默认客户">默认客户</a-select-option>
                   <a-select-option value="VIP客户">VIP客户</a-select-option>
                   <a-select-option value="重要客户">重要客户</a-select-option>
@@ -153,7 +155,7 @@
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="性别">
-                <a-select v-decorator="['customerGender', {initialValue: '先生'}]">
+                <a-select v-model:value="formModel.customerGender">
                   <a-select-option value="先生">先生</a-select-option>
                   <a-select-option value="女士">女士</a-select-option>
                 </a-select>
@@ -164,12 +166,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="地址信息">
-                <a-input placeholder="请输入省/市/区" v-decorator="['customerAddress']" />
+                <a-input placeholder="请输入省/市/区" v-model:value="formModel.customerAddress" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="详细地址">
-                <a-input placeholder="请输入详细地址" v-decorator="['customerDetailAddress']" />
+                <a-input placeholder="请输入详细地址" v-model:value="formModel.customerDetailAddress" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -177,8 +179,8 @@
           <!-- 更多联系人 -->
           <a-form-item :labelCol="labelColFull" :wrapperCol="wrapperColFull" label="更多联系人">
             <div v-for="(contact, idx) in contacts" :key="idx" style="display:flex;align-items:center;margin-bottom:8px">
-              <a-input v-model="contact.contactName" placeholder="姓名" style="width:200px;margin-right:8px" />
-              <a-input v-model="contact.contactPhone" placeholder="手机号" style="width:200px;margin-right:8px" />
+              <a-input v-model:value="contact.contactName" placeholder="姓名" style="width:200px;margin-right:8px" />
+              <a-input v-model:value="contact.contactPhone" placeholder="手机号" style="width:200px;margin-right:8px" />
               <legacy-icon type="delete" @click="removeContact(idx)" style="color:#f5222d;cursor:pointer;font-size:16px" />
             </div>
             <a @click="addContact" style="color:#1890ff">
@@ -191,12 +193,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="车辆所有人">
-                <a-input placeholder="输入行驶证上所有人信息" v-decorator="['vehicleOwner']" />
+                <a-input placeholder="输入行驶证上所有人信息" v-model:value="formModel.vehicleOwner" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="品牌型号">
-                <a-input placeholder="输入行驶证上的品牌型号" v-decorator="['brandModel']" />
+                <a-input placeholder="输入行驶证上的品牌型号" v-model:value="formModel.brandModel" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -204,12 +206,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="发动机号">
-                <a-input placeholder="请输入发动机号" v-decorator="['engineNo']" />
+                <a-input placeholder="请输入发动机号" v-model:value="formModel.engineNo" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="注册日期">
-                <a-date-picker style="width:100%" v-decorator="['registerDate']" placeholder="点击选择日期" />
+                <a-date-picker style="width:100%" v-model:value="formModel.registerDate" placeholder="点击选择日期" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -217,12 +219,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="发证日期">
-                <a-date-picker style="width:100%" v-decorator="['issueDate']" placeholder="点击选择日期" />
+                <a-date-picker style="width:100%" v-model:value="formModel.issueDate" placeholder="点击选择日期" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="使用性质">
-                <a-select placeholder="请选择" v-decorator="['usageNature']" allowClear>
+                <a-select placeholder="请选择" v-model:value="formModel.usageNature" allowClear>
                   <a-select-option value="非营运">非营运</a-select-option>
                   <a-select-option value="营运">营运</a-select-option>
                   <a-select-option value="租赁">租赁</a-select-option>
@@ -237,12 +239,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="年检日期">
-                <a-date-picker style="width:100%" v-decorator="['annualCheckDate']" placeholder="点击选择日期" />
+                <a-date-picker style="width:100%" v-model:value="formModel.annualCheckDate" placeholder="点击选择日期" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="交强险到期">
-                <a-date-picker style="width:100%" v-decorator="['trafficInsuranceExpire']" placeholder="点击选择日期" />
+                <a-date-picker style="width:100%" v-model:value="formModel.trafficInsuranceExpire" placeholder="点击选择日期" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -250,7 +252,7 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="商业险到期">
-                <a-date-picker style="width:100%" v-decorator="['commercialInsuranceExpire']" placeholder="点击选择日期" />
+                <a-date-picker style="width:100%" v-model:value="formModel.commercialInsuranceExpire" placeholder="点击选择日期" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
@@ -263,12 +265,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="保险公司">
-                <a-input placeholder="请输入保险公司" v-decorator="['insuranceCompany']" />
+                <a-input placeholder="请输入保险公司" v-model:value="formModel.insuranceCompany" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="保险联系人">
-                <a-input placeholder="请输入保险联系人" v-decorator="['insuranceContact']" />
+                <a-input placeholder="请输入保险联系人" v-model:value="formModel.insuranceContact" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -276,7 +278,7 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="保险联系电话">
-                <a-input placeholder="请输入保险联系电话" v-decorator="['insurancePhone']" />
+                <a-input placeholder="请输入保险联系电话" v-model:value="formModel.insurancePhone" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -286,12 +288,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="姓名">
-                <a-input placeholder="请输入送修人姓名" v-decorator="['repairerName']" />
+                <a-input placeholder="请输入送修人姓名" v-model:value="formModel.repairerName" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="联系方式">
-                <a-input placeholder="请输入联系方式" v-decorator="['repairerContact']" />
+                <a-input placeholder="请输入联系方式" v-model:value="formModel.repairerContact" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -299,7 +301,7 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="性别">
-                <a-select v-decorator="['repairerGender', {initialValue: '先生'}]">
+                <a-select v-model:value="formModel.repairerGender">
                   <a-select-option value="先生">先生</a-select-option>
                   <a-select-option value="女士">女士</a-select-option>
                 </a-select>
@@ -307,7 +309,7 @@
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="证件号码">
-                <a-input placeholder="最多输入20位字母数字" v-decorator="['repairerIdNo']" :maxLength="20" />
+                <a-input placeholder="最多输入20位字母数字" v-model:value="formModel.repairerIdNo" :maxLength="20" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -315,19 +317,19 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="所在地区">
-                <a-input placeholder="请输入省/市/区" v-decorator="['repairerRegion']" />
+                <a-input placeholder="请输入省/市/区" v-model:value="formModel.repairerRegion" />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="详细地址">
-                <a-input placeholder="请输入详细地址" v-decorator="['repairerAddress']" />
+                <a-input placeholder="请输入详细地址" v-model:value="formModel.repairerAddress" />
               </a-form-item>
             </a-col>
           </a-row>
 
           <!-- 备注 -->
           <a-form-item :labelCol="labelColFull" :wrapperCol="wrapperColFull" label="备注">
-            <a-textarea :rows="3" placeholder="请输入备注" v-decorator="['remark']" />
+            <a-textarea :rows="3" placeholder="请输入备注" v-model:value="formModel.remark" />
           </a-form-item>
 
         </a-form>
@@ -341,7 +343,7 @@
   import { addVehicle, editVehicle } from '@/api/api'
   import { getAction } from '@/api/manage'
   import { mixinDevice } from '@/utils/mixin'
-  import moment from 'moment'
+  import dayjs from 'dayjs'
   import DynamicOptionSelect from '@/components/biz/DynamicOptionSelect'
 
   const PLATE_FIELDS = [
@@ -380,7 +382,7 @@
         noVin: false,
         noInsurance: false,
         contacts: [],
-        form: this.$form.createForm(this),
+        formModel: {},
         labelCol: { xs: { span: 24 }, sm: { span: 6 } },
         wrapperCol: { xs: { span: 24 }, sm: { span: 18 } },
         labelColFull: { xs: { span: 24 }, sm: { span: 3 } },
@@ -389,25 +391,17 @@
                     '苏','浙','赣','鄂','桂','甘','晋','蒙','陕','吉','闽','贵',
                     '粤','川','青','琼','宁','琼','藏'],
         productionYears: Array.from({ length: 40 }, (_, i) => new Date().getFullYear() - i),
-        validatorRules: {
-          customerName: {
-            rules: [{ required: true, message: '请输入客户姓名!' }]
-          },
-          customerPhone: {
-            rules: [
-              { required: true, message: '请输入手机号码!' },
-              { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确!', trigger: 'blur' }
-            ]
-          },
-          licensePlateNo: {
-            rules: [{ max: 7, message: '车牌号最多7位!' }]
-          },
-          vin: {
-            rules: [
-              { len: 17, message: 'VIN码必须为17位!', trigger: 'blur' },
-              { pattern: /^[A-HJ-NPR-Z0-9]{17}$/i, message: 'VIN码格式不正确!', trigger: 'blur' }
-            ]
-          }
+        formRules: {
+          customerName: [{ required: true, message: '请输入客户姓名!', trigger: 'blur' }],
+          customerPhone: [
+            { required: true, message: '请输入手机号码!', trigger: 'blur' },
+            { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确!', trigger: 'blur' }
+          ],
+          licensePlateNo: [{ max: 7, message: '车牌号最多7位!', trigger: 'blur' }],
+          vin: [
+            { len: 17, message: 'VIN码必须为17位!', trigger: 'blur' },
+            { pattern: /^[A-HJ-NPR-Z0-9]{17}$/i, message: 'VIN码格式不正确!', trigger: 'blur' }
+          ]
         }
       }
     },
@@ -416,7 +410,6 @@
         this.edit({})
       },
       edit(record) {
-        this.form.resetFields()
         this.model = Object.assign({}, record)
         this.noPlate = !!record.noPlate
         this.noVin = !!record.noVin
@@ -435,15 +428,16 @@
           })
         }
 
-        this.$nextTick(() => {
-          const dateFields = ['registerDate', 'issueDate', 'annualCheckDate',
-                              'trafficInsuranceExpire', 'commercialInsuranceExpire']
-          const values = pick(this.model, PLATE_FIELDS)
-          dateFields.forEach(f => {
-            if (values[f]) values[f] = moment(values[f])
-          })
-          this.form.setFieldsValue(values)
+        const dateFields = ['registerDate', 'issueDate', 'annualCheckDate',
+                            'trafficInsuranceExpire', 'commercialInsuranceExpire']
+        const values = pick(this.model, PLATE_FIELDS)
+        dateFields.forEach(f => {
+          if (values[f]) values[f] = dayjs(values[f])
         })
+        values.customerGender = values.customerGender || '先生'
+        values.repairerGender = values.repairerGender || '先生'
+        values.customerLevel = values.customerLevel || '默认客户'
+        this.formModel = values
       },
       close() {
         this.$emit('close')
@@ -451,12 +445,13 @@
       },
       onNoPlateChange(checked) {
         if (checked) {
-          this.form.setFieldsValue({ licensePlateProvince: undefined, licensePlateNo: '' })
+          this.formModel.licensePlateProvince = undefined
+          this.formModel.licensePlateNo = ''
         }
       },
       onNoVinChange(checked) {
         if (checked) {
-          this.form.setFieldsValue({ vin: '' })
+          this.formModel.vin = ''
         }
       },
       addContact() {
@@ -467,9 +462,10 @@
       },
       handleOk() {
         const that = this
-        this.form.validateFields((err, values) => {
-          if (!err) {
-            // 处理日期格式
+        const formRef = this.$refs.formRef
+        if (!formRef) return
+        formRef.validate().then(() => {
+            const values = { ...that.formModel }
             const dateFields = ['registerDate', 'issueDate', 'annualCheckDate',
                                 'trafficInsuranceExpire', 'commercialInsuranceExpire']
             dateFields.forEach(f => {
@@ -484,7 +480,6 @@
               contacts: this.contacts.filter(c => c.contactName || c.contactPhone)
             })
 
-            // 非立即保存场景（如工单中“完善更多信息”），只回传数据给父组件
             if (!this.immediateSave) {
               this.$emit('ok', formData)
               this.close()
@@ -504,8 +499,7 @@
             }).finally(() => {
               that.confirmLoading = false
             })
-          }
-        })
+        }).catch(() => {})
       },
       handleCancel() {
         this.close()

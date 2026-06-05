@@ -2,13 +2,13 @@
   <j-modal
     :title="title"
     :width="modelStyle.width"
-    :visible="visible"
+    :open="visible"
     :bodyStyle ="bodyStyle"
     :switchFullscreen="switchFullscreen"
     @cancel="handleCancel"
     style="top:15%;height: 60%;"
    >
-    <template slot="footer">
+    <template #footer>
       <a-button key="back" @click="handleCancel">关闭</a-button>
       <a-button v-if="record.openType==='url'" type="primary" @click="toHandle">去处理</a-button>
     </template>

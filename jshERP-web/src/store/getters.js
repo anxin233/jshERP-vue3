@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import { USER_INFO, ENHANCE_PRE } from "@/store/mutation-types"
 import storage from '@/utils/storage'
 const getters = {

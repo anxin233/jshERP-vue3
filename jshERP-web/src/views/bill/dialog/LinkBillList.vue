@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1300"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -13,7 +13,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button @click="handleCancel">关闭(ESC)</a-button>
         <a-button @click="handleBackBill" v-if="selectType === 'detail'">返回单据列表</a-button>
         <a-button type="primary" @click="handleOk">确定</a-button>
@@ -25,19 +25,19 @@
           <a-row :gutter="24">
             <a-col :md="6" :sm="24">
               <a-form-item label="单据编号" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入单据编号查询" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号查询" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="商品信息" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="条码|名称|规格|型号" v-model="queryParam.materialParam"></a-input>
+                <a-input placeholder="条码|名称|规格|型号" v-model:value="queryParam.materialParam"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                 <a-range-picker
                   style="width: 100%"
-                  v-model="queryParam.createTimeRange"
+                  v-model:value="queryParam.createTimeRange"
                   format="YYYY-MM-DD"
                   :placeholder="['开始时间', '结束时间']"
                   @change="onDateChange"
@@ -68,11 +68,11 @@
         :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange, type: getType}"
         :customRow="rowAction"
         @change="handleTableChange">
-        <span slot="numberCustomRender" slot-scope="text, record">
+        <template #numberCustomRender="{ text, record }"><span>
           <a v-if="!queryParam.purchaseStatus" @click="myHandleDetail(record)">{{record.number}}</a>
           <span v-if="queryParam.purchaseStatus">{{record.number}}</span>
-        </span>
-        <template slot="customRenderStatus" slot-scope="text, record">
+        </span></template>
+        <template #customRenderStatus="{ text, record }">
           <template v-if="!queryParam.purchaseStatus">
             <a-tag v-if="record.status === '0'" color="red">未审核</a-tag>
             <a-tag v-if="record.status === '1'" color="green">已审核</a-tag>
@@ -117,9 +117,7 @@
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import {mixinDevice} from '@/utils/mixin'
   import { findBillDetailByNumber } from '@/api/api'
-  import { getAction } from '@/api/manage'
-  import Vue from 'vue'
-  export default {
+  import { getAction } from '@/api/manage'  export default {
     name: 'LinkBillList',
     mixins:[JeecgListMixin, mixinDevice],
     components: {
@@ -164,10 +162,10 @@
         columns: [
           { title: '', dataIndex: 'organName',width:120, ellipsis:true},
           { title: '单据编号', dataIndex: 'number',width:130,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '商品信息', dataIndex: 'materialsList',width:280, ellipsis:true,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(text) {
                 return text.replace(",","，");
               }
@@ -178,7 +176,7 @@
           { title: '数量', dataIndex: 'materialCount',width:60},
           { title: '金额合计', dataIndex: 'totalPrice',width:70},
           { title: '含税合计', dataIndex: 'totalTaxLastMoney',width:70,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(record.discountLastMoney) {
                 return (record.discountMoney + record.discountLastMoney).toFixed(2);
               } else {
@@ -187,7 +185,7 @@
             }
           },
           { title: '状态', dataIndex: 'status', width: 70, align: "center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           }
         ],
         columnsDetail: [

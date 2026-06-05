@@ -6,12 +6,16 @@
     :value="momVal"
     :showTime="showTime"
     :format="dateFormat"
-    :getCalendarContainer="getCalendarContainer"
+    :getPopupContainer="getPopupContainer"
     style="width:100%"
   />
 </template>
 <script>
-  import moment from 'moment'
+  import dayjs from 'dayjs'
+  import customParseFormat from 'dayjs/plugin/customParseFormat'
+
+  dayjs.extend(customParseFormat)
+
   export default {
     name: 'JDate',
     props: {
@@ -21,7 +25,11 @@
         required: false
       },
       value:{
-        type: String,
+        type: [String, Object],
+        required: false
+      },
+      modelValue:{
+        type: [String, Object],
         required: false
       },
       dateFormat:{
@@ -50,37 +58,55 @@
         required: false,
         default: false
       },
-      getCalendarContainer: {
+      getPopupContainer: {
         type: Function,
         default: (node) => node.parentNode
       }
     },
     data () {
-      let dateStr = this.value;
       return {
         decorator:"",
-        momVal:!dateStr?null:moment(dateStr,this.dateFormat)
+        momVal: this.toDayjs(this.modelValue !== undefined ? this.modelValue : this.value)
       }
     },
     watch: {
       value (val) {
-        if(!val){
-          this.momVal = null
-        }else{
-          this.momVal = moment(val,this.dateFormat)
+        if (this.modelValue === undefined) {
+          this.momVal = this.toDayjs(val)
         }
+      },
+      modelValue (val) {
+        this.momVal = this.toDayjs(val)
       }
     },
     methods: {
-      moment,
+      dayjs,
+      toDayjs(val) {
+        if (!val) {
+          return null
+        }
+        if (dayjs.isDayjs(val)) {
+          return val
+        }
+        if (val && typeof val.valueOf === 'function' && (val._isAMomentObject || val._isAMomentObject === true)) {
+          return dayjs(val.valueOf())
+        }
+        if (val instanceof Date) {
+          return dayjs(val)
+        }
+        if (typeof val === 'string') {
+          const parsed = dayjs(val, this.dateFormat, true)
+          return parsed.isValid() ? parsed : dayjs(val)
+        }
+        return val
+      },
       handleDateChange(mom,dateStr){
-        this.$emit('change', dateStr);
+        this.momVal = mom
+        this.$emit('change', dateStr)
+        this.$emit('input', dateStr)
+        this.$emit('update:value', dateStr)
+        this.$emit('update:modelValue', dateStr)
       }
-    },
-    //2.2新增 在组件内定义 指定父组件调用时候的传值属性和事件类型 这个牛逼
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

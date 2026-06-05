@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :keyboard="false"
     :forceRender="true"
@@ -11,7 +11,7 @@
     @cancel="handleCancel"
     :id="prefixNo"
     style="top:20px;height: 95%;">
-    <template slot="footer">
+    <template #footer>
       <a-button @click="handleCancel">取消</a-button>
       <a-button v-if="checkFlag && isCanCheck" :loading="confirmLoading" @click="handleOkAndCheck">保存并审核</a-button>
       <a-button type="primary" :loading="confirmLoading" @click="handleOkOnly">保存（Ctrl+S）</a-button>
@@ -19,17 +19,17 @@
       <a-button v-if="!checkFlag" @click="handleWorkflow()" type="primary">提交流程</a-button>
     </template>
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form ref="formRef" :model="formModel" :rules="formRules">
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="付款会员">
-              <a-select placeholder="请选择付款会员" v-decorator="[ 'organId', validatorRules.organId ]"
+            <a-form-item name="organId" :labelCol="labelCol" :wrapperCol="wrapperCol" label="付款会员">
+              <a-select placeholder="请选择付款会员" v-model:value="formModel.organId"
                 :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children" @search="handleSearchRetail">
-                <div slot="dropdownRender" slot-scope="menu">
+                <template #dropdownRender="{ menuNode: menu }"><div>
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
                   <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initRetail"><legacy-icon type="reload" /> 刷新列表</div>
-                </div>
+                </div></template>
                 <a-select-option v-for="(item,index) in retailList" :key="index" :value="item.id">
                   {{ item.supplier }}
                 </a-select-option>
@@ -37,25 +37,25 @@
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
-              <j-date v-decorator="['billTime', validatorRules.billTime]" :show-time="true"/>
+            <a-form-item name="billTime" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
+              <j-date v-model:value="formModel.billTime" :show-time="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号">
-              <a-input placeholder="请输入单据编号" v-decorator.trim="[ 'billNo', validatorRules.billNo ]" />
+            <a-form-item name="billNo" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号">
+              <a-input placeholder="请输入单据编号" v-model:value="formModel.billNo" />
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="财务人员">
-              <a-select placeholder="请选择财务人员" v-decorator="[ 'handsPersonId' ]"
+              <a-select placeholder="请选择财务人员" v-model:value="formModel.handsPersonId"
                         :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children">
-                <div slot="dropdownRender" slot-scope="menu">
+                <template #dropdownRender="{ menuNode: menu }"><div>
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
                   <div v-if="quickBtn.person" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addPerson"><legacy-icon type="plus" /> 新增经手人</div>
                   <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initPerson"><legacy-icon type="reload" /> 刷新</div>
-                </div>
+                </div></template>
                 <a-select-option v-for="(item,index) in personList" :key="index" :value="item.id">
                   {{ item.name }}
                 </a-select-option>
@@ -78,19 +78,19 @@
         <a-row class="form-row" :gutter="24">
           <a-col :lg="24" :md="24" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="{xs: { span: 24 },sm: { span: 24 }}" label="">
-              <a-textarea :rows="2" placeholder="请输入备注" v-decorator="[ 'remark' ]" style="margin-top:8px;"/>
+              <a-textarea :rows="2" placeholder="请输入备注" v-model:value="formModel.remark" style="margin-top:8px;"/>
             </a-form-item>
           </a-col>
         </a-row>
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="合计金额">
-              <a-input placeholder="请输入合计收款" v-decorator.trim="[ 'totalPrice' ]" :readOnly="true"/>
+              <a-input placeholder="请输入合计收款" v-model:value="formModel.totalPrice" :readOnly="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="收款金额">
-              <a-input placeholder="请输入收款金额" v-decorator.trim="[ 'changeAmount' ]" :readOnly="true"/>
+              <a-input placeholder="请输入收款金额" v-model:value="formModel.changeAmount" :readOnly="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
@@ -101,7 +101,7 @@
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="附件">
-              <j-upload v-model="fileList" bizPath="financial"></j-upload>
+              <j-upload v-model:value="fileList" bizPath="financial"></j-upload>
             </a-form-item>
           </a-col>
         </a-row>
@@ -129,8 +129,8 @@
       JUpload,
       JDate,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -168,22 +168,10 @@
           ]
         },
         confirmLoading: false,
-        validatorRules:{
-          organId:{
-            rules: [
-              { required: true, message: '请选择付款会员!' }
-            ]
-          },
-          billTime:{
-            rules: [
-              { required: true, message: '请选择单据日期!' }
-            ]
-          },
-          billNo:{
-            rules: [
-              { required: true, message: '请输入单据编号!' }
-            ]
-          }
+                formRules: {
+          organId: [{ required: true, message: '请选择付款会员!', trigger: 'change' }],
+          billTime: [{ required: true, message: '请选择单据日期!', trigger: 'change' }],
+          billNo: [{ required: true, message: '请输入单据编号!', trigger: 'blur' }],
         },
         url: {
           add: '/accountHead/addAccountHeadAndDetail',
@@ -204,7 +192,7 @@
         } else {
           this.model.billTime = this.model.billTimeStr
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(this.model,'organId', 'handsPersonId', 'billTime', 'billNo', 'remark',
+            Object.assign(this.formModel, pick(this.model,'organId', 'handsPersonId', 'billTime', 'billNo', 'remark',
                   'totalPrice', 'changeAmount'))
           });
           this.fileList = this.model.fileName

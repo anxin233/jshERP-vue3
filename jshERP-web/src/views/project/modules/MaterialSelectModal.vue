@@ -2,7 +2,7 @@
   <a-modal
     title="选择商品"
     :width="1200"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     @ok="handleOk"
     @cancel="handleCancel"
@@ -29,13 +29,13 @@
           <a-col :span="16">
             <a-input
               placeholder="请输入商品名称搜索"
-              v-model="searchName"
+              v-model:value="searchName"
               @pressEnter="loadMaterialList"
               allowClear>
             </a-input>
           </a-col>
           <a-col :span="8">
-            <a-button type="primary" @click="loadMaterialList" icon="search">查询</a-button>
+            <a-button type="primary" @click="loadMaterialList"><template #icon><legacy-icon type="search" /></template>查询</a-button>
             <a-button style="margin-left: 8px" @click="resetSearch">重置</a-button>
           </a-col>
         </a-row>
@@ -52,10 +52,14 @@
           size="middle"
           bordered
           :scroll="{y: 350}">
-          <span slot="enabled" slot-scope="enabled">
-            <a-tag v-if="enabled" color="green">启用</a-tag>
+          <template #bodyCell="{ column, text }">
+            <template v-if="column.dataIndex === 'enabled'">
+            <a-tag v-if="text" color="green">启用</a-tag>
             <a-tag v-else color="red">禁用</a-tag>
-          </span>
+          
+            </template>
+            <template v-else>{{ text }}</template>
+          </template>
         </a-table>
       </div>
     </div>
@@ -68,6 +72,8 @@ import {getAction} from '@/api/manage'
 
 export default {
   name: "MaterialSelectModal",
+  // 声明 ok，避免父组件 @ok 透传到根节点 a-modal 与 @ok="handleOk" 合并成数组
+  emits: ['ok'],
   data() {
     return {
       visible: false,
@@ -109,8 +115,7 @@ export default {
         {
           title: '状态',
           dataIndex: 'enabled',
-          width: '10%',
-          scopedSlots: { customRender: 'enabled' }
+          width: '10%'
         }
       ]
     }
@@ -127,27 +132,37 @@ export default {
       this.loadMaterialList();
     },
     loadMaterialCategoryList() {
-      queryMaterialCategoryTreeList({id: ''}).then((res) => {
-        if (res) {
-          // 添加"全部"节点
-          this.categoryTreeData = [
-            {
-              id: '',
-              key: '',
-              title: '全部商品',
-              children: this.buildTreeData(res)
-            }
-          ];
-        }
-      });
+      queryMaterialCategoryTreeList({ id: '' }).then((res) => {
+        const treeList = this.normalizeCategoryTreeResponse(res)
+        this.categoryTreeData = [
+          {
+            id: '',
+            key: '',
+            title: '全部商品',
+            children: this.buildTreeData(treeList)
+          }
+        ]
+      }).catch(() => {
+        this.categoryTreeData = [
+          { id: '', key: '', title: '全部商品', children: [] }
+        ]
+      })
+    },
+    /** 接口可能直接返回数组，也可能为 { code, data: [] }，需统一为数组 */
+    normalizeCategoryTreeResponse(res) {
+      if (!res) return []
+      if (Array.isArray(res)) return res
+      if (res.data && Array.isArray(res.data)) return res.data
+      return []
     },
     buildTreeData(tree) {
+      if (!Array.isArray(tree)) return []
       return tree.map(node => ({
         id: node.id,
-        key: node.id,
+        key: node.key != null ? node.key : node.id,
         title: node.title,
         children: node.children && node.children.length > 0 ? this.buildTreeData(node.children) : []
-      }));
+      }))
     },
     onTreeSelect(selectedKeys) {
       if (selectedKeys.length > 0) {

@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import storage from '@/utils/storage'
 const enhance = {
   state: {

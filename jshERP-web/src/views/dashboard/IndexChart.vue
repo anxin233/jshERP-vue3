@@ -3,7 +3,7 @@
     <a-row :gutter="24">
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="今日销售" data-step="1" data-title="今日销售" data-intro="统计今日销售单据的总金额">
-          <a-tooltip title="统计今日销售单据的总金额" slot="action">
+          <a-tooltip title="统计今日销售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.todaySale"></head-info>
@@ -11,7 +11,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="今日零售" data-step="2" data-title="今日零售" data-intro="统计今日零售单据的总金额">
-          <a-tooltip title="统计今日零售单据的总金额" slot="action">
+          <a-tooltip title="统计今日零售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.todayRetailSale"></head-info>
@@ -19,7 +19,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="今日采购" data-step="3" data-title="今日采购" data-intro="统计今日采购单据的总金额">
-          <a-tooltip title="统计今日采购单据的总金额" slot="action">
+          <a-tooltip title="统计今日采购单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.todayBuy"></head-info>
@@ -27,7 +27,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="本月累计销售">
-          <a-tooltip title="统计本月销售单据的总金额" slot="action">
+          <a-tooltip title="统计本月销售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.monthSale"></head-info>
@@ -35,7 +35,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="本月累计零售">
-          <a-tooltip title="统计本月零售单据的总金额" slot="action">
+          <a-tooltip title="统计本月零售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.monthRetailSale"></head-info>
@@ -43,7 +43,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="本月累计采购">
-          <a-tooltip placement="left" title="统计本月采购单据的总金额" slot="action">
+          <a-tooltip placement="left" title="统计本月采购单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.monthBuy"></head-info>
@@ -51,7 +51,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="昨日销售">
-          <a-tooltip title="统计昨日销售单据的总金额" slot="action">
+          <a-tooltip title="统计昨日销售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.yesterdaySale"></head-info>
@@ -59,7 +59,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="昨日零售">
-          <a-tooltip title="统计昨日零售单据的总金额" slot="action">
+          <a-tooltip title="统计昨日零售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.yesterdayRetailSale"></head-info>
@@ -67,7 +67,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="昨日采购">
-          <a-tooltip title="统计昨日采购单据的总金额" slot="action">
+          <a-tooltip title="统计昨日采购单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.yesterdayBuy"></head-info>
@@ -75,7 +75,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="今年累计销售">
-          <a-tooltip title="统计今年销售单据的总金额" slot="action">
+          <a-tooltip title="统计今年销售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.yearSale"></head-info>
@@ -83,7 +83,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="今年累计零售">
-          <a-tooltip title="统计今年零售单据的总金额" slot="action">
+          <a-tooltip title="统计今年零售单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.yearRetailSale"></head-info>
@@ -91,7 +91,7 @@
       </a-col>
       <a-col :sm="24" :md="12" :xl="4" :style="{ paddingRight: '0px',marginBottom: '12px' }">
         <chart-card :loading="loading" title="今年累计采购">
-          <a-tooltip placement="left" title="统计今年采购单据的总金额" slot="action">
+          <a-tooltip placement="left" title="统计今年采购单据的总金额">
             <legacy-icon type="info-circle-o" />
           </a-tooltip>
           <head-info :content="statistics.yearBuy"></head-info>
@@ -126,11 +126,13 @@
           <div class="hidden-xs" style="float:right;">
             <a-popover
               trigger="hover"
-              :visible="hovered"
-              @visibleChange="handleHoverChange">
-              <div slot="content">
-                <img :src="(publicBase + 'static/weixin.jpg')" style="width:258px" />
-              </div>
+              :open="hovered"
+              @openChange="handleHoverChange">
+              <template #content>
+                <div>
+                  <img :src="(publicBase + 'static/weixin.jpg')" style="width:258px" />
+                </div>
+              </template>
               <a-button type="link" v-if="showWeixinSpan()">管伊佳ERP微信小程序</a-button>
             </a-popover>
             &copy; 2015-2030 {{systemTitle}} V3.6
@@ -149,16 +151,49 @@
   import ChartCard from '@/components/ChartCard'
   import ACol from "ant-design-vue/es/grid/Col"
   import ATooltip from "ant-design-vue/es/tooltip/Tooltip"
-  import MiniArea from '@/components/chart/MiniArea'
-  import MiniBar from '@/components/chart/MiniBar'
   import MiniProgress from '@/components/chart/MiniProgress'
   import Bar from '@/components/chart/Bar'
-  import LineChartMultid from '@/components/chart/LineChartMultid'
   import HeadInfo from '@/components/tools/HeadInfo.vue'
   import Trend from '@/components/Trend'
   import { getBuyAndSaleStatistics, buyOrSalePrice, getPlatformConfigByKey } from '@/api/api'
   import { handleIntroJs } from "@/utils/util"
   import { getAction,postAction } from '../../api/manage'
+
+  const HOME_STATISTICS_KEYS = [
+    'todaySale', 'todayRetailSale', 'todayBuy',
+    'monthSale', 'monthRetailSale', 'monthBuy',
+    'yesterdaySale', 'yesterdayRetailSale', 'yesterdayBuy',
+    'yearSale', 'yearRetailSale', 'yearBuy'
+  ]
+
+  function createDefaultHomeStatistics () {
+    const stats = {}
+    HOME_STATISTICS_KEYS.forEach(key => {
+      stats[key] = 0
+    })
+    return stats
+  }
+
+  function normalizeHomeStatistics (data) {
+    const stats = createDefaultHomeStatistics()
+    if (!data || typeof data !== 'object') {
+      return stats
+    }
+    HOME_STATISTICS_KEYS.forEach(key => {
+      const val = data[key]
+      if (val === '***') {
+        stats[key] = '***'
+      } else if (val === '' || val === null || val === undefined) {
+        stats[key] = 0
+      } else if (typeof val === 'number') {
+        stats[key] = val
+      } else {
+        const num = Number(val)
+        stats[key] = Number.isNaN(num) ? 0 : num
+      }
+    })
+    return stats
+  }
 
   export default {
     name: "IndexChart",
@@ -166,12 +201,9 @@
       ATooltip,
       ACol,
       ChartCard,
-      MiniArea,
-      MiniBar,
       MiniProgress,
       Bar,
       Trend,
-      LineChartMultid,
       HeadInfo
     },
     data() {
@@ -181,7 +213,7 @@
         systemUrl: window.SYS_URL,
         loading: true,
         center: null,
-        statistics: {},
+        statistics: createDefaultHomeStatistics(),
         barHeight: document.documentElement.clientHeight-585,
         yaxisText: '金额',
         buyPriceData: [],
@@ -212,21 +244,22 @@
     },
     computed: {
       publicBase () {
-        return process.env.BASE_URL || '/'
+        return import.meta.env.BASE_URL || '/'
       }
     },
     methods: {
       initInfo () {
         getBuyAndSaleStatistics().then((res)=>{
           if(res.code === 200){
-            this.statistics = res.data;
+            this.statistics = normalizeHomeStatistics(res.data)
           }
         })
         buyOrSalePrice().then(res=>{
-          if(res.code === 200){
-            this.buyPriceData = res.data.buyPriceList
-            this.salePriceData = res.data.salePriceList
-            this.retailPriceData = res.data.retailPriceList
+          if(res.code === 200 && res.data && typeof res.data === 'object'){
+            const data = res.data
+            this.buyPriceData = Array.isArray(data.buyPriceList) ? data.buyPriceList : []
+            this.salePriceData = Array.isArray(data.salePriceList) ? data.salePriceList : []
+            this.retailPriceData = Array.isArray(data.retailPriceList) ? data.retailPriceList : []
           }
         })
         getPlatformConfigByKey({"platformKey": "pay_fee_url"}).then((res)=> {

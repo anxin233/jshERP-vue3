@@ -1,6 +1,6 @@
 <template>
   <a-layout-sider
-    :class="['sider', isDesktop() ? null : 'shadow', theme, fixSiderbar ? 'ant-fixed-sidemenu' : null ]"
+    :class="['sider', isDesktop() ? null : 'shadow', theme, fixSiderbar && isDesktop() ? 'ant-fixed-sidemenu' : null ]"
     width="150px"
     :collapsible="collapsible"
     :collapsed="collapsed"
@@ -19,14 +19,13 @@
 </template>
 
 <script>
-  import ALayoutSider from "ant-design-vue/es/layout/Sider"
   import Logo from '../tools/Logo'
   import SMenu from './index'
   import { mixin, mixinDevice } from '@/utils/mixin.js'
 
   export default {
     name: "SideMenu",
-    components: { ALayoutSider, Logo, SMenu },
+    components: { Logo, SMenu },
     mixins: [mixin, mixinDevice],
     props: {
       mode: {

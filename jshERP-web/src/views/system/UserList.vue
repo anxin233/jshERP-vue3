@@ -8,12 +8,12 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="登录名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="输入登录名称模糊查询" v-model="queryParam.loginName"></a-input>
+                  <a-input placeholder="输入登录名称模糊查询" v-model:value="queryParam.loginName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="用户姓名" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="输入用户姓名模糊查询" v-model="queryParam.userName"></a-input>
+                  <a-input placeholder="输入用户姓名模糊查询" v-model:value="queryParam.userName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
@@ -46,7 +46,7 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' " @click="btnSetDepot(record)">分配仓库</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1'" type="vertical" />
               <a v-if="btnEnableList.indexOf(1)>-1 && customerFlag === '1'" @click="btnSetCustomer(record)">分配客户</a>
@@ -58,9 +58,9 @@
               </a-popconfirm>
               <a-divider type="vertical"/>
               <a @click="handleResetModal(record)">重置密码</a>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="status">
+            <template #customRenderFlag="{ text: status }">
               <a-tag v-if="status===0" color="green">启用</a-tag>
               <a-tag v-if="status===2" color="orange">禁用</a-tag>
             </template>
@@ -122,7 +122,7 @@
           {
             title: '操作',
             dataIndex: 'action',
-            scopedSlots: {customRender: 'action'},
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
             align: "center",
             width: 200
           },
@@ -130,12 +130,12 @@
           { title: '用户姓名', dataIndex: 'username', width: 100, align: "left"},
           { title: '用户类型', dataIndex: 'userType', width: 80, align: "left" },
           { title: '角色', dataIndex: 'roleName', width: 100, align: "left"},
-          { title: '部门', dataIndex: 'orgAbr', width: 100, align: "left"},
+          { title: '閮ㄩ棬', dataIndex: 'orgAbr', width: 100, align: "left"},
           { title: '是否经理', dataIndex: 'leaderFlagStr', width: 60, align: "left"},
           { title: '电话号码', dataIndex: 'phonenum', width: 80, align: "left"},
           { title: '排序', dataIndex: 'userBlngOrgaDsplSeq', width: 40, align: "left"},
-          { title: '状态',dataIndex: 'status',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+          { title: '状态', dataIndex: 'status',width:60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -194,5 +194,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

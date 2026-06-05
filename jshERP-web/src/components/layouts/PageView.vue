@@ -1,8 +1,8 @@
 <template>
   <page-layout :desc="description" :title="getTitle" :link-list="linkList" :search="search" :tabs="tabs">
-    <div slot="extra" class="extra-img">
+    <template #extra><div class="extra-img">
       <img :src="extraImage"/>
-    </div>
+    </div></template>
     <!-- keep-alive  -->
     <route-view ref="content"></route-view>
   </page-layout>
@@ -45,8 +45,7 @@
       getPageHeaderInfo () {
         // eslint-disable-next-line
         this.title = this.$route.meta.title
-        // 因为套用了一层 route-view 所以要取 ref 对象下的子节点的第一个对象
-        const content = this.$refs.content && this.$refs.content.$children[0]
+        const content = this.$refs.content && this.$refs.content.getRouteComponent()
 
         if (content) {
           this.description = content.description

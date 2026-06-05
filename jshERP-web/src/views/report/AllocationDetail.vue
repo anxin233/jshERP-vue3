@@ -13,14 +13,14 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="商品信息" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model="queryParam.materialParam"></a-input>
+                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model:value="queryParam.materialParam"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-range-picker
                     style="width: 100%"
-                    v-model="queryParam.createTimeRange"
+                    v-model:value="queryParam.createTimeRange"
                     format="YYYY-MM-DD"
                     :placeholder="['开始时间', '结束时间']"
                     @change="onDateChange"
@@ -30,8 +30,8 @@
               <a-col :md="6" :sm="24" >
                 <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
-                  <a-button style="margin-left: 8px" v-print="'#reportPrint'" icon="printer">打印</a-button>
-                  <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+                  <a-button style="margin-left: 8px" v-print="'#reportPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
+                  <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
@@ -40,7 +40,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item>
-                  <span>总数量：{{operNumberTotalStr}}，总金额：{{allPriceTotalStr}}</span>
+                  <span>总数量：{{operNumberTotalStr}}（总金额：{{allPriceTotalStr}}）</span>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -48,7 +48,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="单据编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入单据编号" v-model="queryParam.number"></a-input>
+                    <a-input placeholder="请输入单据编号" v-model:value="queryParam.number"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
@@ -58,7 +58,7 @@
                       :dropdownMatchSelectWidth="false"
                       showSearch allow-clear style="width: 100%"
                       placeholder="请选择仓库"
-                      v-model="queryParam.depotIdF">
+                      v-model:value="queryParam.depotIdF">
                       <a-select-option v-for="(depot,index) in depotList" :value="depot.id" :key="index">
                         {{ depot.depotName }}
                       </a-select-option>
@@ -72,7 +72,7 @@
                       :dropdownMatchSelectWidth="false"
                       showSearch allow-clear style="width: 100%"
                       placeholder="请选择仓库"
-                      v-model="queryParam.depotId">
+                      v-model:value="queryParam.depotId">
                       <a-select-option v-for="(depot,index) in depotList" :value="depot.id" :key="index">
                         {{ depot.depotName }}
                       </a-select-option>
@@ -82,20 +82,20 @@
                 <a-col :md="6" :sm="24" v-if="orgaTree.length">
                   <a-form-item label="部门" :labelCol="labelCol" :wrapperCol="wrapperCol">
                     <a-tree-select style="width:100%" allow-clear :treeData="orgaTree"
-                                   v-model="queryParam.organizationId" placeholder="请选择部门">
+                                   v-model:value="queryParam.organizationId" placeholder="请选择部门">
                     </a-tree-select>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="商品类别" :labelCol="labelCol" :wrapperCol="wrapperCol">
                     <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-                                   :treeData="categoryTree" v-model="queryParam.categoryId" placeholder="请选择商品类别">
+                                   :treeData="categoryTree" v-model:value="queryParam.categoryId" placeholder="请选择商品类别">
                     </a-tree-select>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入备注" v-model="queryParam.remark"></a-input>
+                    <a-input placeholder="请输入备注" v-model:value="queryParam.remark"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -116,35 +116,34 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="customTitle">
+            <template #headerCell="{ column }">
+              <template v-if="column.dataIndex === 'rowIndex'"><span>
               <a-popover trigger="click" placement="right">
-                <template slot="content">
-                  <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                    <a-row style="width: 600px">
-                      <template v-for="(item,index) in defColumns">
-                        <template>
-                          <a-col :span="6">
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex==='rowIndex'" disabled></a-checkbox>
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex!=='rowIndex'">
-                              <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
+                <template #content>
+                  <div class="column-setting-panel">
+
+                  <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                    <a-row class="column-setting-list" style="width: 600px">
+                      <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                        <a-col :span="6" class="column-setting-item">
+                            <a-checkbox :value="item.dataIndex">
+                              <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
                             </a-checkbox>
-                          </a-col>
-                        </template>
+                        </a-col>
                       </template>
                     </a-row>
-                    <a-row style="padding-top: 10px;">
-                      <a-col>
-                        恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                      </a-col>
-                    </a-row>
                   </a-checkbox-group>
+                  <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+                  </div>
                 </template>
                 <legacy-icon type="setting" />
               </a-popover>
-            </span>
-            <span slot="numberCustomRender" slot-scope="text, record">
+            </span></template>
+              <template v-else>{{ column.title }}</template>
+            </template>
+            <template #numberCustomRender="{ text, record }"><span>
               <a @click="myHandleDetail(record)">{{record.number}}</a>
-            </span>
+            </span></template>
           </a-table>
           <a-row :gutter="24" style="margin-top: 8px;text-align:right;">
             <a-col :md="24" :sm="24">
@@ -157,8 +156,8 @@
                 :page-size-options="ipagination.pageSizeOptions"
                 :total="ipagination.total"
                 :show-total="(total, range) => `共 ${total-Math.ceil(total/ipagination.pageSize)} 条`">
-                <template slot="buildOptionText" slot-scope="props">
-                  <span>{{ props.value-1 }}条/页</span>
+                <template #buildOptionText="{ value }">
+                  <span>{{ Number(value) - 1 }}条/页</span>
                 </template>
               </a-pagination>
             </a-col>
@@ -174,12 +173,11 @@
 <script>
   import BillDetail from '../bill/dialog/BillDetail'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
-  import { getFormatDate, getPrevMonthFormatDate } from '@/utils/util'
+  import { getFormatDate, getPrevMonthFormatDate, buildAllocationDetailQueryParams } from '@/utils/util'
   import {getAction} from '@/api/manage'
   import {findBySelectSup, findBillDetailByNumber, queryMaterialCategoryTreeList, getAllOrganizationTreeByUser} from '@/api/api'
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import moment from 'moment'
-  import Vue from 'vue'
   export default {
     name: "AllocationDetail",
     mixins:[JeecgListMixin],
@@ -198,16 +196,16 @@
         },
         // 查询条件
         queryParam: {
-          organId: undefined,
           number: '',
           materialParam:'',
           depotId: undefined,
           depotIdF: undefined,
           organizationId: undefined,
+          categoryId: undefined,
           beginTime: getPrevMonthFormatDate(3),
           endTime: getFormatDate(),
           createTimeRange: [moment(getPrevMonthFormatDate(3)), moment(getFormatDate())],
-          subType: "调拨",
+          subType: '调拨',
           remark: ''
         },
         ipagination:{
@@ -224,17 +222,17 @@
         pageName: 'allocationDetail',
         // 默认索引
         defDataIndex:['rowIndex','number','barCode','mname','standard','model','mUnit','operNumber','unitPrice','allPrice','dname','sname','operTime','newRemark'],
-        // 默认列
+        // 默认索引
         defColumns: [
           {
-            dataIndex: 'rowIndex', width:40, align:"center", slots: { title: 'customTitle' },
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
             customRender:function (t,r,index) {
               return (t !== '合计') ? (parseInt(index) + 1) : t
             }
           },
           {
             title: '单据编号', dataIndex: 'number', width: 100,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           {title: '条码', dataIndex: 'barCode', sorter: (a, b) => a.barCode - b.barCode, width: 80},
           {title: '名称', dataIndex: 'mname', width: 120, ellipsis:true},
@@ -267,20 +265,22 @@
     methods: {
       moment,
       getQueryParams() {
-        let param = Object.assign({}, this.queryParam, this.isorter);
-        param.field = this.getQueryField();
-        param.currentPage = this.ipagination.current;
-        param.pageSize = this.ipagination.pageSize-1;
-        return param;
+        return buildAllocationDetailQueryParams(this.queryParam, this.ipagination, this.isorter)
       },
       onDateChange: function (value, dateString) {
-        this.queryParam.beginTime=dateString[0]
-        this.queryParam.endTime=dateString[1]
-        if(dateString[0] && dateString[1]) {
+        this.queryParam.beginTime = dateString[0]
+        this.queryParam.endTime = dateString[1]
+        if (dateString[0] && dateString[1]) {
           this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+        } else {
+          this.queryParam.createTimeRange = []
         }
       },
       loadData(arg) {
+        if (!this.queryParam.beginTime || !this.queryParam.endTime) {
+          this.loading = false
+          return
+        }
         if (arg === 1) {
           this.ipagination.current = 1;
         }
@@ -296,8 +296,11 @@
           } else if(res.code===510){
             this.$message.warning(res.data)
           } else {
-            this.$message.warning(res.data.message)
+            this.$message.warning(res.data && res.data.message ? res.data.message : res.data)
           }
+        }).catch(() => {
+          this.$message.error('加载数据失败')
+        }).finally(() => {
           this.loading = false;
         })
       },
@@ -351,7 +354,7 @@
       },
       searchQuery() {
         if(this.queryParam.beginTime == '' || this.queryParam.endTime == ''){
-          this.$message.warning('请选择单据日期！')
+          this.$message.warning('请选择单据日期：')
         } else {
           this.loadData(1);
         }
@@ -373,5 +376,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

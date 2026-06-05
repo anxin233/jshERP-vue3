@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import router from './router'
 import store from './store'
 import NProgress from 'nprogress' // progress bar
@@ -10,14 +9,46 @@ import storage from '@/utils/storage'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/user/login', '/user/register', '/user/register-result'] // no redirect whitelist
+const ROOT_ROUTE_NAME = 'RootLayout'
 
 function addDynamicRoutes(routes = []) {
+  if (router.hasRoute(ROOT_ROUTE_NAME)) {
+    router.removeRoute(ROOT_ROUTE_NAME)
+  }
   routes.forEach(route => {
+    if (route.path === '/') {
+      router.addRoute({ ...route, name: ROOT_ROUTE_NAME })
+      return
+    }
     if (route.name && router.hasRoute(route.name)) {
       router.removeRoute(route.name)
     }
     router.addRoute(route)
   })
+}
+
+/** 登录态下在 router.install 之前预加载菜单路由，避免 No match found 警告 */
+export async function preloadDynamicRoutes() {
+  if (!storage.get(USER_ID)) {
+    return
+  }
+  if (store.getters.permissionList && store.getters.permissionList.length > 0) {
+    addDynamicRoutes(store.getters.addRouters)
+    return
+  }
+  const menuData = await store.dispatch('GetPermissionList')
+  if (menuData === null || menuData === '' || menuData === undefined) {
+    return
+  }
+  try {
+    const btnRes = await store.dispatch('GetUserBtnList')
+    storage.set('winBtnStrList', btnRes.data.userBtn, 7 * 24 * 60 * 60 * 1000)
+  } catch (e) {
+    // 按钮权限失败不阻塞路由
+  }
+  const constRoutes = generateIndexRouter(menuData)
+  await store.dispatch('UpdateAppRouter', { constRoutes })
+  addDynamicRoutes(store.getters.addRouters)
 }
 
 router.beforeEach((to, from, next) => {
@@ -75,3 +106,5 @@ router.beforeEach((to, from, next) => {
 router.afterEach(() => {
   NProgress.done() // finish progress bar
 })
+
+export default router

@@ -14,7 +14,7 @@
           {{ item.materialStr }}
         </a-select-option>
       </a-select>
-      <a-button icon="search" @click="onSearch" />
+      <a-button @click="onSearch" ><template #icon><legacy-icon type="search" /></template></a-button>
     </a-input-group>
     <a-input-search v-if="kind === 'batch'||kind === 'sn'||kind === 'snAdd'" :value="names" placeholder="请点开弹窗" readOnly @search="onSearch"></a-input-search>
     <j-select-material-modal v-if="kind === 'material'" ref="selectModal" :rows="rows" :multi="multi" :bar-code="value" @ok="selectOK" @initComp="initComp"/>
@@ -36,8 +36,8 @@
     components: {
       JSelectMaterialModal, JSelectBatchModal, JSelectSnModal, JSelectSnAddModal,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     props: {
@@ -83,10 +83,6 @@
     },
     created () {
     },
-    model: {
-      prop: 'value',
-      event: 'change'
-    },
     methods: {
       normalizeDropdownRenderMenu(menu) {
         if (menu && menu.menuNode) {
@@ -125,6 +121,9 @@
       handleChange(value) {
         this.names = value
         this.$emit("change", value)
+        this.$emit("input", value)
+        this.$emit("update:value", value)
+        this.$emit("update:modelValue", value)
       },
       handleEnter() {
         if(this.materialData.length===0) {
@@ -140,6 +139,9 @@
           this.ids = idstr
         }
         this.$emit("change", this.ids)
+        this.$emit("input", this.ids)
+        this.$emit("update:value", this.ids)
+        this.$emit("update:modelValue", this.ids)
       }
     }
   }

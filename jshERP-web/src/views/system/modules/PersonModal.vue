@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{ top: '93px', left: '154px' }"
@@ -21,14 +21,14 @@
         </a-button>
       </template>
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" id="personModal" :model="formModel" :rules="formRules">
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="姓名" prop="name" name="name">
+        <a-form ref="formRef" id="personModal" :model="formModel" :rules="formRules">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="姓名" name="name">
             <a-input
               placeholder="请输入姓名"
               :value="formModel.name"
               @change="handleFieldChange('name', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="类型" prop="type" name="type">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="类型" name="type">
             <a-select
               placeholder="请选择类型"
               :value="formModel.type"
@@ -36,14 +36,14 @@
               <a-select-option value="销售员">销售员</a-select-option>
               <a-select-option value="财务员">财务员</a-select-option>
             </a-select>
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序" prop="sort" name="sort">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序" name="sort">
             <a-input
               placeholder="请输入排序"
               :value="formModel.sort"
               @change="handleFieldChange('sort', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>

@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :keyboard="false"
     :forceRender="true"
@@ -13,7 +13,7 @@
     @cancel="handleCancel"
     :id="prefixNo"
     style="top:20px;height: 95%;">
-    <template slot="footer">
+    <template #footer>
       <a-button @click="handleCancel">取消</a-button>
       <a-button v-if="billPrintFlag && isShowPrintBtn" @click="handlePrintPro('请购单')">三联打印-新版</a-button>
       <a-button v-if="billPrintFlag && isShowPrintBtn" @click="handlePrint('请购单')">三联打印</a-button>
@@ -23,17 +23,17 @@
       <a-button v-if="!checkFlag" @click="handleWorkflow()" type="primary">提交流程</a-button>
     </template>
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form ref="formRef" :model="formModel" :rules="formRules">
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
-              <j-date v-decorator="['operTime', validatorRules.operTime]" :show-time="true"/>
+            <a-form-item name="operTime" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
+              <j-date v-model:value="formModel.operTime" :show-time="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号" data-step="2" data-title="单据编号"
+            <a-form-item name="number" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号" data-step="2" data-title="单据编号"
               data-intro="单据编号自动生成、自动累加、开头是单据类型的首字母缩写，累加的规则是每次打开页面会自动占用一个新的编号">
-              <a-input placeholder="请输入单据编号" v-decorator.trim="[ 'number', validatorRules.number ]" />
+              <a-input placeholder="请输入单据编号" v-model:value="formModel.number" />
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
@@ -61,7 +61,7 @@
                 <a-button @click="scanEnter">扫码录入</a-button>
               </a-col>
               <a-col v-if="!scanStatus" :md="16" :sm="24" style="padding: 0 8px 0 12px">
-                <a-input placeholder="请扫描商品条码并回车" v-model="scanBarCode" @pressEnter="scanPressEnter" ref="scanBarCode"/>
+                <a-input placeholder="请扫描商品条码并回车" v-model:value="scanBarCode" @pressEnter="scanPressEnter" ref="scanBarCode"/>
               </a-col>
               <a-col v-if="!scanStatus" :md="6" :sm="24" style="padding: 0px 12px 0 0">
                 <a-button @click="stopScan">收起扫码</a-button>
@@ -73,21 +73,21 @@
               </a-col>
             </a-row>
             <a-row v-if="rowCanEdit" :gutter="24" style="float:left;padding-bottom: 5px;padding-left:20px;">
-              <a-button icon="import" @click="onImport(prefixNo)">导入明细</a-button>
+              <a-button @click="onImport(prefixNo)"><template #icon><legacy-icon type="import" /></template>导入明细</a-button>
             </a-row>
           </template>
         </j-editable-table>
         <a-row class="form-row" :gutter="24">
           <a-col :lg="24" :md="24" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="{xs: { span: 24 },sm: { span: 24 }}" label="">
-              <a-textarea :rows="1" placeholder="请输入备注" v-decorator="[ 'remark' ]" style="margin-top:8px;"/>
+              <a-textarea :rows="1" placeholder="请输入备注" v-model:value="formModel.remark" style="margin-top:8px;"/>
             </a-form-item>
           </a-col>
         </a-row>
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="附件" data-step="10" data-title="附件" data-intro="可以上传与单据相关的图片、文档，支持多个文件">
-              <j-upload v-model="fileList" bizPath="bill"></j-upload>
+              <j-upload v-model:value="fileList" bizPath="bill"></j-upload>
             </a-form-item>
           </a-col>
         </a-row>
@@ -113,7 +113,6 @@
   import { getMpListShort, changeListFmtMinus,handleIntroJs } from "@/utils/util"
   import JUpload from '@/components/jeecg/JUpload'
   import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
   export default {
     name: "PurchaseApplyModal",
@@ -127,8 +126,8 @@
       JUpload,
       JDate,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -185,22 +184,9 @@
           ]
         },
         confirmLoading: false,
-        validatorRules:{
-          operTime:{
-            rules: [
-              { required: true, message: '请输入单据日期!' }
-            ]
-          },
-          number:{
-            rules: [
-              { required: true, message: '请输入单据编号!' }
-            ]
-          },
-          organId:{
-            rules: [
-              { required: true, message: '请选择供应商!' }
-            ]
-          }
+        formRules: {
+          operTime: [{ required: true, message: '请输入单据日期!', trigger: 'change' }],
+          number: [{ required: true, message: '请输入单据编号!', trigger: 'blur' }]
         },
         url: {
           add: '/depotHead/addDepotHeadAndDetail',
@@ -237,7 +223,7 @@
           }
           this.fileList = this.model.fileName
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(this.model, 'operTime', 'number', 'remark'))
+            Object.assign(this.formModel, pick(this.model, 'operTime', 'number', 'remark'))
           });
           // 加载子表数据
           let params = {

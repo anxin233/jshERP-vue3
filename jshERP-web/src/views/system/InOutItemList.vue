@@ -9,12 +9,12 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入名称查询" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select v-model="queryParam.type" placeholder="请选择类型">
+                  <a-select v-model:value="queryParam.type" placeholder="请选择类型">
                     <a-select-option value="">请选择</a-select-option>
                     <a-select-option value="收入">收入</a-select-option>
                     <a-select-option value="支出">支出</a-select-option>
@@ -23,7 +23,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入备注查询" v-model="queryParam.remark"></a-input>
+                  <a-input placeholder="请输入备注查询" v-model:value="queryParam.remark"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -56,15 +56,15 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
+            <template #customRenderFlag="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
@@ -118,14 +118,14 @@
             dataIndex: 'action',
             width: 100,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '名称', dataIndex: 'name', width: 200},
           { title: '类型', dataIndex: 'type', width: 100},
           { title: '备注', dataIndex: 'remark', width: 200},
           { title: '排序', dataIndex: 'sort', width: 60},
-          { title: '状态',dataIndex: 'enabled',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+          { title: '状态', dataIndex: 'enabled',width:60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -152,5 +152,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

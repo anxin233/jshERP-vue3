@@ -1,4 +1,4 @@
-<!-- by 7527_18920 -->
+﻿<!-- by 7527_18920 -->
 <template>
   <a-row :gutter="24">
     <a-col :md="24">
@@ -9,13 +9,13 @@
           <a-form layout="inline" @keyup.enter="searchQuery">
             <a-row :gutter="24">
               <a-col :md="6" :sm="8">
-                <a-form-item label="属性名" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                  <a-input placeholder="请输入属性名查询" v-model="queryParam.attributeName"></a-input>
+                <a-form-item label="灞炴у悕" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
+                  <a-input placeholder="请输入属性名查询" v-model:value="queryParam.attributeName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="8">
-                <a-form-item label="属性值" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                  <a-input placeholder="请输入属性值查询" v-model="queryParam.attributeValue"></a-input>
+                <a-form-item label="灞炴у" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
+                  <a-input placeholder="请输入属性值查询" v-model:value="queryParam.attributeValue"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -45,14 +45,14 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
-            <template slot="customRenderAttributeValue" slot-scope="attributeValue">
+            </span></template>
+            <template #customRenderAttributeValue="{ text: attributeValue }">
               <a-tag  v-for="(item,index) in getTagArr(attributeValue)" color="blue">{{item}}</a-tag>
             </template>
           </a-table>
@@ -107,11 +107,11 @@
             dataIndex: 'action',
             width: 100,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
-          {title: '属性名', dataIndex: 'attributeName', width: 150},
-          {title: '属性值', dataIndex: 'attributeValue', width: 750,
-            scopedSlots: { customRender: 'customRenderAttributeValue' }
+          {title: '灞炴у悕', dataIndex: 'attributeName', width: 150},
+          {title: '灞炴у', dataIndex: 'attributeValue', width: 750,
+            customRender: (cell) => this.$renderColumnSlot('customRenderAttributeValue', cell)
           }
         ],
         url: {
@@ -140,5 +140,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

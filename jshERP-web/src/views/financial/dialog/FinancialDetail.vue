@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :maskClosable="false"
     :forceRender="true"
     :style="modalStyle"
@@ -10,7 +10,7 @@
     switchFullscreen
     @cancel="handleCancel"
     wrapClassName="ant-modal-cust-warp">
-    <template slot="footer">
+    <template #footer>
       <a-button key="back" @click="handleCancel">取消(ESC)</a-button>
       <!--此处为解决缓存问题-->
       <a-button v-if="financialType === '收预付款'" v-print="'#advanceInPrint'">打印</a-button>
@@ -22,14 +22,13 @@
       <!--反审核-->
       <a-button v-if="checkFlag && isCanBackCheck && model.status==='1'" @click="handleBackCheck()">反审核</a-button>
     </template>
-    <a-form :form="form">
+    <a-form>
       <!--收预付款-->
       <template v-if="financialType === '收预付款'">
         <section ref="print" id="advanceInPrint">
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="付款会员">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -89,7 +88,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="财务人员">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.handsPersonName}}
               </a-form-item>
             </a-col>
@@ -144,7 +142,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="往来单位">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -203,7 +200,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="往来单位">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -262,7 +258,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -329,7 +324,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="供应商">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -394,7 +388,7 @@
         <a-row class="form-row" :gutter="24">
           <a-col :span="12">
             <a-form-item :labelCol="{xs: { span: 24 },sm: { span: 3 }}" :wrapperCol="{xs: { span: 24 },sm: { span: 21 }}" label="附件">
-              <j-upload v-model="fileList" bizPath="bill" :disabled="true" :buttonVisible="false"></j-upload>
+              <j-upload v-model:value="fileList" bizPath="bill" :disabled="true" :buttonVisible="false"></j-upload>
             </a-form-item>
           </a-col>
           <a-col :span="12"></a-col>
@@ -434,8 +428,7 @@
         wrapperCol: {
           xs: { span: 24 },
           sm: { span: 16 },
-        },
-        form: this.$form.createForm(this),
+        },
         loading: false,
         dataSource: [],
         url: {
@@ -501,9 +494,7 @@
             this.visible = true
             this.modalStyle = 'top:20px;height: 95%;'
             this.model = Object.assign({}, item)
-            this.$nextTick(() => {
-              this.form.setFieldsValue(pick(this.model, 'id'))
-            });
+            this.$nextTick(() => {});
             let params = {
               headerId: this.model.id,
             }

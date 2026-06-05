@@ -2,21 +2,23 @@
   <div :style="!$route.meta.pageHeader ? 'margin: -10px -24px 0;' : null">
     <!-- pageHeader , route meta hideHeader:true on hide -->
     <page-header v-if="!$route.meta.pageHeader" :title="title" :logo="logo" :avatar="avatar">
-      <slot slot="action" name="action"></slot>
-      <slot slot="content" name="headerContent"></slot>
-      <div slot="content" v-if="!this.$slots.headerContent && desc">
-        <p style="font-size: 14px;color: rgba(0,0,0,.65)">{{ desc }}</p>
-        <div class="link">
-          <template v-for="(link, index) in linkList" :key="index">
-            <a :href="link.href">
-              <legacy-icon :type="link.icon"/>
-              <span>{{ link.title }}</span>
-            </a>
-          </template>
+      <template #action><slot name="action"></slot></template>
+      <template #content>
+        <slot v-if="$slots.headerContent" name="headerContent"></slot>
+        <div v-else-if="desc">
+          <p style="font-size: 14px;color: rgba(0,0,0,.65)">{{ desc }}</p>
+          <div class="link">
+            <template v-for="(link, index) in linkList" :key="index">
+              <a :href="link.href">
+                <legacy-icon :type="link.icon"/>
+                <span>{{ link.title }}</span>
+              </a>
+            </template>
+          </div>
         </div>
-      </div>
-      <slot slot="extra" name="extra"></slot>
-      <div slot="pageMenu">
+      </template>
+      <template #extra><slot name="extra"></slot></template>
+      <template #pageMenu><div>
         <div class="page-menu-search" v-if="search">
           <a-input-search style="width: 80%; max-width: 522px;" placeholder="请输入..." size="large" enterButton="搜索" />
         </div>
@@ -26,7 +28,7 @@
             <a-tab-pane v-for="item in tabs.items" :tab="item.title" :key="item.key"></a-tab-pane>
           </a-tabs>
         </div>
-      </div>
+      </div></template>
     </page-header>
     <div class="content">
       <div :class="['page-header-index-wide']">

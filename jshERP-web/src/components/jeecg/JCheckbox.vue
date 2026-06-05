@@ -32,12 +32,12 @@
     },
     methods:{
       onChange (checkedValues) {
-        this.$emit('change', checkedValues.join(","));
+        const value = checkedValues.join(",")
+        this.$emit('change', value)
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
       },
-    },
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

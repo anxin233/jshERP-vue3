@@ -12,7 +12,7 @@
       <legacy-icon type="search"></legacy-icon>
     </span>
     <!-- update-begin author:sunjianlei date:20200219 for: 菜单搜索改为动态组件，在手机端呈现出弹出框 -->
-    <component :is="searchMenuComp" v-show="searchMenuVisible || isMobile()" class="borders" :visible="searchMenuVisible" title="搜索菜单" :footer="null" @cancel="searchMenuVisible=false">
+    <component :is="searchMenuComp" v-show="searchMenuVisible || isMobile()" class="borders" :open="searchMenuVisible" title="搜索菜单" :footer="null" @cancel="searchMenuVisible=false">
       <a-select
         class="search-input"
         showSearch
@@ -26,7 +26,7 @@
         @change="searchMethods"
         @blur="hiddenClick"
       >
-        <a-select-option v-for="(site,index) in searchMenuOptions" :key="index" :value="site.id">{{site.text}}</a-select-option>
+        <a-select-option v-for="(site,index) in searchMenuOptions" :key="index" :value="site.id" :label="site.text">{{site.text}}</a-select-option>
       </a-select>
     </component>
     <!-- update-end author:sunjianlei date:20200219 for: 菜单搜索改为动态组件，在手机端呈现出弹出框 -->
@@ -34,7 +34,7 @@
     <!-- update_end  author:zhaoxin date:20191129 for: 做头部菜单栏导航 -->
     <span class="action">
       <a-tooltip>
-        <template slot="title">官方网站</template>
+        <template #title>官方网站</template>
         <a target="_blank" :href="systemUrl">
           <legacy-icon type="bank" style="font-size: 16px;" />
         </a>
@@ -46,7 +46,7 @@
         <legacy-icon type="down-circle"/>
         <span style="margin-left:4px">欢迎您，{{ nickname() }}</span>
       </span>
-      <a-menu slot="overlay" class="user-dropdown-menu-wrapper">
+      <template #overlay><a-menu class="user-dropdown-menu-wrapper">
         <a-menu-item key="3"  @click="systemSetting">
            <legacy-icon type="tool"/>
            <span>界面设置</span>
@@ -55,7 +55,7 @@
           <legacy-icon type="setting"/>
           <span>密码修改</span>
         </a-menu-item>
-      </a-menu>
+      </a-menu></template>
     </a-dropdown>
     <span class="action">
       <a class="logout_title" href="javascript:;" @click="handleLogout">
@@ -78,6 +78,7 @@
   import { mixinDevice } from '@/utils/mixin.js'
   import { getFileAccessHttpUrl,getAction } from "@/api/manage"
   import { getPlatformConfigByKey } from '@/api/api'
+  import { antSelectFilterOption } from '@/utils/optionText'
 
   export default {
     name: "UserMenu",
@@ -155,7 +156,7 @@
           content: '真的要退出登录吗 ?',
           onOk() {
             return that.Logout({}).then(() => {
-                window.location.href = process.env.BASE_URL || '/'
+                window.location.href = import.meta.env.BASE_URL || '/'
               //window.location.reload()
             }).catch(err => {
               that.$message.error({
@@ -187,9 +188,7 @@
         }
       },
       filterOption(input, option) {
-        if(option && option.componentOptions && option.componentOptions.children && option.componentOptions.children[0]) {
-          return option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
-        }
+        return antSelectFilterOption(input, option)
       },
       // update_begin author:sunjianlei date:20191230 for: 解决外部链接打开失败的问题
       searchMethods(value) {
@@ -232,7 +231,7 @@
     width: 180px;
     color: inherit;
 
-    /deep/ .ant-select-selection {
+    :deep(.ant-select-selection) {
       background-color: inherit;
       border: 0;
       border-bottom: 1px solid white;

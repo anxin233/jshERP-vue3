@@ -10,12 +10,12 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="仓库名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入仓库名称查询" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入仓库名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入备注查询" v-model="queryParam.remark"></a-input>
+                  <a-input placeholder="请输入备注查询" v-model:value="queryParam.remark"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -48,7 +48,7 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' && quickBtn.user.indexOf(1)>-1 " @click="btnSetUser(record)">分配用户</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' && quickBtn.user.indexOf(1)>-1 " type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定设为默认吗?" @confirm="() => handleSetDefault(record.id)">
@@ -60,13 +60,13 @@
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderEnabledFlag" slot-scope="enabled">
+            <template #customRenderEnabledFlag="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
-            <template slot="customRenderFlag" slot-scope="isDefault">
+            <template #customRenderFlag="{ text: isDefault }">
               <a-tag v-if="isDefault" color="green">是</a-tag>
               <a-tag v-if="!isDefault" color="orange">否</a-tag>
             </template>
@@ -88,7 +88,6 @@
   import JDate from '@/components/jeecg/JDate'
   import { postAction } from '@api/manage'
   import { getCurrentSystemConfig } from '@/api/api'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
   export default {
     name: "DepotList",
@@ -131,7 +130,7 @@
             dataIndex: 'action',
             align:"center",
             width: 200,
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {title: '仓库名称', dataIndex: 'name', width: 200},
           {title: '仓库地址', dataIndex: 'address', width: 200},
@@ -140,11 +139,11 @@
           {title: '负责人', dataIndex: 'principalName', width: 80},
           {title: '备注', dataIndex: 'remark', width: 120},
           {title: '排序', dataIndex: 'sort', width: 60},
-          { title: '状态',dataIndex: 'enabled',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderEnabledFlag' }
+          { title: '状态', dataIndex: 'enabled',width:60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderEnabledFlag', cell)
           },
           {title: '是否默认',dataIndex: 'isDefault',width:80,align:"center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -210,5 +209,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

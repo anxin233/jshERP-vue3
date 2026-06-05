@@ -14,7 +14,7 @@
                     optionFilterProp="children"
                     showSearch style="width: 100%"
                     placeholder="请选择仓库"
-                    v-model="depotSelected">
+                    v-model:value="depotSelected">
                     <a-select-option v-for="(depot,index) in depotList" :key="index" :value="depot.id">
                       {{ depot.depotName }}
                     </a-select-option>
@@ -23,14 +23,14 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="商品信息" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model="queryParam.materialParam"></a-input>
+                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model:value="queryParam.materialParam"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24" >
                 <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
-                  <a-button style="margin-left: 8px" v-print="'#reportPrint'" icon="printer">打印</a-button>
-                  <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+                  <a-button style="margin-left: 8px" v-print="'#reportPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
+                  <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
@@ -39,7 +39,7 @@
               </a-col>
               <a-col :md="7" :sm="24">
                 <a-form-item>
-                  <span>总库存：{{currentStock}}，总库存金额：{{currentStockPrice}}，总重量：{{currentWeight}}</span>
+                  <span>总库存：{{currentStock}}（总库存金额：{{currentStockPrice}}（总重量：{{currentWeight}}</span>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -48,19 +48,19 @@
                 <a-col :md="5" :sm="24">
                   <a-form-item label="类别" :labelCol="labelCol" :wrapperCol="wrapperCol">
                     <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-                                   :treeData="categoryTree" v-model="queryParam.categoryId" placeholder="请选择类别">
+                                   :treeData="categoryTree" v-model:value="queryParam.categoryId" placeholder="请选择类别">
                     </a-tree-select>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="仓位货架" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input style="width: 100%" placeholder="请输入仓位货架查询" v-model="queryParam.position"></a-input>
+                    <a-input style="width: 100%" placeholder="请输入仓位货架查询" v-model:value="queryParam.position"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="零库存" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select v-model="queryParam.zeroStock">
-                      <a-select-option value="0">隐藏</a-select-option>
+                    <a-select v-model:value="queryParam.zeroStock">
+                      <a-select-option value="0">闅愯棌</a-select-option>
                       <a-select-option value="1">显示</a-select-option>
                     </a-select>
                   </a-form-item>
@@ -83,40 +83,37 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="customTitle">
-              <a-popover trigger="click" placement="right">
-                <template slot="content">
-                  <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                    <a-row style="width: 600px">
-                      <template v-for="(item,index) in defColumns">
-                        <template>
-                          <a-col :span="6">
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex==='rowIndex'" disabled></a-checkbox>
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex!=='rowIndex'">
-                              <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
-                            </a-checkbox>
-                          </a-col>
-                        </template>
-                      </template>
-                    </a-row>
-                    <a-row style="padding-top: 10px;">
-                      <a-col>
-                        恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
+            <template #headerCell="{ column }">
+              <template v-if="column.dataIndex === 'rowIndex'"><span>
+              <a-popover trigger="click" placement="right" destroyTooltipOnHide>
+                <template #content>
+                  <div class="column-setting-panel">
+
+                  <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                    <a-row class="column-setting-list" style="width: 600px">
+                      <a-col v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index" :span="6" class="column-setting-item">
+                        <a-checkbox :value="item.dataIndex">
+                          <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
+                        </a-checkbox>
                       </a-col>
                     </a-row>
                   </a-checkbox-group>
+                  <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+                  </div>
                 </template>
                 <legacy-icon type="setting" />
               </a-popover>
-            </span>
-            <span slot="action" slot-scope="text, record">
+            </span></template>
+              <template v-else>{{ column.title }}</template>
+            </template>
+            <template #action="{ text, record }"><span>
               <a @click="showMaterialInOutList(record)">{{record.id?'流水':''}}</a>
               <a-divider type="vertical" />
               <a @click="showMaterialDepotStockList(record)">{{record.id?'分布':''}}</a>
-            </span>
-            <template slot="customPic" slot-scope="text, record">
-              <a-popover placement="right" trigger="click">
-                <template slot="content">
+            </span></template>
+            <template #customPic="{ text, record }">
+              <a-popover placement="right" trigger="click" destroyTooltipOnHide>
+                <template #content>
                   <img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" />
                 </template>
                 <div class="item-info" v-if="record.imgName">
@@ -124,7 +121,7 @@
                 </div>
               </a-popover>
             </template>
-            <template slot="customRenderStock" slot-scope="text, record">
+            <template #customRenderStock="{ text, record }">
               <a-tooltip :title="record.bigUnitStock">
                 {{text}}
               </a-tooltip>
@@ -141,8 +138,8 @@
                 :page-size-options="ipagination.pageSizeOptions"
                 :total="ipagination.total"
                 :show-total="(total, range) => `共 ${total-Math.ceil(total/ipagination.pageSize)} 条`">
-                <template slot="buildOptionText" slot-scope="props">
-                  <span>{{ props.value-1 }}条/页</span>
+                <template #buildOptionText="{ value }">
+                  <span>{{ Number(value) - 1 }}条/页</span>
                 </template>
               </a-pagination>
             </a-col>
@@ -164,7 +161,6 @@
   import { getMpListShort } from "@/utils/util"
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import moment from 'moment'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
   export default {
     name: "MaterialStock",
@@ -208,15 +204,15 @@
         // 默认列
         defColumns: [
           {
-            dataIndex: 'rowIndex', width:40, align:"center", slots: { title: 'customTitle' },
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
             customRender:function (t,r,index) {
               return (t !== '合计') ? (parseInt(index) + 1) : t
             }
           },
           {title: '库存详情', dataIndex: 'action', align:"center", width: 80,
-            scopedSlots: { customRender: 'action' }
+            customRender: (cell) => this.$renderColumnSlot('action', cell)
           },
-          {title: '图片', dataIndex: 'pic', width: 45, scopedSlots: { customRender: 'customPic' }},
+          {title: '图片', dataIndex: 'pic', width: 45, customRender: (cell) => this.$renderColumnSlot('customPic', cell)},
           {title: '条码', dataIndex: 'mBarCode', width: 100, sorter: (a, b) => a.mBarCode - b.mBarCode},
           {title: '名称', dataIndex: 'name', width: 140, ellipsis:true},
           {title: '规格', dataIndex: 'standard', width: 100, ellipsis:true},
@@ -230,10 +226,10 @@
           {title: '成本价', dataIndex: 'purchaseDecimal', sorter: (a, b) => a.purchaseDecimal - b.purchaseDecimal, width: 60},
           {title: '初始库存', dataIndex: 'initialStock', width: 60},
           {title: '库存', dataIndex: 'currentStock', sorter: (a, b) => a.currentStock - b.currentStock, width: 60,
-            scopedSlots: { customRender: 'customRenderStock' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStock', cell)
           },
-          {title: '库存金额', dataIndex: 'currentStockPrice', sorter: (a, b) => a.currentStockPrice - b.currentStockPrice, width: 80},
-          {title: '重量', dataIndex: 'currentWeight', sorter: (a, b) => a.currentWeight - b.currentWeight, width: 60}
+          {title: '商品库存查询', dataIndex: 'currentStockPrice', sorter: (a, b) => a.currentStockPrice - b.currentStockPrice, width: 80},
+          {title: '商品库存', dataIndex: 'currentWeight', sorter: (a, b) => a.currentWeight - b.currentWeight, width: 60}
         ],
         url: {
           list: "/material/getListWithStock"
@@ -244,6 +240,14 @@
       this.getDepotData()
       this.loadCategoryTreeData()
       this.initColumnsSetting()
+    },
+    deactivated() {
+      if (this.$refs.materialInOutList && this.$refs.materialInOutList.visible) {
+        this.$refs.materialInOutList.handleCancel()
+      }
+      if (this.$refs.materialDepotStockList && this.$refs.materialDepotStockList.visible) {
+        this.$refs.materialDepotStockList.handleCancel()
+      }
     },
     methods: {
       moment,
@@ -303,9 +307,9 @@
             this.dataSource = res.data.rows;
             this.ipagination.total = res.data.total;
             this.tableAddTotalRow(this.columns, this.dataSource)
-            this.currentStock = res.data.currentStock.toFixed(2)
-            this.currentStockPrice = res.data.currentStockPrice.toFixed(2)
-            this.currentWeight = res.data.currentWeight.toFixed(2)
+            this.currentStock = Number(res.data.currentStock || 0).toFixed(2)
+            this.currentStockPrice = Number(res.data.currentStockPrice || 0).toFixed(2)
+            this.currentWeight = Number(res.data.currentWeight || 0).toFixed(2)
           } else if(res.code===510){
             this.$message.warning(res.data)
           } else {
@@ -320,7 +324,7 @@
           depotIds = this.depotSelected.join()
         }
         this.$refs.materialInOutList.show(record, depotIds);
-        this.$refs.materialInOutList.title = "查看商品库存流水";
+        this.$refs.materialInOutList.title = "查看商品库存流水（条码：";
         this.$refs.materialInOutList.disableSubmit = false;
       },
       showMaterialDepotStockList(record) {
@@ -329,7 +333,7 @@
           depotIds = this.depotSelected.join()
         }
         this.$refs.materialDepotStockList.show(record, depotIds);
-        this.$refs.materialDepotStockList.title = "查看商品库存分布（条码：" + record.mBarCode + "，名称：" + record.name + "）";
+        this.$refs.materialDepotStockList.title = "查看商品库存分布（条码：" + record.mBarCode + "，名称：" + record.name + "）"
         this.$refs.materialDepotStockList.disableSubmit = false;
       },
       exportExcel() {
@@ -349,15 +353,15 @@
           })
           list.push(item)
         }
-        let tip = '商品库存查询'
-        this.handleExportXlsPost('商品库存', '商品库存', head, tip, list)
+        let tip = '查看商品库存流水'
+        this.handleExportXlsPost('查看商品库存分布（条码：', '查看商品库存分布（条码：', head, tip, list)
       }
     }
   }
 </script>
 
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
 <style scoped>
   .item-info {
@@ -375,3 +379,4 @@
     object-fit: cover;
   }
 </style>
+

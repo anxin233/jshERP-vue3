@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{ top: '93px', left: '154px' }"
@@ -21,14 +21,14 @@
         </a-button>
       </template>
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" id="roleModal" :model="formModel" :rules="formRules">
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="角色名称" prop="name" name="name">
+        <a-form ref="formRef" id="roleModal" :model="formModel" :rules="formRules">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="角色名称" name="name">
             <a-input
               placeholder="请输入角色名称"
               :value="formModel.name"
               @change="handleFieldChange('name', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="数据类型" prop="type" name="type">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="数据类型" name="type">
             <a-select
               placeholder="请选择数据类型"
               style="width:94%"
@@ -41,31 +41,31 @@
             <a-tooltip title="1、全部数据：该角色对应的用户可以看到全部单据；2、本部门数据：该角色对应的用户可以看到自己所在部门的全部单据；3、个人数据：该角色对应的用户只可以看到自己的单据。单据是指采购入库、销售出库等">
               <legacy-icon type="question-circle" style="width:6%; padding-left: 5px; font-size: 18px;" />
             </a-tooltip>
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="价格屏蔽">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="价格屏蔽">
             <j-select-multiple
-              v-model="priceLimitList.value"
+              v-model:value="priceLimitList.value"
               style="width:94%"
               placeholder="请选择价格屏蔽"
               :options="priceLimitList.options" />
             <a-tooltip title="价格屏蔽支持多选，主要用于控制首页界面和物料的价格屏蔽">
               <legacy-icon type="question-circle" style="width:6%; padding-left: 5px; font-size: 18px;" />
             </a-tooltip>
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注" prop="description" name="description">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注" name="description">
             <a-textarea
               :rows="1"
               placeholder="请输入备注"
               :value="formModel.description"
               @change="handleFieldChange('description', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序" prop="sort" name="sort">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序" name="sort">
             <a-input
               placeholder="请输入排序"
               :value="formModel.sort"
               @change="handleFieldChange('sort', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>

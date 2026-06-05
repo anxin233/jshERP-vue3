@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import { login, logout } from "@/api/login"
 import { ACCESS_TOKEN, USER_NAME,USER_INFO,UI_CACHE_DB_DICT_DATA,USER_ID,USER_LOGIN_NAME,CACHE_INCLUDED_ROUTES } from "@/store/mutation-types"
 import { welcome } from "@/utils/util"

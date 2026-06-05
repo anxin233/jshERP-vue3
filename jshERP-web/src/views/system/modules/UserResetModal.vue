@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="600"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{ top: '93px', left: '154px' }"
@@ -16,14 +16,14 @@
       @ok="handleOk"
       @cancel="handleCancel">
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" :model="formModel" :rules="formRules">
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="新密码" prop="password" name="password">
+        <a-form ref="formRef" :model="formModel" :rules="formRules">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="新密码" name="password">
             <a-input-password
               placeholder="请输入新密码"
               :value="formModel.password"
               @change="handleFieldChange('password', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>

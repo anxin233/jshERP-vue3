@@ -8,23 +8,23 @@
             <a-row :gutter="16">
               <a-col :md="5" :sm="24">
                 <a-form-item label="工单号" :labelCol="{span:6}" :wrapperCol="{span:18}">
-                  <a-input placeholder="请输入工单号" v-model="queryParam.orderNo" allowClear />
+                  <a-input placeholder="请输入工单号" v-model:value="queryParam.orderNo" allowClear />
                 </a-form-item>
               </a-col>
               <a-col :md="5" :sm="24">
                 <a-form-item label="客户姓名" :labelCol="{span:7}" :wrapperCol="{span:17}">
-                  <a-input placeholder="请输入客户姓名" v-model="queryParam.customerName" allowClear />
+                  <a-input placeholder="请输入客户姓名" v-model:value="queryParam.customerName" allowClear />
                 </a-form-item>
               </a-col>
               <a-col :md="5" :sm="24">
                 <a-form-item label="车牌号" :labelCol="{span:6}" :wrapperCol="{span:18}">
-                  <a-input placeholder="请输入车牌号" v-model="queryParam.licensePlate" allowClear />
+                  <a-input placeholder="请输入车牌号" v-model:value="queryParam.licensePlate" allowClear />
                 </a-form-item>
               </a-col>
               <a-col :md="4" :sm="24">
                 <a-form-item label="状态" :labelCol="{span:6}" :wrapperCol="{span:18}">
                   <dynamic-option-select
-                    v-model="queryParam.status"
+                    v-model:value="queryParam.status"
                     code="workorder_status"
                     placeholder="全部"
                     allowClear
@@ -42,7 +42,7 @@
             <a-row :gutter="16" style="margin-top:8px">
               <a-col :md="10" :sm="24">
                 <a-form-item label="接车日期" :labelCol="{span:4}" :wrapperCol="{span:20}">
-                  <a-range-picker v-model="dateRange" format="YYYY-MM-DD"
+                  <a-range-picker v-model:value="dateRange" format="YYYY-MM-DD"
                     @change="onDateRangeChange" style="width:100%" />
                 </a-form-item>
               </a-col>
@@ -58,11 +58,11 @@
           <!-- 快速状态流转按钮 -->
           <a-divider type="vertical" v-if="selectedRowKeys.length > 0" />
           <template v-if="selectedRowKeys.length === 1">
-            <a-button v-if="currentRecord && String(currentRecord.status) === '1'" @click="quickStatus(2)" icon="tool" style="color:#1890ff;border-color:#1890ff">开始维修</a-button>
-            <a-button v-if="currentRecord && String(currentRecord.status) === '2'" @click="quickStatus(3)" icon="check-circle" style="color:#13c2c2;border-color:#13c2c2">完工</a-button>
-            <a-button v-if="currentRecord && String(currentRecord.status) === '3'" @click="openSettleModal(currentRecord)" icon="pay-circle" style="color:#722ed1;border-color:#722ed1">结算收款</a-button>
-            <a-button v-if="currentRecord && String(currentRecord.status) === '4'" @click="openSettleModal(currentRecord)" icon="dollar" style="color:#52c41a;border-color:#52c41a">继续收款</a-button>
-            <a-button v-if="currentRecord && ['1','2'].includes(String(currentRecord.status))" @click="quickStatus(6)" icon="close-circle" style="color:#ff4d4f;border-color:#ff4d4f">取消工单</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '1'" @click="quickStatus(2)" style="color:#1890ff;border-color:#1890ff"><template #icon><legacy-icon type="tool" /></template>开始维修</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '2'" @click="quickStatus(3)" style="color:#13c2c2;border-color:#13c2c2"><template #icon><legacy-icon type="check-circle" /></template>完工</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '3'" @click="openSettleModal(currentRecord)" style="color:#722ed1;border-color:#722ed1"><template #icon><legacy-icon type="pay-circle" /></template>结算收款</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '4'" @click="openSettleModal(currentRecord)" style="color:#52c41a;border-color:#52c41a"><template #icon><legacy-icon type="dollar" /></template>继续收款</a-button>
+            <a-button v-if="currentRecord && ['1','2'].includes(String(currentRecord.status))" @click="quickStatus(6)" style="color:#ff4d4f;border-color:#ff4d4f"><template #icon><legacy-icon type="close-circle" /></template>取消工单</a-button>
           </template>
         </div>
 
@@ -79,32 +79,27 @@
           :loading="loading"
           :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
           @change="handleTableChange">
-
-          <!-- 工单号列 -->
-          <template slot="orderNo" slot-scope="text, record">
+          <template #bodyCell="{ column, text, record }">
+            <template v-if="column.dataIndex === 'orderNo'">
             <a @click="handleView(record)" style="font-weight:500">{{ text }}</a>
-          </template>
-
-          <!-- 车辆信息 -->
-          <template slot="vehicleCol" slot-scope="text, record">
+          
+            </template>
+            <template v-else-if="column.dataIndex === 'licensePlate'">
             <div>
               <a-tag color="blue">{{ record.licensePlate || '无牌' }}</a-tag>
               <span style="color:#666;font-size:12px;margin-left:4px">{{ record.vehicleInfo }}</span>
             </div>
-          </template>
-
-          <!-- 状态列 -->
-          <template slot="statusCol" slot-scope="status">
-            <a-tag :color="statusColor(status)">{{ statusLabel(status) }}</a-tag>
-          </template>
-
-          <!-- 金额 -->
-          <template slot="amountCol" slot-scope="text">
-            <span style="color:#f5222d;font-weight:500">¥ {{ text }}</span>
-          </template>
-
-          <!-- 操作列 -->
-          <span slot="action" slot-scope="text, record" style="white-space:nowrap">
+          
+            </template>
+            <template v-else-if="column.dataIndex === 'status'">
+            <a-tag :color="statusColor(text)">{{ statusLabel(text) }}</a-tag>
+          
+            </template>
+            <template v-else-if="column.dataIndex === 'payableAmount'">
+            <span style="color:#f5222d;font-weight:500">￥ {{ text }}</span>
+          
+            </template>
+            <template v-else-if="column.dataIndex === 'action'">
             <a v-if="!isFinished(record.status)" @click="handleEdit(record)">编辑</a>
             <a-divider v-if="!isFinished(record.status)" type="vertical" />
             <a @click="handleView(record)">详情</a>
@@ -118,7 +113,10 @@
                 <a style="color:#f5222d">删除</a>
               </a-popconfirm>
             </template>
-          </span>
+          
+            </template>
+            <template v-else>{{ text }}</template>
+          </template>
         </a-table>
 
         <!-- 弹窗 -->
@@ -127,21 +125,21 @@
         <!-- 工单结算弹窗 -->
         <a-modal
           title="工单结算"
-          :visible="settleVisible"
+          :open="settleVisible"
           :confirmLoading="settleLoading"
           @ok="doSettle"
           @cancel="settleVisible = false">
           <div v-if="settleRecord">
             <p>工单号：{{ settleRecord.orderNo }}</p>
             <p>客户：{{ settleRecord.customerName }}（{{ settleRecord.customerPhone }}）</p>
-            <p>应收金额：<b style="color:#f5222d">¥ {{ settleRecord.payableAmount }}</b></p>
-            <p v-if="settleRecord.receivedAmount > 0">已收金额：<b style="color:#52c41a">¥ {{ settleRecord.receivedAmount }}</b></p>
-            <p v-if="settleRecord.receivedAmount > 0">剩余应收：<b style="color:#fa8c16">¥ {{ (settleRecord.payableAmount - settleRecord.receivedAmount).toFixed(2) }}</b></p>
+            <p>应收金额：<b style="color:#f5222d">￥ {{ settleRecord.payableAmount }}</b></p>
+            <p v-if="settleRecord.receivedAmount > 0">已收金额：<b style="color:#52c41a">￥ {{ settleRecord.receivedAmount }}</b></p>
+            <p v-if="settleRecord.receivedAmount > 0">剩余应收：<b style="color:#fa8c16">￥ {{ (settleRecord.payableAmount - settleRecord.receivedAmount).toFixed(2) }}</b></p>
           </div>
           <a-form :labelCol="{span:6}" :wrapperCol="{span:16}">
             <a-form-item label="结算账户" required>
               <a-select
-                v-model="settleAccountId"
+                v-model:value="settleAccountId"
                 placeholder="请选择结算账户"
                 show-search
                 optionFilterProp="children"
@@ -153,7 +151,7 @@
             </a-form-item>
             <a-form-item label="结算金额">
               <a-input-number
-                v-model="settleAmount"
+                v-model:value="settleAmount"
                 :min="0"
                 :max="settleRecord ? (settleRecord.payableAmount - (settleRecord.receivedAmount || 0)) || settleRecord.payableAmount : 99999999"
                 :step="0.01"
@@ -195,22 +193,17 @@ export default {
       columns: [
         { title: '#', dataIndex: '', key: 'rowIndex', width: 50, align: 'center',
           customRender: (t, r, index) => parseInt(index) + 1 },
-        { title: '操作', dataIndex: 'action', width: 200, align: 'center',
-          scopedSlots: { customRender: 'action' } },
-        { title: '工单编号', dataIndex: 'orderNo', width: 180, ellipsis: true,
-          scopedSlots: { customRender: 'orderNo' } },
-        { title: '状态', dataIndex: 'status', width: 90, align: 'center',
-          scopedSlots: { customRender: 'statusCol' } },
-        { title: '车辆/车牌', dataIndex: 'licensePlate', width: 200,
-          scopedSlots: { customRender: 'vehicleCol' } },
+        { title: '操作', dataIndex: 'action', width: 200, align: 'center' },
+        { title: '工单编号', dataIndex: 'orderNo', width: 180, ellipsis: true },
+        { title: '状态', dataIndex: 'status', width: 90, align: 'center' },
+        { title: '车辆/车牌', dataIndex: 'licensePlate', width: 200 },
         { title: '客户姓名', dataIndex: 'customerName', width: 100 },
         { title: '客户电话', dataIndex: 'customerPhone', width: 120 },
         { title: '故障描述', dataIndex: 'faultDesc', width: 160, ellipsis: true },
         { title: '派工人员', dataIndex: 'handlerName', width: 100 },
         { title: '接车时间', dataIndex: 'intakeTime', width: 150 },
         { title: '预计完工', dataIndex: 'estimatedFinishTime', width: 150 },
-        { title: '应收金额', dataIndex: 'payableAmount', width: 110, align: 'right',
-          scopedSlots: { customRender: 'amountCol' } }
+        { title: '应收金额', dataIndex: 'payableAmount', width: 110, align: 'right' }
       ],
       url: {
         list: '/workOrder/list',
@@ -324,7 +317,7 @@ export default {
         amount: this.settleAmount
       }).then(res => {
         if (res.code === 200) {
-          this.$message.success('结算成功，已纳入账户统计')
+          this.$message.success('结算成功（已计入账户统计）')
           this.settleVisible = false
           this.queryParam.status = ''
           this.loadData()
@@ -340,5 +333,12 @@ export default {
 </script>
 
 <style scoped>
-@import '~@assets/less/common.less';
+@import '@assets/less/common.less';
 </style>
+
+
+
+
+
+
+

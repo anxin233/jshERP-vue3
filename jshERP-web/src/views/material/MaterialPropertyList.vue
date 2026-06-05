@@ -1,4 +1,4 @@
-<!-- from 7 5 2 7 1 8 9 2 0 -->
+﻿<!-- from 7 5 2 7 1 8 9 2 0 -->
 <template>
   <a-row :gutter="24">
     <a-col :md="24">
@@ -15,9 +15,9 @@
             :pagination="ipagination"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
-            </span>
+            </span></template>
           </a-table>
         </div>
         <!-- table区域-end -->
@@ -31,9 +31,7 @@
   import MaterialPropertyModal from './modules/MaterialPropertyModal'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import JDate from '@/components/jeecg/JDate'
-  import { getAction } from '@/api/manage'
-  import Vue from 'vue'
-  import storage from '@/utils/storage'
+  import { getAction } from '@/api/manage'  import storage from '@/utils/storage'
   export default {
     name: "MaterialPropertyList",
     mixins:[JeecgListMixin],
@@ -70,7 +68,7 @@
             dataIndex: 'action',
             width: 100,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {title: '名称', dataIndex: 'nativeName', width: 100},
           {title: '别名', dataIndex: 'anotherName', width: 100}
@@ -107,5 +105,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

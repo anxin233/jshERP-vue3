@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="width"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,11 +12,11 @@
       :style="modalStyle"
       @cancel="handleCancel"
       cancelText="关闭">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
         <a-button type="primary" :loading="loading" @click="handleSubmit">确认提交</a-button>
       </template>
-      <a-form :form="form">
+      <a-form>
         <template>
           <iframe :src="sendWorkflowUrl" width="100%" :height="height" frameborder="0" scrolling="no"></iframe>
         </template>
@@ -24,7 +24,6 @@
           <a-row>
             <a-col>
               <a-form-item>
-                <a-input v-decorator="['id']" hidden/>
               </a-form-item>
             </a-col>
           </a-row>
@@ -49,8 +48,7 @@
         modalStyle: '',
         sendWorkflowUrl: '',
         height: "",
-        model: {},
-        form: this.$form.createForm(this),
+        model: {},
         loading: false,
       }
     },

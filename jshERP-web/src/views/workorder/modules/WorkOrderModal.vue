@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="1100"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :maskClosable="false"
     :keyboard="false"
@@ -17,7 +17,7 @@
     <a-spin :spinning="confirmLoading">
       <!-- ======== 基本信息 ======== -->
       <a-divider orientation="left" style="margin-top:0">基本信息</a-divider>
-      <a-form :form="form" :labelCol="{span:7}" :wrapperCol="{span:17}">
+      <a-form ref="formRef" :model="formModel" :labelCol="{span:7}" :wrapperCol="{span:17}">
         <!-- 选择车辆独占一行 -->
         <a-row :gutter="16">
           <a-col :span="24">
@@ -26,7 +26,7 @@
               label="选择车辆"
               :labelCol="{span:3}"
               :wrapperCol="{span:21}">
-              <!-- 已选中状态：只读标签 + 重新选择 -->
+              <!-- 已选中状态：只打标 + 重新选择 -->
               <template v-if="orderForm.vehicleId && !isViewMode">
                 <div class="vehicle-selected-bar">
                   <a-tag color="blue" style="font-size:13px;padding:2px 8px">
@@ -38,7 +38,7 @@
                   </a>
                 </div>
               </template>
-              <!-- 查看模式：只读展示 -->
+              <!-- 查看模式（只读展示） -->
               <template v-else-if="isViewMode">
                 <a-tag color="blue">{{ orderForm.licensePlate || '无牌' }}</a-tag>
                 <span style="margin-left:6px">{{ orderForm.customerName }}</span>
@@ -50,13 +50,16 @@
                   :filter-option="false"
                   :not-found-content="vehicleSearchLoading ? undefined : null"
                   :value="vehicleSelectValue"
-                  placeholder="请输入车牌号/姓名/手机号/VIN码搜索"
+                  placeholder="请输入车牌号/姓名/手机号/VIN码搜索
+"
                   style="width:100%"
                   @search="onVehicleSearch"
                   @select="onVehicleSelect"
                   @change="onVehicleSelectChange"
                   allow-clear>
-                  <a-spin v-if="vehicleSearchLoading" slot="notFoundContent" size="small" />
+                  <template #notFoundContent>
+                    <a-spin v-if="vehicleSearchLoading" size="small" />
+                  </template>
                   <a-select-option
                     v-for="v in vehicleOptions"
                     :key="String(v.id)"
@@ -84,13 +87,13 @@
             <a-form-item label="车牌号">
               <div style="display:flex;align-items:center">
                 <a-input
-                  v-model="orderForm.licensePlate"
+                  v-model:value="orderForm.licensePlate"
                   :disabled="isViewMode || orderForm.noPlate"
                   @change="onVehicleFieldEdited"
-                  placeholder="如：粤A12345"
+                  placeholder="如：粤12345"
                   style="flex:1;margin-right:8px" />
                 <a-checkbox
-                  v-model="orderForm.noPlate"
+                  v-model:checked="orderForm.noPlate"
                   :disabled="isViewMode"
                   @change="onNoPlateChange">
                   无牌
@@ -99,23 +102,23 @@
             </a-form-item>
 
             <a-form-item label="客户姓名">
-              <a-input v-model="orderForm.customerName"
+              <a-input v-model:value="orderForm.customerName"
                 :disabled="isViewMode"
                 @change="onVehicleFieldEdited" />
             </a-form-item>
             <a-form-item label="客户电话">
-              <a-input v-model="orderForm.customerPhone"
+              <a-input v-model:value="orderForm.customerPhone"
                 :disabled="isViewMode"
                 @change="onVehicleFieldEdited" />
             </a-form-item>
             <a-form-item label="车辆信息">
-              <a-input v-model="orderForm.vehicleInfo"
+              <a-input v-model:value="orderForm.vehicleInfo"
                 :disabled="isViewMode"
                 @change="onVehicleFieldEdited"
                 placeholder="品牌车型，如：大众速腾" />
             </a-form-item>
             <a-form-item label="VIN码">
-              <a-input v-model="orderForm.vin"
+              <a-input v-model:value="orderForm.vin"
                 :disabled="isViewMode"
                 @change="onVehicleFieldEdited" />
             </a-form-item>
@@ -129,11 +132,12 @@
           <!-- 中列 -->
           <a-col :span="8">
             <a-form-item label="工单编号">
-              <a-input :value="form.getFieldValue('orderNo') || '保存后自动生成'" :disabled="true" />
+              <a-input :value="formModel.orderNo || '保存后自动生成'" :disabled="true" />
             </a-form-item>
             <a-form-item label="工单状态">
               <dynamic-option-select
-                v-decorator="['status']"
+                :value="formModel.status"
+                @change="v => { formModel.status = v }"
                 code="workorder_status"
                 :disabled="isViewMode"
                 placeholder="请选择工单状态"
@@ -141,7 +145,7 @@
             </a-form-item>
             <a-form-item label="接车时间">
               <a-date-picker
-                v-decorator="['intakeTime']"
+                v-model:value="formModel.intakeTime"
                 show-time
                 format="YYYY-MM-DD HH:mm"
                 placeholder="请选择接车时间"
@@ -150,7 +154,7 @@
             </a-form-item>
             <a-form-item label="预计完工">
               <a-date-picker
-                v-decorator="['estimatedFinishTime']"
+                v-model:value="formModel.estimatedFinishTime"
                 show-time
                 format="YYYY-MM-DD HH:mm"
                 placeholder="请选择预计完工时间"
@@ -159,7 +163,7 @@
             </a-form-item>
             <a-form-item label="进厂里程">
               <a-input-number
-                v-decorator="['mileage']"
+                v-model:value="formModel.mileage"
                 :min="0"
                 :max="9999999"
                 style="width:100%"
@@ -168,7 +172,8 @@
             </a-form-item>
             <a-form-item label="派工人员">
               <dynamic-option-select
-                v-decorator="['handlerName']"
+                :value="formModel.handlerName"
+                @change="v => { formModel.handlerName = v }"
                 code="dispatch_staff"
                 placeholder="请选择派工人员"
                 :disabled="isViewMode"
@@ -180,14 +185,14 @@
           <a-col :span="8">
             <a-form-item label="故障描述" :labelCol="{span:7}" :wrapperCol="{span:17}">
               <a-textarea
-                v-decorator="['faultDesc']"
-                placeholder="请填写客户主诉及故障描述"
+                v-model:value="formModel.faultDesc"
+                placeholder="请填写车主诉求及故障描述"
                 :rows="5"
                 :disabled="isViewMode" />
             </a-form-item>
             <a-form-item label="备注" :labelCol="{span:7}" :wrapperCol="{span:17}">
               <a-textarea
-                v-decorator="['remark']"
+                v-model:value="formModel.remark"
                 placeholder="备注信息"
                 :rows="3"
                 :disabled="isViewMode" />
@@ -199,8 +204,8 @@
       <!-- ======== 服务项目 ======== -->
       <a-divider orientation="left">
         服务项目（工时）
-        <a-button v-if="!isViewMode" size="small" type="dashed" icon="plus" @click="addProjectRow" style="margin-left:12px">添加项目</a-button>
-        <a-button v-if="!isViewMode" size="small" icon="import" @click="openProjectSelect" style="margin-left:8px">从项目库导入</a-button>
+        <a-button v-if="!isViewMode" size="small" type="dashed" @click="addProjectRow" style="margin-left:12px"><template #icon><legacy-icon type="plus" /></template>添加项目</a-button>
+        <a-button v-if="!isViewMode" size="small" @click="openProjectSelect" style="margin-left:8px"><template #icon><legacy-icon type="import" /></template>从项目库导入</a-button>
       </a-divider>
       <a-table
         :columns="projectColumns"
@@ -210,87 +215,85 @@
         bordered
         rowKey="rowKey"
         :scroll="{x: 900}">
-        <!-- 项目名称（仅从项目库选择） -->
-        <template slot="projectName" slot-scope="text, record">
-          <template v-if="isViewMode">
-            <span>{{ text }}</span>
-          </template>
-          <template v-else-if="isLegacyProjectRow(record)">
-            <div>
-              <span>{{ record.projectName }}</span>
-              <a-tag color="orange" style="margin-left:6px">未关联项目库</a-tag>
-              <a @click="clearProjectRowForReselect(record)" style="margin-left:6px;font-size:12px">清空并重选</a>
-            </div>
-          </template>
-          <a-select
-            v-else
-            show-search
-            :filter-option="false"
-            :not-found-content="record._projectLoading ? undefined : null"
-            :get-popup-container="getSelectPopupContainer"
-            placeholder="搜索并选择服务项目"
-            style="width:100%;min-width:160px"
-            :value="record.projectId != null ? record.projectId : undefined"
-            allow-clear
-            size="small"
-            @dropdownVisibleChange="(open) => onProjectDropdownVisible(record, open)"
-            @search="(q) => onProjectNameSearch(record, q)"
-            @change="(v) => onProjectSelectChange(record, v)">
-            <a-spin v-if="record._projectLoading" slot="notFoundContent" size="small" />
-            <a-select-option v-for="opt in record._projectOptions || []" :key="'pj_'+opt.id" :value="opt.id">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-                <div style="flex:1;min-width:0">
-                  <div style="font-weight:500">{{ opt.name }}</div>
-                  <div v-if="opt.categoryName" style="font-size:11px;color:#999;margin-top:2px">类别 {{ opt.categoryName }}</div>
-                </div>
-                <span v-if="opt.totalPrice != null" style="color:#f5222d;font-size:12px;white-space:nowrap">¥{{ opt.totalPrice }}</span>
+        <!-- 项目名称（仅从项目库选择）-->
+        <template #bodyCell="{ column, text, record }">
+          <template v-if="column.dataIndex === 'projectName'">
+            <template v-if="isViewMode">
+              <span>{{ text }}</span>
+            </template>
+            <template v-else-if="isLegacyProjectRow(record)">
+              <div>
+                <span>{{ record.projectName }}</span>
+                <a-tag color="orange" style="margin-left:6px">未关联项目库</a-tag>
+                <a @click="clearProjectRowForReselect(record)" style="margin-left:6px;font-size:12px">清空并重选</a>
               </div>
-            </a-select-option>
-          </a-select>
-        </template>
-        <!-- 单价 -->
-        <template slot="unitPrice" slot-scope="text, record">
-          <a-input-number v-if="!isViewMode" v-model="record.unitPrice" :min="0" :precision="2" size="small"
-            style="width:80px" @change="() => recalcProject(record)" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 数量 -->
-        <template slot="quantity" slot-scope="text, record">
-          <a-input-number v-if="!isViewMode" v-model="record.quantity" :min="0" :precision="2" size="small"
-            style="width:70px" @change="() => recalcProject(record)" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 折扣 -->
-        <template slot="discountRate" slot-scope="text, record">
-          <a-input-number v-if="!isViewMode" v-model="record.discountRate" :min="0" :max="100" :precision="1" size="small"
-            style="width:70px" @change="() => recalcProject(record)" />
-          <span v-else>{{ text }}%</span>
-        </template>
-        <!-- 金额（只读，自动计算） -->
-        <template slot="amount" slot-scope="text, record">
-          <span style="color:#f5222d;font-weight:500">{{ record.amount }}</span>
-        </template>
-        <!-- 施工人员 -->
-        <template slot="workerName" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.workerName" placeholder="施工人员" size="small" style="width:90px" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 备注 -->
-        <template slot="remark" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.remark" placeholder="备注" size="small" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 操作 -->
-        <template slot="projectAction" slot-scope="text, record">
-          <a v-if="!isViewMode" @click="removeProjectRow(record)" style="color:#f5222d">删除</a>
+            </template>
+            <a-select
+              v-else
+              show-search
+              :filter-option="false"
+              :not-found-content="record._projectLoading ? undefined : null"
+              :get-popup-container="getSelectPopupContainer"
+              placeholder="搜索并选择服务项目"
+              style="width:100%;min-width:160px"
+              :value="record.projectId != null ? record.projectId : undefined"
+              allow-clear
+              size="small"
+              @dropdownVisibleChange="(open) => onProjectDropdownVisible(record, open)"
+              @search="(q) => onProjectNameSearch(record, q)"
+              @change="(v) => onProjectSelectChange(record, v)">
+              <template #notFoundContent>
+                <a-spin v-if="record._projectLoading" size="small" />
+              </template>
+              <a-select-option v-for="opt in record._projectOptions || []" :key="'pj_'+opt.id" :value="opt.id">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-weight:500">{{ opt.name }}</div>
+                    <div v-if="opt.categoryName" style="font-size:11px;color:#999;margin-top:2px">类别 {{ opt.categoryName }}</div>
+                  </div>
+                  <span v-if="opt.totalPrice != null" style="color:#f5222d;font-size:12px;white-space:nowrap">￥{{ opt.totalPrice }}</span>
+                </div>
+              </a-select-option>
+            </a-select>
+          </template>
+          <template v-else-if="column.dataIndex === 'unitPrice'">
+            <a-input-number v-if="!isViewMode" v-model:value="record.unitPrice" :min="0" :precision="2" size="small"
+              style="width:80px" @change="() => recalcProject(record)" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'quantity'">
+            <a-input-number v-if="!isViewMode" v-model:value="record.quantity" :min="0" :precision="2" size="small"
+              style="width:70px" @change="() => recalcProject(record)" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'discountRate'">
+            <a-input-number v-if="!isViewMode" v-model:value="record.discountRate" :min="0" :max="100" :precision="1" size="small"
+              style="width:70px" @change="() => recalcProject(record)" />
+            <span v-else>{{ text }}%</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'amount'">
+            <span style="color:#f5222d;font-weight:500">{{ record.amount }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'workerName'">
+            <a-input v-if="!isViewMode" v-model:value="record.workerName" placeholder="施工人员" size="small" style="width:90px" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'remark'">
+            <a-input v-if="!isViewMode" v-model:value="record.remark" placeholder="备注" size="small" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'action'">
+            <a v-if="!isViewMode" @click="removeProjectRow(record)" style="color:#f5222d">删除</a>
+          </template>
+          <template v-else>{{ text }}</template>
         </template>
       </a-table>
 
       <!-- ======== 维修材料 ======== -->
       <a-divider orientation="left" style="margin-top:16px">
         维修材料（配件）
-        <a-button v-if="!isViewMode" size="small" type="dashed" icon="plus" @click="addMaterialRow" style="margin-left:12px">手动添加</a-button>
-        <a-button v-if="!isViewMode" size="small" icon="database" @click="openMaterialSelect" style="margin-left:8px">从商品库选择</a-button>
+        <a-button v-if="!isViewMode" size="small" type="dashed" @click="addMaterialRow" style="margin-left:12px"><template #icon><legacy-icon type="plus" /></template>手动添加</a-button>
+        <a-button v-if="!isViewMode" size="small" @click="openMaterialSelect" style="margin-left:8px"><template #icon><legacy-icon type="database" /></template>从商品库选择</a-button>
       </a-divider>
       <a-table
         :columns="materialColumns"
@@ -301,91 +304,88 @@
         rowKey="rowKey"
         :scroll="{x: 980}">
         <!-- 商品名称（仅从商品库选择） -->
-        <template slot="materialName" slot-scope="text, record">
-          <template v-if="isViewMode">
-            <span>{{ text }}</span>
-          </template>
-          <template v-else-if="isLegacyMaterialRow(record)">
-            <div>
-              <span>{{ record.materialName }}</span>
-              <a-tag color="orange" style="margin-left:6px">未关联商品库</a-tag>
-              <a @click="clearMaterialRowForReselect(record)" style="margin-left:6px;font-size:12px">清空并重选</a>
-            </div>
-          </template>
-          <a-select
-            v-else
-            show-search
-            :filter-option="false"
-            :not-found-content="record._materialLoading ? undefined : null"
-            :get-popup-container="getSelectPopupContainer"
-            placeholder="搜索并选择商品"
-            style="width:100%;min-width:160px"
-            :value="materialSelectValue(record)"
-            allow-clear
-            size="small"
-            @dropdownVisibleChange="(open) => onMaterialDropdownVisible(record, open)"
-            @search="(q) => onMaterialNameSearch(record, q)"
-            @change="(v) => onMaterialSelectChange(record, v)">
-            <a-spin v-if="record._materialLoading" slot="notFoundContent" size="small" />
-            <a-select-option
-              v-for="opt in record._materialOptions || []"
-              :key="'mat_' + record.rowKey + '_' + materialOptionKey(opt)"
-              :value="materialOptionValue(opt)">
+        <template #bodyCell="{ column, text, record }">
+          <template v-if="column.dataIndex === 'materialName'">
+            <template v-if="isViewMode">
+              <span>{{ text }}</span>
+            </template>
+            <template v-else-if="isLegacyMaterialRow(record)">
               <div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-                  <div style="flex:1;min-width:0">
-                    <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis">{{ opt.name }}</div>
-                    <div v-if="opt.categoryName" style="font-size:11px;color:#999;margin-top:2px">类别 {{ opt.categoryName }}</div>
-                  </div>
-                  <span style="color:#999;font-size:12px;white-space:nowrap">库存 {{ formatStock(opt.stock) }}</span>
-                </div>
-                <div v-if="opt.standard || opt.model" style="font-size:11px;color:#999;margin-top:2px">
-                  {{ opt.standard || '' }} {{ opt.model || '' }}
-                </div>
+                <span>{{ record.materialName }}</span>
+                <a-tag color="orange" style="margin-left:6px">未关联商品库</a-tag>
+                <a @click="clearMaterialRowForReselect(record)" style="margin-left:6px;font-size:12px">清空并重选</a>
               </div>
-            </a-select-option>
-          </a-select>
-        </template>
-        <!-- 规格 -->
-        <template slot="standard" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.standard" placeholder="规格" size="small" style="width:80px" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 单位 -->
-        <template slot="unit" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.unit" placeholder="单位" size="small" style="width:60px" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 单价 -->
-        <template slot="unitPrice" slot-scope="text, record">
-          <a-input-number v-if="!isViewMode" v-model="record.unitPrice" :min="0" :precision="2" size="small"
-            style="width:80px" @change="() => recalcMaterial(record)" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 数量 -->
-        <template slot="quantity" slot-scope="text, record">
-          <a-input-number v-if="!isViewMode" v-model="record.quantity" :min="0" :precision="2" size="small"
-            style="width:70px" @change="() => recalcMaterial(record)" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 折扣 -->
-        <template slot="discountRate" slot-scope="text, record">
-          <a-input-number v-if="!isViewMode" v-model="record.discountRate" :min="0" :max="100" :precision="1" size="small"
-            style="width:70px" @change="() => recalcMaterial(record)" />
-          <span v-else>{{ text }}%</span>
-        </template>
-        <!-- 金额 -->
-        <template slot="amount" slot-scope="text, record">
-          <span style="color:#f5222d;font-weight:500">{{ record.amount }}</span>
-        </template>
-        <!-- 备注 -->
-        <template slot="remark" slot-scope="text, record">
-          <a-input v-if="!isViewMode" v-model="record.remark" placeholder="备注" size="small" />
-          <span v-else>{{ text }}</span>
-        </template>
-        <!-- 操作 -->
-        <template slot="materialAction" slot-scope="text, record">
-          <a v-if="!isViewMode" @click="removeMaterialRow(record)" style="color:#f5222d">删除</a>
+            </template>
+            <a-select
+              v-else
+              show-search
+              :filter-option="false"
+              :not-found-content="record._materialLoading ? undefined : null"
+              :get-popup-container="getSelectPopupContainer"
+              placeholder="搜索并选择商品"
+              style="width:100%;min-width:160px"
+              :value="materialSelectValue(record)"
+              allow-clear
+              size="small"
+              @dropdownVisibleChange="(open) => onMaterialDropdownVisible(record, open)"
+              @search="(q) => onMaterialNameSearch(record, q)"
+              @change="(v) => onMaterialSelectChange(record, v)">
+              <template #notFoundContent>
+                <a-spin v-if="record._materialLoading" size="small" />
+              </template>
+              <a-select-option
+                v-for="opt in record._materialOptions || []"
+                :key="'mat_' + record.rowKey + '_' + materialOptionKey(opt)"
+                :value="materialOptionValue(opt)">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                    <div style="flex:1;min-width:0">
+                      <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis">{{ opt.name }}</div>
+                      <div v-if="opt.categoryName" style="font-size:11px;color:#999;margin-top:2px">类别 {{ opt.categoryName }}</div>
+                    </div>
+                    <span style="color:#999;font-size:12px;white-space:nowrap">库存 {{ formatStock(opt.stock) }}</span>
+                  </div>
+                  <div v-if="opt.standard || opt.model" style="font-size:11px;color:#999;margin-top:2px">
+                    {{ opt.standard || '' }} {{ opt.model || '' }}
+                  </div>
+                </div>
+              </a-select-option>
+            </a-select>
+          </template>
+          <template v-else-if="column.dataIndex === 'standard'">
+            <a-input v-if="!isViewMode" v-model:value="record.standard" placeholder="规格" size="small" style="width:80px" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'unit'">
+            <a-input v-if="!isViewMode" v-model:value="record.unit" placeholder="单位" size="small" style="width:60px" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'unitPrice'">
+            <a-input-number v-if="!isViewMode" v-model:value="record.unitPrice" :min="0" :precision="2" size="small"
+              style="width:80px" @change="() => recalcMaterial(record)" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'quantity'">
+            <a-input-number v-if="!isViewMode" v-model:value="record.quantity" :min="0" :precision="2" size="small"
+              style="width:70px" @change="() => recalcMaterial(record)" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'discountRate'">
+            <a-input-number v-if="!isViewMode" v-model:value="record.discountRate" :min="0" :max="100" :precision="1" size="small"
+              style="width:70px" @change="() => recalcMaterial(record)" />
+            <span v-else>{{ text }}%</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'amount'">
+            <span style="color:#f5222d;font-weight:500">{{ record.amount }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'remark'">
+            <a-input v-if="!isViewMode" v-model:value="record.remark" placeholder="备注" size="small" />
+            <span v-else>{{ text }}</span>
+          </template>
+          <template v-else-if="column.dataIndex === 'action'">
+            <a v-if="!isViewMode" @click="removeMaterialRow(record)" style="color:#f5222d">删除</a>
+          </template>
+          <template v-else>{{ text }}</template>
         </template>
       </a-table>
 
@@ -393,41 +393,41 @@
       <a-divider orientation="left" style="margin-top:16px">费用汇总</a-divider>
       <a-row :gutter="24">
         <a-col :span="14">
-          <!-- 占位，保持右侧对齐 -->
+          <!-- 占位（保持右侧对齐） -->
         </a-col>
         <a-col :span="10">
           <table class="fee-summary-table">
             <tr>
               <td class="fee-label">工时费合计：</td>
-              <td class="fee-value">¥ {{ laborAmount }}</td>
+              <td class="fee-value">￥ {{ laborAmount }}</td>
             </tr>
             <tr>
               <td class="fee-label">材料费合计：</td>
-              <td class="fee-value">¥ {{ materialAmount }}</td>
+              <td class="fee-value">￥ {{ materialAmount }}</td>
             </tr>
             <tr>
               <td class="fee-label">其他费用：</td>
               <td class="fee-value">
-                <a-input-number v-if="!isViewMode" v-model="otherAmount" :min="0" :precision="2"
+                <a-input-number v-if="!isViewMode" v-model:value="otherAmount" :min="0" :precision="2"
                   size="small" style="width:120px" @change="recalcTotal" />
-                <span v-else>¥ {{ otherAmount }}</span>
+                <span v-else>￥ {{ otherAmount }}</span>
               </td>
             </tr>
             <tr class="fee-total-row">
               <td class="fee-label">合计：</td>
-              <td class="fee-value fee-total">¥ {{ totalAmount }}</td>
+              <td class="fee-value fee-total">￥ {{ totalAmount }}</td>
             </tr>
             <tr>
               <td class="fee-label">优惠金额：</td>
               <td class="fee-value">
-                <a-input-number v-if="!isViewMode" v-model="discountAmount" :min="0" :precision="2"
+                <a-input-number v-if="!isViewMode" v-model:value="discountAmount" :min="0" :precision="2"
                   size="small" style="width:120px" @change="recalcTotal" />
-                <span v-else>¥ {{ discountAmount }}</span>
+                <span v-else>￥ {{ discountAmount }}</span>
               </td>
             </tr>
             <tr class="fee-payable-row">
               <td class="fee-label">应收金额：</td>
-              <td class="fee-value fee-payable">¥ {{ payableAmount }}</td>
+              <td class="fee-value fee-payable">￥ {{ payableAmount }}</td>
             </tr>
           </table>
         </a-col>
@@ -442,8 +442,7 @@
 </template>
 
 <script>
-import moment from 'moment'
-import Vue from 'vue'
+import dayjs from 'dayjs'
 import { postAction, putAction, getAction } from '@/api/manage'
 import { getMaterialBySelect } from '@/api/api'
 import { getMpListShort } from '@/utils/util'
@@ -462,7 +461,7 @@ export default {
       confirmLoading: false,
       isViewMode: false,
       title: '新增工单',
-      form: this.$form.createForm(this),
+      formModel: {},
       editId: null,
 
       // 车辆信息（选择后回填 / 手动录入）
@@ -474,7 +473,7 @@ export default {
         customerPhone: '',
         vehicleInfo: '',
         vin: '',
-        // “完善更多信息”中补充的字段
+        // 「完善更多信息」中补充的字段
         vehiclePurpose: '',
         vehicleType: '',
         customerLevel: '',
@@ -502,25 +501,25 @@ export default {
 
       // 列定义
       projectColumns: [
-        { title: '服务项目名称', dataIndex: 'projectName', width: 180, scopedSlots: { customRender: 'projectName' } },
-        { title: '单价(元)', dataIndex: 'unitPrice', width: 90, align: 'right', scopedSlots: { customRender: 'unitPrice' } },
-        { title: '数量', dataIndex: 'quantity', width: 80, align: 'center', scopedSlots: { customRender: 'quantity' } },
-        { title: '折扣(%)', dataIndex: 'discountRate', width: 80, align: 'center', scopedSlots: { customRender: 'discountRate' } },
-        { title: '金额(元)', dataIndex: 'amount', width: 90, align: 'right', scopedSlots: { customRender: 'amount' } },
-        { title: '施工人员', dataIndex: 'workerName', width: 100, scopedSlots: { customRender: 'workerName' } },
-        { title: '备注', dataIndex: 'remark', scopedSlots: { customRender: 'remark' } },
-        { title: '操作', dataIndex: 'action', width: 60, align: 'center', scopedSlots: { customRender: 'projectAction' } }
+        { title: '服务项目名称', dataIndex: 'projectName', width: 180 },
+        { title: '单价(元)', dataIndex: 'unitPrice', width: 90, align: 'right' },
+        { title: '数量', dataIndex: 'quantity', width: 80, align: 'center' },
+        { title: '折扣(%)', dataIndex: 'discountRate', width: 80, align: 'center' },
+        { title: '金额(元)', dataIndex: 'amount', width: 90, align: 'right' },
+        { title: '施工人员', dataIndex: 'workerName', width: 100 },
+        { title: '备注', dataIndex: 'remark' },
+        { title: '操作', dataIndex: 'action', width: 60, align: 'center' }
       ],
       materialColumns: [
-        { title: '商品名称', dataIndex: 'materialName', width: 160, scopedSlots: { customRender: 'materialName' } },
-        { title: '规格', dataIndex: 'standard', width: 90, scopedSlots: { customRender: 'standard' } },
-        { title: '单位', dataIndex: 'unit', width: 60, scopedSlots: { customRender: 'unit' } },
-        { title: '单价(元)', dataIndex: 'unitPrice', width: 90, align: 'right', scopedSlots: { customRender: 'unitPrice' } },
-        { title: '数量', dataIndex: 'quantity', width: 80, align: 'center', scopedSlots: { customRender: 'quantity' } },
-        { title: '折扣(%)', dataIndex: 'discountRate', width: 80, align: 'center', scopedSlots: { customRender: 'discountRate' } },
-        { title: '金额(元)', dataIndex: 'amount', width: 90, align: 'right', scopedSlots: { customRender: 'amount' } },
-        { title: '备注', dataIndex: 'remark', scopedSlots: { customRender: 'remark' } },
-        { title: '操作', dataIndex: 'action', width: 60, align: 'center', scopedSlots: { customRender: 'materialAction' } }
+        { title: '商品名称', dataIndex: 'materialName', width: 160 },
+        { title: '规格', dataIndex: 'standard', width: 90 },
+        { title: '单位', dataIndex: 'unit', width: 60 },
+        { title: '单价(元)', dataIndex: 'unitPrice', width: 90, align: 'right' },
+        { title: '数量', dataIndex: 'quantity', width: 80, align: 'center' },
+        { title: '折扣(%)', dataIndex: 'discountRate', width: 80, align: 'center' },
+        { title: '金额(元)', dataIndex: 'amount', width: 90, align: 'right' },
+        { title: '备注', dataIndex: 'remark' },
+        { title: '操作', dataIndex: 'action', width: 60, align: 'center' }
       ]
     }
   },
@@ -541,18 +540,14 @@ export default {
     }
   },
   methods: {
-    // ——— 开启方式 ——————————————————————————————
+    // ---------- 开启方法 ----------
     add() {
       this.reset()
       this.isViewMode = false
       this.title = '新增工单'
       this.visible = true
-      // 不在这里 set status，由工单状态下拉（DynamicOptionSelect）加载选项后自动设默认值，避免先显示 "0"
-      this.$nextTick(() => {
-        setTimeout(() => {
-          this.form.setFieldsValue({})
-        }, 0)
-      })
+      // 不在这里 set status，由工单状态下拉（DynamicOptionSelect）加载选项后自动设默认值，避免先显示"0"
+      this.formModel = {}
     },
     edit(record) {
       this.reset()
@@ -589,21 +584,18 @@ export default {
           this.otherAmount            = info.otherAmount || 0
           this.discountAmount         = info.discountAmount || 0
 
-          this.$nextTick(() => {
-            setTimeout(() => {
-              this.form.setFieldsValue({
-                status:              info.status,
-                mileage:             info.mileage,
-                handlerName:         info.handlerName,
-                faultDesc:           info.faultDesc,
-                remark:              info.remark,
-                intakeTime:          info.intakeTime ? moment(info.intakeTime) : null,
-                estimatedFinishTime: info.estimatedFinishTime ? moment(info.estimatedFinishTime) : null
-              })
-            }, 0)
-          })
+          this.formModel = {
+            orderNo: info.orderNo,
+            status: info.status,
+            mileage: info.mileage,
+            handlerName: info.handlerName,
+            faultDesc: info.faultDesc,
+            remark: info.remark,
+            intakeTime: info.intakeTime ? dayjs(info.intakeTime) : null,
+            estimatedFinishTime: info.estimatedFinishTime ? dayjs(info.estimatedFinishTime) : null
+          }
 
-          // 回填项目行
+          // 回填项目表
           this.projectItems = projects.map((p, i) => ({
             rowKey: 'p_' + i,
             projectId:   p.projectId,
@@ -620,7 +612,7 @@ export default {
             _projectLoading: false
           }))
 
-          // 回填材料行
+          // 回填材料表
           this.materialItems = materials.map((m, i) => ({
             rowKey: 'm_' + i,
             materialId:   m.materialId,
@@ -650,13 +642,13 @@ export default {
       }).finally(() => { this.confirmLoading = false })
     },
 
-    // ——— 智能车辆搜索 ——————————————————————————————
+    // ---------- 智能车辆搜索 ----------
     onVehicleSearch(value) {
       if (!value || value.trim().length === 0) {
         this.vehicleOptions = []
         return
       }
-      // 防抖：300ms 后才触发请求
+      // 防抖 300ms 后才触发请求
       if (this.vehicleSearchTimer) clearTimeout(this.vehicleSearchTimer)
       this.vehicleSearchLoading = true
       this.vehicleSearchTimer = setTimeout(() => {
@@ -729,7 +721,7 @@ export default {
       }
       this.onVehicleFieldEdited()
     },
-    // 打开“完善更多信息”弹窗（复用客户车辆模块的大弹窗，仅采集信息）
+    // 打开「完善更多信息」弹窗（复用客户车辆模块的大弹窗，仅采集信息）
     openVehicleDetailModal() {
       if (this.isViewMode) return
       const plate = this.orderForm.licensePlate || ''
@@ -765,7 +757,7 @@ export default {
       this.orderForm.customerDetailAddress = formData.customerDetailAddress || ''
     },
 
-    // ——— 项目行操作 ————————————————————————————
+    // ---------- 项目行操作 ----------
     openProjectSelect() {
       this.$refs.projectModal.show()
     },
@@ -804,7 +796,7 @@ export default {
       record.amount = this.calcAmount(record.unitPrice, record.quantity, record.discountRate)
     },
 
-    // ——— 材料行操作 ————————————————————————————
+    // ---------- 材料行操作 ----------
     openMaterialSelect() {
       const existingIds = this.materialItems.filter(m => m.materialId).map(m => m.materialId)
       this.$refs.materialModal.show(existingIds)
@@ -856,7 +848,7 @@ export default {
       record.amount = this.calcAmount(record.unitPrice, record.quantity, record.discountRate)
     },
 
-    // ——— 金额计算 ——————————————————————————————
+    // ---------- 金额计算 ----------
     calcAmount(unitPrice, quantity, discountRate) {
       const p = this.toNum(unitPrice)
       const q = this.toNum(quantity)
@@ -869,7 +861,7 @@ export default {
     recalcTotal() { /* 由 computed 自动处理 */ },
     toNum(v) { return parseFloat(v) || 0 },
 
-    /** 表格/弹窗内下拉挂到 body，避免被 overflow 裁剪或点击无法触发 */
+    /** 表格/弹窗内下拉挂到 body（避免被 overflow 裁剪或点击无法触发） */
     getSelectPopupContainer() {
       return document.body
     },
@@ -898,7 +890,7 @@ export default {
         return ov != null && String(ov) === String(val)
       })
     },
-    /** 商品名称下拉绑定值：有扩展行 id 时用 meId，否则用主表 materialId（详情回填种子选项） */
+    /** 商品名称下拉绑定值：有扩展 id 时用 meId，否则用主表 materialId（酌情回填子选项）*/
     materialSelectValue(record) {
       if (!record) return undefined
       if (record.materialExtendId != null) return record.materialExtendId
@@ -968,7 +960,7 @@ export default {
         search: JSON.stringify(searchObj)
       }).then(res => {
         if (res.code === 200) {
-          this.$set(record, '_projectOptions', res.data.rows || [])
+          (record['_projectOptions'] = res.data.rows || [])
         }
       }).finally(() => {
         record._projectLoading = false
@@ -1021,7 +1013,7 @@ export default {
           if (mid != null) seen[mid] = true
           rows.push(r)
         }
-        this.$set(record, '_materialOptions', rows)
+        (record['_materialOptions'] = rows)
       }).finally(() => {
         record._materialLoading = false
       })
@@ -1056,10 +1048,9 @@ export default {
       this.recalcMaterial(record)
     },
 
-    // ——— 提交 —————————————————————————————————
+    // ---------- 提交 ----------
     handleSubmit() {
-      this.form.validateFields((err, values) => {
-        if (err) return
+      const values = this.formModel
         // 校验客户姓名、电话必填
         if (!this.orderForm.customerName || !this.orderForm.customerPhone) {
           this.$message.warning('客户姓名和联系电话为必填项')
@@ -1070,7 +1061,7 @@ export default {
           this.$message.warning('车牌号为必填，或勾选“无牌”')
           return
         }
-        // 若勾选无牌且未填写车牌，在入库时统一用“无牌”占位
+        // 若勾选无牌且未填车牌，在入库时统一用「无牌」占位
         if (this.orderForm.noPlate && !this.orderForm.licensePlate) {
           this.orderForm.licensePlate = '无牌'
         }
@@ -1102,7 +1093,7 @@ export default {
           customerLevel:   this.orderForm.customerLevel,
           customerAddress: this.orderForm.customerAddress,
           customerDetailAddress: this.orderForm.customerDetailAddress,
-          // 手动录入标志：无 vehicleId 且处于手动录入模式时，后端将同步创建车辆档案
+          // 手动录入标志：无 vehicleId 且属于手动录入模式时，后端将同步创建车辆档案
           isManualVehicle: this.isManualEntry && !this.orderForm.vehicleId,
           otherAmount:     this.otherAmount,
           discountAmount:  this.discountAmount,
@@ -1131,7 +1122,6 @@ export default {
             this.$message.warning(res.data || '保存失败')
           }
         }).finally(() => { this.confirmLoading = false })
-      })
     },
 
     close() {
@@ -1167,16 +1157,14 @@ export default {
       this.materialItems = []
       this.otherAmount   = 0
       this.discountAmount= 0
-      this.$nextTick(() => {
-        if (this.form) this.form.resetFields()
-      })
+      this.formModel = {}
     }
   }
 }
 </script>
 
 <style scoped>
-@import '~@assets/less/common.less';
+@import '@assets/less/common.less';
 
 .fee-summary-table {
   width: 100%;
@@ -1220,3 +1208,14 @@ export default {
   border-radius: 4px;
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+

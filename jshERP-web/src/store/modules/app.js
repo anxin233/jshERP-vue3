@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import storage from '@/utils/storage'
 import {
   SIDEBAR_TYPE,

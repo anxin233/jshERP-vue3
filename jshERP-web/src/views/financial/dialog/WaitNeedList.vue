@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,7 +12,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消(ESC)</a-button>
       </template>
       <!-- 查询区域 -->
@@ -22,13 +22,13 @@
           <a-row :gutter="24">
             <a-col :md="12" :sm="24">
               <a-form-item :label="organType" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-select :placeholder="'请选择'+ organType" v-model="queryParam.organId"
+                <a-select :placeholder="'请选择'+ organType" v-model:value="queryParam.organId"
                           :dropdownMatchSelectWidth="false" showSearch allow-clear optionFilterProp="children" @search="handleSearchSupplier">
-                  <div slot="dropdownRender" slot-scope="menu">
+                  <template #dropdownRender="{ menuNode: menu }"><div>
                     <v-nodes :vnodes="menu" />
                     <a-divider style="margin: 4px 0;" />
                     <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initSupplier"><legacy-icon type="reload" /> 刷新列表</div>
-                  </div>
+                  </div></template>
                   <a-select-option v-for="(item,index) in supList" :key="index" :value="item.id">
                     {{ item.supplier }}
                   </a-select-option>
@@ -55,9 +55,9 @@
         :pagination="ipagination"
         :loading="loading"
         @change="handleTableChange">
-        <span slot="action" slot-scope="text, record">
+        <template #action="{ text, record }"><span>
           <a @click="handleAction(record)">{{actionType}}</a>
-        </span>
+        </span></template>
       </a-table>
       <!-- table区域-end -->
       <div>注意：具体欠款详情，请到<b>报表查询</b>中的<b>{{organType}}对账</b>查看</div>
@@ -75,8 +75,8 @@
     mixins:[JeecgListMixin],
     components: {
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -111,7 +111,7 @@
             dataIndex: 'action',
             width:100,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '', dataIndex: 'supplier',width:400, ellipsis:true},
           { title: '欠款金额', dataIndex: 'allNeed',width:150 }

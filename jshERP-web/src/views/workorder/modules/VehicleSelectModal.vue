@@ -2,19 +2,19 @@
   <a-modal
     title="选择客户车辆"
     :width="860"
-    :visible="visible"
+    :open="visible"
     @cancel="handleCancel"
     :footer="null">
     <!-- 搜索条件 -->
     <a-row :gutter="12" style="margin-bottom:12px">
       <a-col :span="8">
-        <a-input v-model="searchPlate" placeholder="车牌号搜索" allowClear @pressEnter="doSearch" />
+        <a-input v-model:value="searchPlate" placeholder="车牌号搜索" allowClear @pressEnter="doSearch" />
       </a-col>
       <a-col :span="8">
-        <a-input v-model="searchName" placeholder="客户姓名搜索" allowClear @pressEnter="doSearch" />
+        <a-input v-model:value="searchName" placeholder="客户姓名搜索" allowClear @pressEnter="doSearch" />
       </a-col>
       <a-col :span="8">
-        <a-button type="primary" icon="search" @click="doSearch">查询</a-button>
+        <a-button type="primary" @click="doSearch"><template #icon><legacy-icon type="search" /></template>查询</a-button>
         <a-button style="margin-left:8px" @click="resetSearch">重置</a-button>
       </a-col>
     </a-row>
@@ -30,14 +30,17 @@
       bordered
       :scroll="{y:340}"
       @change="handleTableChange">
-      <template slot="licensePlateCol" slot-scope="text, record">
+      <template #bodyCell="{ column, text, record }">
+        <template v-if="column.dataIndex === 'licensePlateNo'">
         <a-tag color="blue" v-if="!record.noPlate">
           {{ record.licensePlateProvince }}{{ record.licensePlateNo }}
         </a-tag>
         <a-tag color="orange" v-else>无牌</a-tag>
       </template>
-      <template slot="action" slot-scope="text, record">
+        <template v-else-if="column.dataIndex === 'action'">
         <a-button type="primary" size="small" @click="selectVehicle(record)">选择</a-button>
+      </template>
+        <template v-else>{{ text }}</template>
       </template>
     </a-table>
   </a-modal>
@@ -58,14 +61,12 @@ export default {
       pagination: { current: 1, pageSize: 8, total: 0,
         showTotal: (t) => `共 ${t} 条` },
       columns: [
-        { title: '车牌号', dataIndex: 'licensePlateNo', width: 120,
-          scopedSlots: { customRender: 'licensePlateCol' } },
+        { title: '车牌号', dataIndex: 'licensePlateNo', width: 120 },
         { title: '车辆信息', dataIndex: 'brandModel', width: 140 },
         { title: 'VIN码',  dataIndex: 'vin', width: 160, ellipsis: true },
         { title: '客户姓名', dataIndex: 'customerName', width: 100 },
         { title: '手机号码', dataIndex: 'customerPhone', width: 120 },
-        { title: '操作', dataIndex: 'action', width: 70, align: 'center',
-          scopedSlots: { customRender: 'action' } }
+        { title: '操作', dataIndex: 'action', width: 70, align: 'center' }
       ]
     }
   },

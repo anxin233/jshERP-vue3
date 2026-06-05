@@ -46,20 +46,20 @@
         <span v-if="this.isShowRight"><a href="http://beian.miit.gov.cn/" target="_blank">苏ICP备2021042833号</a></span>
       </p>
     </div>
-    <a-modal v-model="isAndroidShow" title="微信扫一扫下载安卓版" width="200" centered>
-      <template slot="footer">
+    <a-modal v-model:open="isAndroidShow" title="微信扫一扫下载安卓版" width="200" centered>
+      <template #footer>
         <a-button key="back" @click="handleAndroidCancel">取消</a-button>
       </template>
       <div class="platform-modal"><img :src="publicBase + 'static/android-code.png'" style="width:200px" /></div>
     </a-modal>
-    <a-modal v-model="isIphoneShow" title="微信扫一扫下载iPhone版" width="200" centered>
-      <template slot="footer">
+    <a-modal v-model:open="isIphoneShow" title="微信扫一扫下载iPhone版" width="200" centered>
+      <template #footer>
         <a-button key="back" @click="handleIphoneCancel">取消</a-button>
       </template>
       <div class="platform-modal"><img :src="publicBase + 'static/iphone-code.png'" style="width:200px" /></div>
     </a-modal>
-    <a-modal v-model="isMiniProgramShow" title="微信扫一扫使用小程序版" width="200" centered>
-      <template slot="footer">
+    <a-modal v-model:open="isMiniProgramShow" title="微信扫一扫使用小程序版" width="200" centered>
+      <template #footer>
         <a-button key="back" @click="handleMiniProgramCancel">取消</a-button>
       </template>
       <div class="platform-modal"><img :src="publicBase + 'static/weixin-code.png'" style="width:200px;" /></div>
@@ -88,12 +88,12 @@
     mounted () {
       document.body.classList.add('userLayout')
     },
-    beforeDestroy () {
+    beforeUnmount() {
       document.body.classList.remove('userLayout')
     },
     computed: {
       publicBase () {
-        return process.env.BASE_URL || '/'
+        return import.meta.env.BASE_URL || '/'
       }
     },
     created () {

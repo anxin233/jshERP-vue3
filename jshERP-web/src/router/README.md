@@ -96,14 +96,14 @@ const asyncRouterMap = [
           {
             path: '/result/success',
             name: 'ResultSuccess',
-            component: () => import(/* webpackChunkName: "result" */ '@/views/result/Success'),
+            component: () => import('@/views/result/Success'),
             // 该页面隐藏面包屑和页面标题栏
             meta: { title: '成功', hiddenHeaderContent: true, permission: [ 'result' ] }
           },
           {
             path: '/result/fail',
             name: 'ResultFail',
-            component: () => import(/* webpackChunkName: "result" */ '@/views/result/Error'),
+            component: () => import('@/views/result/Error'),
             // 该页面隐藏面包屑和页面标题栏
             meta: { title: '失败', hiddenHeaderContent: true, permission: [ 'result' ] }
           }

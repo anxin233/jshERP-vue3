@@ -1,23 +1,17 @@
 <template>
   <div :style="{ padding: '0 0 32px 32px' }">
     <h4 :style="{ marginBottom: '20px' }">{{ title }}</h4>
-    <v-chart
-      :height="height"
-      :data="data"
-      :scale="scale"
-      :forceFit="true"
-      :padding="['auto', 'auto', '40', '50']">
-      <v-tooltip/>
-      <v-axis/>
-      <v-bar position="x*y"/>
-    </v-chart>
+    <div ref="chartContainer" :style="{ height: height + 'px', width: '100%' }"></div>
   </div>
 </template>
 
 <script>
+  import { Column } from '@antv/g2plot'
+  import { G2PlotChartMixin } from './mixins/g2plotChartMixin'
 
   export default {
-    name: 'Bar',
+    name: 'TransferBar',
+    mixins: [G2PlotChartMixin],
     props: {
       title: {
         type: String,
@@ -40,27 +34,36 @@
         default: 254
       }
     },
-    data() {
-      return {}
-    },
-    computed: {
-      scale() {
-        return [
-          { dataKey: 'x', title: this.x, alias: this.x },
-          { dataKey: 'y', title: this.y, alias: this.y }
-        ]
+    watch: {
+      data: {
+        deep: true,
+        handler () {
+          this.renderChart()
+        }
+      },
+      height () {
+        this.$nextTick(() => this._resizeG2PlotChart())
       }
     },
-    created() {
-      // this.getMonthBar()
+    mounted () {
+      this.renderChart()
     },
     methods: {
-      // getMonthBar() {
-      //   this.$http.get('/analysis/month-bar')
-      //     .then(res => {
-      //       this.data = res.result
-      //     })
-      // }
+      renderChart () {
+        this._syncG2PlotChart(Column, () => ({
+          data: this.data || [],
+          xField: 'x',
+          yField: 'y',
+          height: this.height,
+          autoFit: true,
+          padding: [20, 30, 40, 50],
+          meta: {
+            x: { alias: this.x },
+            y: { alias: this.y }
+          },
+          legend: false
+        }))
+      }
     }
   }
 </script>

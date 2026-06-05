@@ -1,4 +1,4 @@
-<!-- by j i sheng h u a -->
+﻿<!-- by j i sheng h u a -->
 <template>
   <a-row :gutter="24">
     <a-col :md="24">
@@ -10,14 +10,14 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="单据编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入单据编号" v-model="queryParam.billNo"></a-input>
+                  <a-input placeholder="请输入单据编号" v-model:value="queryParam.billNo"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-range-picker
                     style="width:100%"
-                    v-model="queryParam.createTimeRange"
+                    v-model:value="queryParam.createTimeRange"
                     format="YYYY-MM-DD"
                     :placeholder="['开始时间', '结束时间']"
                     @change="onDateChange"
@@ -27,7 +27,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="操作员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="请选择操作员" showSearch allow-clear optionFilterProp="children" v-model="queryParam.creator">
+                  <a-select placeholder="请选择操作员" showSearch allow-clear optionFilterProp="children" v-model:value="queryParam.creator">
                     <a-select-option v-for="(item,index) in userList" :key="index" :value="item.id">
                       {{ item.userName }}
                     </a-select-option>
@@ -49,7 +49,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="财务人员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择财务人员" showSearch allow-clear optionFilterProp="children" v-model="queryParam.handsPersonId">
+                    <a-select placeholder="请选择财务人员" showSearch allow-clear optionFilterProp="children" v-model:value="queryParam.handsPersonId">
                       <a-select-option v-for="(item,index) in personList" :key="index" :value="item.id">
                         {{ item.name }}
                       </a-select-option>
@@ -58,7 +58,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="付款账户" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择付款账户" showSearch allow-clear optionFilterProp="children" v-model="queryParam.accountId">
+                    <a-select placeholder="请选择付款账户" showSearch allow-clear optionFilterProp="children" v-model:value="queryParam.accountId">
                       <a-select-option v-for="(item,index) in accountList" :key="index" :value="item.id">
                         {{ item.name }}
                       </a-select-option>
@@ -67,7 +67,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="单据状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择单据状态" allow-clear v-model="queryParam.status">
+                    <a-select placeholder="请选择单据状态" allow-clear v-model:value="queryParam.status">
                       <a-select-option value="0">未审核</a-select-option>
                       <a-select-option value="9" v-if="!checkFlag">审核中</a-select-option>
                       <a-select-option value="1">已审核</a-select-option>
@@ -76,7 +76,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="单据备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入单据备注" v-model="queryParam.remark"></a-input>
+                    <a-input placeholder="请输入单据备注" v-model:value="queryParam.remark"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -90,7 +90,7 @@
           <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" icon="check" @click="batchSetStatus(1)">审核</a-button>
           <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" icon="stop" @click="batchSetStatus(0)">反审核</a-button>
           <a-button v-if="isShowExcel && btnEnableList.indexOf(3)>-1" icon="download" @click="handleExport">导出</a-button>
-          <a-tooltip placement="left" title="转账：本系统的转账是指从一个银行存款账户转入到另一个银行存款账户。" slot="action">
+          <a-tooltip placement="left" title="转账：本系统的转账是指从一个银行存款账户转入到另一个银行存款账户。">
             <legacy-icon v-if="btnEnableList.indexOf(1)>-1" type="question-circle" style="font-size:20px;float:right;" />
           </a-tooltip>
         </div>
@@ -109,7 +109,7 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="myHandleDetail(record, '转账', prefixNo)">查看</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a v-if="btnEnableList.indexOf(1)>-1" @click="myHandleEdit(record)">编辑</a>
@@ -117,8 +117,8 @@
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => myHandleDelete(record)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
-            <template slot="customRenderStatus" slot-scope="status">
+            </span></template>
+            <template #customRenderStatus="{ text: status }">
               <a-tag v-if="status == '0'" color="red">未审核</a-tag>
               <a-tag v-if="status == '1'" color="green">已审核</a-tag>
               <a-tag v-if="status == '9'" color="orange">审核中</a-tag>
@@ -140,9 +140,7 @@
   import BillExcelIframe from '@/components/tools/BillExcelIframe'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { FinancialListMixin } from './mixins/FinancialListMixin'
-  import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
-  export default {
+  import JDate from '@/components/jeecg/JDate'  export default {
     name: "GiroList",
     mixins:[JeecgListMixin, FinancialListMixin],
     components: {
@@ -180,7 +178,7 @@
             dataIndex: 'action',
             width:200,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '单据编号', dataIndex: 'billNo',width:160},
           { title: '单据日期 ', dataIndex: 'billTimeStr',width:160},
@@ -190,7 +188,7 @@
           { title: '实付金额', dataIndex: 'changeAmount',width:80},
           { title: '备注', dataIndex: 'remark',width:200},
           { title: '状态', dataIndex: 'status', width: 80, align: "center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           }
         ],
         url: {
@@ -214,5 +212,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

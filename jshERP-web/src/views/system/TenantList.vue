@@ -8,12 +8,12 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="登录名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="输入登录名称模糊查询" v-model="queryParam.loginName"></a-input>
+                  <a-input placeholder="输入登录名称模糊查询" v-model:value="queryParam.loginName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="租户类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select v-model="queryParam.type" placeholder="请选择租户类型">
+                  <a-select v-model:value="queryParam.type" placeholder="请选择租户类型">
                     <a-select-option value="0">试用租户</a-select-option>
                     <a-select-option value="1">付费租户</a-select-option>
                   </a-select>
@@ -21,7 +21,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="租户状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select v-model="queryParam.enabled" placeholder="请选择操作状态">
+                  <a-select v-model:value="queryParam.enabled" placeholder="请选择操作状态">
                     <a-select-option value="1">启用</a-select-option>
                     <a-select-option value="0">禁用</a-select-option>
                   </a-select>
@@ -42,7 +42,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input v-model="queryParam.remark" placeholder="请输入备注"></a-input>
+                    <a-input v-model:value="queryParam.remark" placeholder="请输入备注"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -51,9 +51,9 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="border-top: 5px">
-          <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button @click="batchSetStatus(1)" icon="check-square">启用</a-button>
-          <a-button @click="batchSetStatus(0)" icon="close-square">禁用</a-button>
+          <a-button @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button @click="batchSetStatus(1)"><template #icon><legacy-icon type="check-square" /></template>启用</a-button>
+          <a-button @click="batchSetStatus(0)"><template #icon><legacy-icon type="close-square" /></template>禁用</a-button>
         </div>
         <!-- table区域-begin -->
         <div>
@@ -69,15 +69,15 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderType" slot-scope="type">
+            <template #customRenderType="{ text: type }">
               <a-tag v-if="type==0">试用租户</a-tag>
               <a-tag v-if="type==1" color="green">付费租户</a-tag>
             </template>
-            <template slot="customRenderEnabled" slot-scope="enabled">
+            <template #customRenderEnabled="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
@@ -132,7 +132,7 @@
           {
             title: '操作',
             dataIndex: 'action',
-            scopedSlots: {customRender: 'action'},
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
             align: "center",
             width: 100
           },
@@ -141,10 +141,10 @@
           { title: '用户数量限制', dataIndex: 'userNumLimit', width: 80, align: "center"},
           { title: '租户角色', dataIndex: 'roleName', width: 80, align: "center"},
           { title: '租户类型',dataIndex: 'type',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderType' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderType', cell)
           },
-          { title: '租户状态',dataIndex: 'enabled',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderEnabled' }
+          { title: '租户状态', dataIndex: 'enabled',width:60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderEnabled', cell)
           },
           { title: '创建时间', dataIndex: 'createTimeStr', width: 100, align: "center"},
           { title: '到期时间', dataIndex: 'expireTimeStr', width: 100, align: "center"},
@@ -163,5 +163,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

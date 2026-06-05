@@ -1,9 +1,9 @@
 <template>
   <div class="components-input-demo-presuffix">
     <!---->
-    <a-input @click="openModal" placeholder="请点击选择部门" v-model="departNames" readOnly :disabled="disabled">
-      <legacy-icon slot="prefix" type="cluster" title="部门选择控件"/>
-      <legacy-icon v-if="departIds" slot="suffix" type="close-circle" @click="handleEmpty" title="清空"/>
+    <a-input @click="openModal" placeholder="请点击选择部门" v-model:value="departNames" readOnly :disabled="disabled">
+      <template #prefix><legacy-icon type="cluster" title="部门选择控件"/></template>
+      <template #suffix><legacy-icon v-if="departIds" type="close-circle" @click="handleEmpty" title="清空"/></template>
     </a-input>
 
     <j-select-depart-modal
@@ -90,7 +90,10 @@
           this.departNames = rows.map(row => row['departName']).join(',')
           this.departIds = idstr
         }
-        this.$emit("change", value)
+        this.$emit('change', value)
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
       },
       getDepartNames(){
         return this.departNames
@@ -98,10 +101,6 @@
       handleEmpty(){
         this.handleOK('')
       }
-    },
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

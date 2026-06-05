@@ -36,12 +36,12 @@ export const constantRouterMap = [
       {
         path: 'login',
         name: 'login',
-        component: () => import(/* webpackChunkName: "user" */ '@/views/user/Login')
+        component: () => import('@/views/user/Login')
       },
       {
         path: 'register',
         name: 'register',
-        component: () => import(/* webpackChunkName: "user" */ '@/views/user/Register')
+        component: () => import('@/views/user/Register')
       }
     ]
   },
@@ -54,13 +54,13 @@ export const constantRouterMap = [
         path: 'analysis',
         name: 'analysis',
         meta: { title: '首页' },
-        component: () => import(/* webpackChunkName: "dashboard" */ '@/views/dashboard/Analysis')
+        component: () => import('@/views/dashboard/Analysis')
       }
     ]
   },
   {
     path: '/404',
-    component: () => import(/* webpackChunkName: "fail" */ '@/views/exception/404')
+    component: () => import('@/views/exception/404')
   },
 
 ]

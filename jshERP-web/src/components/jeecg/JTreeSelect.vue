@@ -125,7 +125,10 @@
       onLoadTriggleChange(text){
         //只有单选才会触发
         if(!this.multiple && this.loadTriggleChange){
-          this.$emit('change', this.value,text)
+          this.$emit('change', this.value, text)
+        this.$emit('input', this.value)
+        this.$emit('update:value', this.value)
+        this.$emit('update:modelValue', this.value)
         }
       },
       initDictInfo(){
@@ -211,13 +214,23 @@
       },
       onChange(value){
         if(!value){
-          this.$emit('change', '');
+          this.$emit('change', '')
+        this.$emit('input', '')
+        this.$emit('update:value', '')
+        this.$emit('update:modelValue', '')
           this.treeValue = null
         } else if (value instanceof Array) {
-          this.$emit('change', value.map(item => item.value).join(','))
+          const emitValue = value.map(item => item.value).join(',')
+          this.$emit('change', emitValue)
+        this.$emit('input', emitValue)
+        this.$emit('update:value', emitValue)
+        this.$emit('update:modelValue', emitValue)
           this.treeValue = value
         } else {
-          this.$emit('change', value.value,value.label)
+          this.$emit('change', value.value, value.label)
+          this.$emit('input', value.value)
+          this.$emit('update:value', value.value)
+          this.$emit('update:modelValue', value.value)
           this.treeValue = value
         }
 
@@ -250,11 +263,6 @@
           }
         })
       }
-    },
-    //2.2新增 在组件内定义 指定父组件调用时候的传值属性和事件类型 这个牛逼
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

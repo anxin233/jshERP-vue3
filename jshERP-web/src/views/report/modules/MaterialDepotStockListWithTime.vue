@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div ref="container">
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,7 +12,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:100px;height: 80%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消(ESC)</a-button>
       </template>
       <!-- table区域-begin -->
@@ -128,5 +128,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

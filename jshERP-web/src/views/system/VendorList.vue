@@ -9,17 +9,17 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入名称查询" v-model="queryParam.supplier"></a-input>
+                  <a-input placeholder="请输入名称查询" v-model:value="queryParam.supplier"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="联系人" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入联系人查询" v-model="queryParam.contacts"></a-input>
+                  <a-input placeholder="请输入联系人查询" v-model:value="queryParam.contacts"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="手机号码" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入手机号码查询" v-model="queryParam.telephone"></a-input>
+                  <a-input placeholder="请输入手机号码查询" v-model:value="queryParam.telephone"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
@@ -37,7 +37,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="联系电话" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入联系电话查询" v-model="queryParam.phonenum"></a-input>
+                    <a-input placeholder="请输入联系电话查询" v-model:value="queryParam.phonenum"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -67,15 +67,15 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
+            <template #customRenderFlag="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
@@ -95,7 +95,6 @@
   import ImportFileModal from '@/components/tools/ImportFileModal'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
   export default {
     name: "VendorList",
     mixins:[JeecgListMixin],
@@ -142,7 +141,7 @@
             dataIndex: 'action',
             width: 130,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '名称',dataIndex: 'supplier',width:150,align:"left"},
           { title: '联系人', dataIndex: 'contacts',width:70,align:"left"},
@@ -153,8 +152,8 @@
           { title: '期末应付',dataIndex: 'allNeedPay',width:80,align:"left"},
           { title: '税率(%)', dataIndex: 'taxRate',width:80,align:"left"},
           { title: '排序', dataIndex: 'sort', width: 60,align:"left"},
-          { title: '状态',dataIndex: 'enabled',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+          { title: '状态', dataIndex: 'enabled',width:60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -186,7 +185,7 @@
         let templateUrl = '/doc/vendor_template.xls'
         let templateName = '供应商Excel模板[下载]'
         this.$refs.modalImportForm.initModal(importExcelUrl, templateUrl, templateName);
-        this.$refs.modalImportForm.title = "供应商导入";
+        this.$refs.modalImportForm.title = "供应商导入"
       },
       handleEdit: function (record) {
         this.$refs.modalForm.edit(record);
@@ -200,5 +199,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

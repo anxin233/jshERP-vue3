@@ -3,9 +3,7 @@ import { findBySelectCus, findBySelectRetail, findBySelectSup, findStockByDepotA
   getBatchNumberList, getCurrentSystemConfig, getMaterialByBarCode, getPersonByNumType, getPlatformConfigByKey } from '@/api/api'
 import { getAction } from '@/api/manage'
 import { getCheckFlag, getMpListShort, getNowFormatDateTime } from '@/utils/util'
-import { USER_INFO } from '@/store/mutation-types'
-import Vue from 'vue'
-import storage from '@/utils/storage'
+import { USER_INFO } from '@/store/mutation-types'import storage from '@/utils/storage'
 
 export const BillModalMixin = {
   data() {
@@ -79,7 +77,7 @@ export const BillModalMixin = {
   mounted() {
     document.getElementById(this.prefixNo).addEventListener('keydown', this.handleOkKey)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.getElementById(this.prefixNo).removeEventListener('keydown', this.handleOkKey)
   },
   computed: {

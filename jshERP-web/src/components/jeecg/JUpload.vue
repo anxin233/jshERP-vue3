@@ -1,9 +1,9 @@
 <template>
-  <div :id="containerId" style="position: relative">
+  <div :id="containerId" ref="containerRef" style="position: relative">
 
     <!--  ---------------------------- begin 图片左右换位置 ------------------------------------- -->
     <div class="movety-container" :style="{top:top+'px',left:left+'px',display:moveDisplay}" style="padding:0 8px;position: absolute;z-index: 91;height: 32px;width: 104px;text-align: center;">
-      <div :id="containerId+'-mover'" :class="showMoverTask?'uploadty-mover-mask':'movety-opt'" style="margin-top: 12px">
+      <div :id="containerId+'-mover'" ref="moverRef" :class="showMoverTask?'uploadty-mover-mask':'movety-opt'" style="margin-top: 12px">
         <a @click="moveLast" style="margin: 0 5px;"><legacy-icon type="arrow-left" style="color: #fff;font-size: 16px"/></a>
         <a @click="moveNext" style="margin: 0 5px;"><legacy-icon type="arrow-right" style="color: #fff;font-size: 16px"/></a>
       </div>
@@ -34,15 +34,13 @@
         </a-button>
       </template>
     </a-upload>
-    <a-modal :visible="previewVisible" :width="1000" :footer="null" @cancel="handleCancel">
+    <a-modal :open="previewVisible" :width="1000" :footer="null" @cancel="handleCancel">
       <img alt="example" style="width: 100%" :src="previewImage" />
     </a-modal>
   </div>
 </template>
 
 <script>
-
-  import Vue from 'vue'
   import { ACCESS_TOKEN } from "@/store/mutation-types"
   import { getFileAccessHttpUrl } from '@/api/manage';
   import { fileSizeLimit } from '@/api/api'
@@ -81,6 +79,12 @@
         moverHold:false,
         currentImg:'',
         //---------------------------- end 图片左右换位置 -------------------------------------
+        _moverRetryTimer: null,
+        _moverListenersBound: false,
+        _moverMouseOver: null,
+        _moverMouseOut: null,
+        _picMouseOver: null,
+        _picMouseOut: null,
         sizeLimit: 0
       }
     },
@@ -174,6 +178,12 @@
     },
 
     methods:{
+      emitValue(value) {
+        this.$emit('change', value)
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
+      },
       initFileSizeLimit() {
         fileSizeLimit().then((res)=>{
           if(res.code === 200) {
@@ -241,7 +251,7 @@
         if(arr.length>0){
           path = arr.join(",")
         }
-        this.$emit('change', path);
+        this.emitValue(path);
       },
       beforeUpload(file){
         this.uploadGoOn=true
@@ -304,7 +314,7 @@
               };
               this.newFileList.push(fileJson);
             }
-            this.$emit('change', this.newFileList);
+            this.emitValue(this.newFileList);
           }
         }
       },
@@ -347,7 +357,7 @@
             }
           }
           this.currentImg = last
-          this.$emit('change',arr.join(','))
+          this.emitValue(arr.join(','))
         }
       },
       moveNext(){
@@ -368,7 +378,7 @@
             }
           }
           this.currentImg = next
-          this.$emit('change',arr.join(','))
+          this.emitValue(arr.join(','))
         }
       },
       getIndexByUrl(){
@@ -378,55 +388,145 @@
           }
         }
         return -1;
+      },
+
+      clearMoverRetryTimer() {
+        if (this._moverRetryTimer) {
+          clearTimeout(this._moverRetryTimer)
+          this._moverRetryTimer = null
+        }
+      },
+
+      getMoverEl() {
+        return this.$refs.moverRef || document.getElementById(this.containerId + '-mover')
+      },
+
+      getContainerEl() {
+        return this.$refs.containerRef || document.getElementById(this.containerId)
+      },
+
+      teardownMoverListeners() {
+        const moverObj = this.getMoverEl()
+        if (moverObj) {
+          if (this._moverMouseOver) {
+            moverObj.removeEventListener('mouseover', this._moverMouseOver)
+          }
+          if (this._moverMouseOut) {
+            moverObj.removeEventListener('mouseout', this._moverMouseOut)
+          }
+        }
+        const container = this.getContainerEl()
+        if (container) {
+          const picList = container.getElementsByClassName('ant-upload-list-picture-card')
+          if (picList && picList.length > 0 && this._picMouseOver) {
+            picList[0].removeEventListener('mouseover', this._picMouseOver)
+          }
+          if (picList && picList.length > 0 && this._picMouseOut) {
+            picList[0].removeEventListener('mouseout', this._picMouseOut)
+          }
+        }
+        this._moverListenersBound = false
+        this._moverMouseOver = null
+        this._moverMouseOut = null
+        this._picMouseOver = null
+        this._picMouseOut = null
+      },
+
+      /** 图片左右切换：绑定 hover 事件（弹窗未打开时 DOM 可能未就绪） */
+      initMoverListeners() {
+        this.clearMoverRetryTimer()
+        const moverObj = this.getMoverEl()
+        if (!moverObj) {
+          const scheduleRetry = (attempt = 0) => {
+            if (this.getMoverEl() || attempt >= 120) {
+              if (this.getMoverEl()) {
+                this.initMoverListeners()
+              }
+              return
+            }
+            this._moverRetryTimer = setTimeout(() => scheduleRetry(attempt + 1), 50)
+          }
+          this.$nextTick(() => scheduleRetry(0))
+          return
+        }
+
+        this.teardownMoverListeners()
+
+        this._moverMouseOver = () => {
+          this.moverHold = true
+          this.moveDisplay = 'block'
+        }
+        this._moverMouseOut = () => {
+          this.moverHold = false
+          this.moveDisplay = 'none'
+        }
+        moverObj.addEventListener('mouseover', this._moverMouseOver)
+        moverObj.addEventListener('mouseout', this._moverMouseOut)
+
+        const container = this.getContainerEl()
+        const picList = container
+          ? container.getElementsByClassName('ant-upload-list-picture-card')
+          : []
+        if (picList && picList.length > 0) {
+          this._picMouseOver = (ev) => {
+            ev = ev || window.event
+            const target = ev.target || ev.srcElement
+            if (target.className === 'ant-upload-list-item-info') {
+              this.showMoverTask = false
+              const item = target.parentElement
+              this.left = item.offsetLeft
+              this.top = item.offsetTop + item.offsetHeight - 50
+              this.moveDisplay = 'block'
+              const img = target.getElementsByTagName('img')[0]
+              if (img) {
+                this.currentImg = img.src
+              }
+            }
+          }
+          this._picMouseOut = (ev) => {
+            ev = ev || window.event
+            const target = ev.target || ev.srcElement
+            if (target.className === 'ant-upload-list-item-info') {
+              this.showMoverTask = true
+              setTimeout(() => {
+                if (this.moverHold === false) {
+                  this.moveDisplay = 'none'
+                }
+              }, 100)
+            }
+            if (
+              target.className === 'ant-upload-list-item ant-upload-list-item-done' ||
+              target.className === 'ant-upload-list ant-upload-list-picture-card'
+            ) {
+              this.moveDisplay = 'none'
+            }
+          }
+          picList[0].addEventListener('mouseover', this._picMouseOver)
+          picList[0].addEventListener('mouseout', this._picMouseOut)
+        }
+
+        this._moverListenersBound = true
       }
     },
-    mounted(){
-      const moverObj = document.getElementById(this.containerId+'-mover');
-      moverObj.addEventListener('mouseover',()=>{
-        this.moverHold = true
-        this.moveDisplay = 'block';
-      });
-      moverObj.addEventListener('mouseout',()=>{
-        this.moverHold = false
-        this.moveDisplay = 'none';
-      });
-      let picList = document.getElementById(this.containerId)?document.getElementById(this.containerId).getElementsByClassName('ant-upload-list-picture-card'):[];
-      if(picList && picList.length>0){
-        picList[0].addEventListener('mouseover',(ev)=>{
-          ev = ev || window.event;
-          let target = ev.target || ev.srcElement;
-          if('ant-upload-list-item-info' == target.className){
-            this.showMoverTask=false
-            let item = target.parentElement
-            this.left = item.offsetLeft
-            this.top=item.offsetTop+item.offsetHeight-50;
-            this.moveDisplay = 'block';
-            this.currentImg = target.getElementsByTagName('img')[0].src
-          }
-
-        });
-
-        picList[0].addEventListener('mouseout',(ev)=>{
-          ev = ev || window.event;
-          let target = ev.target || ev.srcElement;
-          //console.log('移除',target)
-          if('ant-upload-list-item-info' == target.className){
-            this.showMoverTask=true
-            setTimeout(()=>{
-              if(this.moverHold === false)
-                this.moveDisplay = 'none';
-            },100)
-          }
-          if('ant-upload-list-item ant-upload-list-item-done' == target.className || 'ant-upload-list ant-upload-list-picture-card'== target.className){
-            this.moveDisplay = 'none';
-          }
-        })
-        //---------------------------- end 图片左右换位置 -------------------------------------
+    mounted() {
+      if (this.isImageComp) {
+        this.initMoverListeners()
       }
     },
-    model: {
-      prop: 'value',
-      event: 'change'
+    activated() {
+      if (this.isImageComp) {
+        this._moverListenersBound = false
+        this.initMoverListeners()
+      }
+    },
+    updated() {
+      if (this.isImageComp && !this._moverListenersBound) {
+        this.$nextTick(() => this.initMoverListeners())
+      }
+    },
+    beforeUnmount() {
+      this.clearMoverRetryTimer()
+      this.teardownMoverListeners()
     }
   }
 </script>

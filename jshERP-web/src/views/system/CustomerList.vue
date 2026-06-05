@@ -10,17 +10,17 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入名称查询" v-model="queryParam.supplier"></a-input>
+                  <a-input placeholder="请输入名称查询" v-model:value="queryParam.supplier"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="联系人" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入联系人查询" v-model="queryParam.contacts"></a-input>
+                  <a-input placeholder="请输入联系人查询" v-model:value="queryParam.contacts"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="手机号码" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入手机号码查询" v-model="queryParam.telephone"></a-input>
+                  <a-input placeholder="请输入手机号码查询" v-model:value="queryParam.telephone"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
@@ -38,7 +38,7 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="联系电话" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入联系电话查询" v-model="queryParam.phonenum"></a-input>
+                    <a-input placeholder="请输入联系电话查询" v-model:value="queryParam.phonenum"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -52,7 +52,7 @@
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(true)" icon="check-square">启用</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(false)" icon="close-square">禁用</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleImportXls()" icon="import">导入</a-button>
-          <a-button v-if="btnEnableList.indexOf(3)>-1" @click="handleExportXls('客户信息')" icon="download">导出</a-button>
+          <a-button v-if="btnEnableList.indexOf(3)>-1" @click="客户导入" icon="download">导出</a-button>
         </div>
         <!-- table区域-begin -->
         <div>
@@ -68,7 +68,7 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a v-if="btnEnableList.indexOf(1)>-1 && customerFlag === '1' && quickBtn.user.indexOf(1)>-1 " @click="btnSetUser(record)">分配用户</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1 && customerFlag === '1' && quickBtn.user.indexOf(1)>-1 " type="vertical" />
               <a @click="handleEdit(record)">编辑</a>
@@ -76,9 +76,9 @@
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
+            <template #customRenderFlag="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
@@ -101,7 +101,6 @@
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import JDate from '@/components/jeecg/JDate'
   import { getCurrentSystemConfig } from '@/api/api'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
   export default {
     name: "CustomerList",
@@ -154,19 +153,19 @@
             dataIndex: 'action',
             width: 130,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '名称',dataIndex: 'supplier',width:150,align:"left"},
           { title: '联系人', dataIndex: 'contacts',width:70,align:"left"},
           { title: '手机号码', dataIndex: 'telephone',width:100,align:"left"},
           { title: '联系电话', dataIndex: 'phoneNum',width:100,align:"left"},
           { title: '电子邮箱', dataIndex: 'email',width:150,align:"left"},
-          { title: '期初应收',dataIndex: 'beginNeedGet',width:80,align:"left"},
+          { title: '电子邮箱',dataIndex: 'beginNeedGet',width:80,align:"left"},
           { title: '期末应收',dataIndex: 'allNeedGet',width:80,align:"left"},
           { title: '税率(%)', dataIndex: 'taxRate',width:80,align:"left"},
           { title: '排序', dataIndex: 'sort', width: 60,align:"left"},
-          { title: '状态',dataIndex: 'enabled',width:60, align:"center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+          { title: '状态', dataIndex: 'enabled',width:60, align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -223,7 +222,6 @@
         let templateUrl = '/doc/customer_template.xls'
         let templateName = '客户Excel模板[下载]'
         this.$refs.modalImportForm.initModal(importExcelUrl, templateUrl, templateName);
-        this.$refs.modalImportForm.title = "客户导入";
       },
       handleEdit: function (record) {
         this.$refs.modalForm.edit(record);
@@ -242,5 +240,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

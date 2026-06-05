@@ -146,6 +146,9 @@
           obj[this.back] = label
         }
         this.$emit('change', value, obj)
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
       },
       asyncLoadTreeData (treeNode) {
         return new Promise((resolve) => {
@@ -194,10 +197,17 @@
 
       onChange(value){
         if(!value){
-          this.$emit('change', '');
+          this.$emit('change', '')
+        this.$emit('input', '')
+        this.$emit('update:value', '')
+        this.$emit('update:modelValue', '')
           this.treeValue = ''
         } else if (value instanceof Array) {
-          //this.$emit('change', value.map(item => item.value).join(','))
+          //const emitValue = value.map(item => item.value).join(',')
+          this.$emit('change', emitValue)
+        this.$emit('input', emitValue)
+        this.$emit('update:value', emitValue)
+        this.$emit('update:modelValue', emitValue)
           //this.treeValue = value
         } else {
           this.backValue(value.value,value.label)
@@ -228,11 +238,6 @@
           }
         })
       }
-    },
-    //2.2新增 在组件内定义 指定父组件调用时候的传值属性和事件类型 这个牛逼
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

@@ -1,22 +1,17 @@
-import '@/config/vue-compat-bootstrap'
 import '@/config/api-base-bootstrap'
-import Vue, { createApp, h } from 'vue'
+import { createApp, h } from 'vue'
 import App from './App.vue'
-import router from './router'
 import store from './store/'
 
 import { VueAxios } from "@/utils/request"
 
 import Antd from 'ant-design-vue'
-import Viser from 'viser-vue'
 import 'ant-design-vue/dist/reset.css'
 
-import '@/permission' // permission control
+import router, { preloadDynamicRoutes } from '@/permission' // permission control + 路由预加载
 import '@/utils/filter' // base filter
-import Print from 'vue-print-nb-jeecg'
+import Print from '@/utils/print'
 /*import '@babel/polyfill'*/
-import preview from 'vue-photo-preview'
-import 'vue-photo-preview/dist/skin.css'
 import 'intro.js/introjs.css'
 
 import {
@@ -37,24 +32,10 @@ import config from '@/defaultSettings'
 import hasPermission from '@/utils/hasPermission'
 import vueBus from '@/utils/vueBus';
 import JeecgComponents from '@/components/jeecg/index'
-import '@/assets/less/JAreaLinkage.less'
-import VueAreaLinkage from 'vue-area-linkage'
 import DictData from '@/components/DictData'
 import DictTag from '@/components/DictTag'
 import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
 import storage, { installStorage } from '@/utils/storage'
-import { installAntd4Compat } from '@/utils/antd4-compat'
-
-Vue.config.productionTip = false
-Vue.use(VueAxios, router)
-Vue.use(Viser)
-Vue.use(hasPermission)
-Vue.use(Print)
-Vue.use(preview)
-Vue.use(vueBus);
-Vue.use(JeecgComponents)
-Vue.use(VueAreaLinkage)
-DictData.install()
 
 const app = createApp({
   mounted () {
@@ -74,19 +55,42 @@ const app = createApp({
   render: () => h(App)
 })
 
-app.config.compatConfig = {
-  MODE: 2,
-  COMPONENT_ASYNC: false
+app.config.globalProperties.$renderColumnSlot = function (slotName, cell) {
+  const payload = cell && typeof cell === 'object'
+    ? cell
+    : { text: cell }
+  const text = Object.prototype.hasOwnProperty.call(payload, 'text') ? payload.text : cell
+  const slot = this.$slots && this.$slots[slotName]
+  return slot ? slot({
+    text,
+    value: text,
+    record: payload.record,
+    index: payload.index,
+    column: payload.column
+  }) : text
 }
 
 installStorage(app)
 app.use(Antd)
-installAntd4Compat(app)
+app.use(VueAxios, router)
+app.use(hasPermission)
+app.use(Print)
+app.use(vueBus)
+app.use(JeecgComponents)
+app.use(DictData)
 app.component('DictTag', DictTag)
 app.component('LegacyIcon', LegacyIcon)
 app.use(store)
-app.use(router)
 
-router.isReady().then(() => {
+async function bootstrap() {
+  try {
+    await preloadDynamicRoutes()
+  } catch (e) {
+    console.warn('[router] preloadDynamicRoutes failed', e)
+  }
+  app.use(router)
+  await router.isReady()
   app.mount('#app')
-})
+}
+
+bootstrap()

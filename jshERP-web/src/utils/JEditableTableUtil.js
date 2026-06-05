@@ -53,7 +53,7 @@ export function getRefPromise(vm, name) {
 export function validateFormAndTables(form, cases) {
 
   if (!(form && typeof form.validateFields === 'function')) {
-    throw `form 参数需要的是一个form对象，而传入的却是${typeof form}`
+    throw new Error(`form 参数需要的是一个 form 对象（含 validateFields），而传入的却是 ${typeof form}`)
   }
 
   let options = {}

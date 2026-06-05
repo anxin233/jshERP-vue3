@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :width="modalWidth"
-    :visible="visible"
+    :open="visible"
     :title="title"
     :wrapClassName="wrapClassNameInfo()"
     @ok="handleSubmit"
@@ -18,17 +18,17 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="8">
                 <a-form-item label="关键词" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input ref="material" placeholder="请输入条码、名称、助记码等查询" v-model="queryParam.q"></a-input>
+                  <a-input ref="material" placeholder="请输入条码、名称、助记码等查询" v-model:value="queryParam.q"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="8">
                 <a-form-item label="规格型号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入规格、型号" v-model="queryParam.standardOrModel"></a-input>
+                  <a-input placeholder="请输入规格、型号" v-model:value="queryParam.standardOrModel"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="8">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="仓库">
-                  <a-select placeholder="选择仓库" v-model="queryParam.depotId" @change="onDepotChange"
+                  <a-select placeholder="选择仓库" v-model:value="queryParam.depotId" @change="onDepotChange"
                     :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children" allow-clear>
                     <a-select-option v-for="(item,index) in depotList" :key="index" :value="item.id">
                       {{ item.depotName }}
@@ -54,44 +54,44 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="8">
                   <a-form-item label="颜色" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-input placeholder="请输入颜色" v-model="queryParam.color"></a-input>
+                    <a-input placeholder="请输入颜色" v-model:value="queryParam.color"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="8">
                   <a-form-item label="品牌" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-input placeholder="请输入品牌" v-model="queryParam.brand"></a-input>
+                    <a-input placeholder="请输入品牌" v-model:value="queryParam.brand"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="8">
                   <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="类别">
                     <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-                                   :treeData="categoryTree" v-model="queryParam.categoryId" placeholder="请选择类别">
+                                   :treeData="categoryTree" v-model:value="queryParam.categoryId" placeholder="请选择类别">
                     </a-tree-select>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="8">
                   <a-form-item label="制造商" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-input placeholder="请输入制造商" v-model="queryParam.mfrs"></a-input>
+                    <a-input placeholder="请输入制造商" v-model:value="queryParam.mfrs"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="8">
                   <a-form-item :label="queryTitle.mp1" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-input :placeholder="'请输入'+ queryTitle.mp1" v-model="queryParam.otherField1"></a-input>
+                    <a-input :placeholder="'请输入'+ queryTitle.mp1" v-model:value="queryParam.otherField1"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="8">
                   <a-form-item :label="queryTitle.mp2" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-input :placeholder="'请输入'+ queryTitle.mp2" v-model="queryParam.otherField2"></a-input>
+                    <a-input :placeholder="'请输入'+ queryTitle.mp2" v-model:value="queryParam.otherField2"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="8">
                   <a-form-item :label="queryTitle.mp3" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-input :placeholder="'请输入'+ queryTitle.mp3" v-model="queryParam.otherField3"></a-input>
+                    <a-input :placeholder="'请输入'+ queryTitle.mp3" v-model:value="queryParam.otherField3"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="序列号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="有无序列号" v-model="queryParam.enableSerialNumber">
+                    <a-select placeholder="有无序列号" v-model:value="queryParam.enableSerialNumber">
                       <a-select-option value="1">有</a-select-option>
                       <a-select-option value="0">无</a-select-option>
                     </a-select>
@@ -99,7 +99,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="批号" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                    <a-select placeholder="有无批号" v-model="queryParam.enableBatchNumber">
+                    <a-select placeholder="有无批号" v-model:value="queryParam.enableBatchNumber">
                       <a-select-option value="1">有</a-select-option>
                       <a-select-option value="0">无</a-select-option>
                     </a-select>
@@ -120,21 +120,23 @@
             :loading="loading"
             :customRow="rowAction"
             @change="handleTableChange">
-            <template slot="customBarCode" slot-scope="text, record">
-              <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.mBarCode}}</div>
-              <a-popover placement="right" trigger="click">
-                <template slot="content">
-                  <img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" />
-                </template>
-                <div class="item-info" v-if="record.imgName">
-                  <img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" />
-                </div>
-              </a-popover>
-            </template>
-            <template slot="customName" slot-scope="text, record">
-              {{record.name}}
-              <a-tag v-if="record.enableSerialNumber==1" color="orange">序</a-tag>
-              <a-tag v-if="record.enableBatchNumber==1" color="orange">批</a-tag>
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.dataIndex === 'mBarCode'">
+                <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.mBarCode}}</div>
+                <a-popover placement="right" trigger="click">
+                  <template #content>
+                    <img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" />
+                  </template>
+                  <div class="item-info" v-if="record.imgName">
+                    <img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="" />
+                  </div>
+                </a-popover>
+              </template>
+              <template v-else-if="column.dataIndex === 'name'">
+                {{record.name}}
+                <a-tag v-if="record.enableSerialNumber==1" color="orange">序</a-tag>
+                <a-tag v-if="record.enableBatchNumber==1" color="orange">批</a-tag>
+              </template>
             </template>
           </a-table>
         </div>
@@ -150,8 +152,8 @@
   import {getMaterialBySelect, queryMaterialCategoryTreeList} from '@/api/api'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import {mixinDevice} from '@/utils/mixin'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 
   export default {
     name: 'JSelectMaterialModal',
@@ -192,8 +194,8 @@
         },
         categoryTree:[],
         columns: [
-          {dataIndex: 'mBarCode', title: '条码', scopedSlots: { customRender: 'customBarCode' }},
-          {dataIndex: 'name', title: '名称', scopedSlots: { customRender: 'customName' }},
+          {dataIndex: 'mBarCode', title: '条码'},
+          {dataIndex: 'name', title: '名称'},
           {dataIndex: 'categoryName', title: '类别'},
           {dataIndex: 'standard', title: '规格'},
           {dataIndex: 'model', title: '型号'},
@@ -231,7 +233,8 @@
         departTree: [],
         depotList: [],
         visible: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         loading: false,
         expandedKeys: [],
         disableMixinCreated: true,

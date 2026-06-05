@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1200"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,7 +12,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <!-- 查询区域 -->
@@ -22,14 +22,14 @@
           <a-row :gutter="24">
             <a-col :md="8" :sm="24">
               <a-form-item label="单据编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-input placeholder="请输入单据编号" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                 <a-range-picker
                   style="width:100%"
-                  v-model="queryParam.createTimeRange"
+                  v-model:value="queryParam.createTimeRange"
                   format="YYYY-MM-DD"
                   :placeholder="['开始时间', '结束时间']"
                   @change="onDateChange"
@@ -40,7 +40,7 @@
             <a-col :md="8" :sm="24">
               <a-button type="primary" @click="searchQuery">查询</a-button>
               <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
-              <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+              <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
             </a-col>
           </a-row>
         </a-form>
@@ -57,35 +57,34 @@
         :pagination="ipagination"
         :loading="loading"
         @change="handleTableChange">
-        <span slot="numberCustomRender" slot-scope="text, record">
+        <template #numberCustomRender="{ text, record }"><span>
           <a @click="myHandleDetail(record)">{{record.number}}</a>
-        </span>
-        <span slot="customTitle">
+        </span></template>
+        <template #headerCell="{ column }">
+              <template v-if="column.dataIndex === 'rowIndex'"><span>
           <a-popover trigger="click" placement="right">
-            <template slot="content">
-              <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                <a-row style="width: 600px">
-                  <template v-for="(item,index) in defColumns">
-                    <template>
-                      <a-col :span="6">
-                        <a-checkbox :value="item.dataIndex" v-if="item.dataIndex==='rowIndex'" disabled></a-checkbox>
-                        <a-checkbox :value="item.dataIndex" v-if="item.dataIndex!=='rowIndex'">
-                          <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
+            <template #content>
+              <div class="column-setting-panel">
+
+              <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                <a-row class="column-setting-list" style="width: 600px">
+                  <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                    <a-col :span="6" class="column-setting-item">
+                        <a-checkbox :value="item.dataIndex">
+                          <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
                         </a-checkbox>
                       </a-col>
-                    </template>
                   </template>
-                </a-row>
-                <a-row style="padding-top: 10px;">
-                  <a-col>
-                    恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                  </a-col>
-                </a-row>
-              </a-checkbox-group>
+                    </a-row>
+                  </a-checkbox-group>
+                  <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+              </div>
             </template>
             <legacy-icon type="setting" />
           </a-popover>
-        </span>
+        </span></template>
+              <template v-else>{{ column.title }}</template>
+            </template>
       </a-table>
       <!-- table区域-end -->
       <!-- 表单区域 -->
@@ -132,17 +131,16 @@
         // 默认列
         defColumns: [
           {
-            dataIndex: 'rowIndex',
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true,
             width:40,
             align:"center",
-            slots: { title: 'customTitle' },
             customRender:function (t,r,index) {
               return parseInt(index)+1;
             }
           },
           {
             title: '单据编号', dataIndex: 'number', width: 120,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '类型', dataIndex: 'type', width: 100},
           { title: '单位信息', dataIndex: 'supplierName', width: 180, ellipsis:true},
@@ -282,5 +280,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

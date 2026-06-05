@@ -1,7 +1,7 @@
-import Menu from 'ant-design-vue/es/menu'
+import { h } from 'vue'
+import { Menu } from 'ant-design-vue'
+import { RouterLink } from 'vue-router'
 import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
-
-const { Item, SubMenu } = Menu
 
 export default {
   name: 'SMenu',
@@ -34,10 +34,13 @@ export default {
     }
   },
   computed: {
-    rootSubmenuKeys: vm => {
+    rootSubmenuKeys () {
       const keys = []
-      vm.menu.forEach(item => keys.push(item.url))
+      this.menu.forEach(item => keys.push(item.url))
       return keys
+    },
+    menuItems () {
+      return this.buildMenuItems(this.menu)
     }
   },
   mounted () {
@@ -52,20 +55,16 @@ export default {
         this.openKeys = this.cachedOpenKeys
       }
     },
-    $route: function () {
+    $route () {
       this.updateMenu()
     }
   },
   methods: {
-    // select menu item
     onOpenChange (openKeys) {
-
-      // 在水平模式下时执行，并且不再执行后续
       if (this.mode === 'horizontal') {
         this.openKeys = openKeys
         return
       }
-      // 非水平模式时
       const latestOpenKey = openKeys.find(key => !this.openKeys.includes(key))
       if (!this.rootSubmenuKeys.includes(latestOpenKey)) {
         this.openKeys = openKeys
@@ -88,110 +87,98 @@ export default {
           openKeys.push(item.path)
         })
       }
-      //update-begin-author:taoyan date:20190510 for:online表单菜单点击展开的一级目录不对
-      if(!this.selectedKeys|| this.selectedKeys[0].indexOf(":")<0){
+      if (!this.selectedKeys || this.selectedKeys[0].indexOf(':') < 0) {
         this.collapsed ? (this.cachedOpenKeys = openKeys) : (this.openKeys = openKeys)
       }
-      //update-end-author:taoyan date:20190510 for:online表单菜单点击展开的一级目录不对
     },
-
-    // render
-    renderItem (menu) {
-      if (!menu.hidden) {
-        return menu.children && !menu.alwaysShow ? this.renderSubMenu(menu) : this.renderMenuItem(menu)
+    onMenuClick ({ key }) {
+      if (key && (key.indexOf('http://') > -1 || key.indexOf('https://') > -1)) {
+        window.open(key)
+        return
       }
-      return null
+      this.selectedKeys = [key]
+      this.$emit('select', { key, selectedKeys: [key] })
     },
-    renderMenuItem (menu) {
-      const target = null
-      const tag = target && 'a' || 'router-link'
-      let props = { to: { name: menu.name } }
-      if(menu.route && menu.route === '0'){
-        props = { to: { path: menu.path } }
+    buildMenuItems (menuList) {
+      return menuList
+        .filter(item => !item.hidden)
+        .map(item => this.buildItem(item))
+        .filter(item => item != null)
+    },
+    buildItem (menu) {
+      if (menu.hidden) {
+        return null
       }
-
-      const attrs = { href: menu.url, target: menu.text }
-
+      if (menu.children && !menu.alwaysShow) {
+        return this.buildSubMenuItem(menu)
+      }
+      return this.buildMenuItem(menu)
+    },
+    buildMenuItem (menu) {
+      // 后台菜单仅有 url/text，无 name；路由 name 与菜单解耦，统一用 path 跳转
+      const toPath = menu.url || menu.path
+      if (!toPath) {
+        return null
+      }
+      const linkProps = { to: toPath }
       if (menu.children) {
-        // 把有子菜单的 并且 父菜单是要隐藏子菜单的
-        // 都给子菜单增加一个 hidden 属性
-        // 用来给刷新页面时， selectedKeys 做控制用
         menu.children.forEach(item => {
-          item.meta = Object.assign(item.meta, { hidden: true })
+          item.meta = Object.assign(item.meta || {}, { hidden: true })
         })
       }
-      return (
-        <Item {...{ key: menu.url }}>
-          <tag {...{ props, attrs }} title={menu.text}>
-            {this.renderIcon(menu.icon)}
-            <span>{menu.text}</span>
-          </tag>
-        </Item>
-      )
+      const icon = this.renderIconVNode(menu.icon)
+      return {
+        key: menu.url,
+        icon,
+        label: h(RouterLink, { ...linkProps, title: menu.text }, {
+          default: () => menu.text
+        })
+      }
     },
-    renderSubMenu (menu) {
-      const itemArr = []
+    buildSubMenuItem (menu) {
+      const children = []
       if (!menu.alwaysShow) {
         menu.children.forEach(item => {
-          const node = this.renderItem(item)
+          const node = this.buildItem(item)
           if (node != null) {
-            itemArr.push(node)
+            children.push(node)
           }
         })
       }
-      return (
-        <SubMenu key={menu.url}>
-          {{
-            title: () => [
-              this.renderIcon(menu.icon),
-              <span title={menu.text}>{menu.text}</span>
-            ]
-          }}
-          {itemArr}
-        </SubMenu>
-      )
+      return {
+        key: menu.url,
+        label: menu.text,
+        title: menu.text,
+        icon: this.renderIconVNode(menu.icon),
+        children
+      }
     },
-    renderIcon (icon) {
-      if (icon === 'none' || icon === undefined) {
+    renderIconVNode (icon) {
+      const normalized = typeof icon === 'string' ? icon.trim() : icon
+      if (!normalized || normalized === 'none') {
         return null
       }
-      return (
-        typeof (icon) === 'object'
-          ? <LegacyIcon component={icon}/>
-          : <LegacyIcon type={icon}/>
-      )
+      if (typeof normalized === 'object') {
+        return h(LegacyIcon, { component: normalized })
+      }
+      return h(LegacyIcon, { type: normalized })
     }
   },
-
   render () {
-    const { mode, theme, menu } = this
-    const props = {
-      mode: mode,
-      theme: theme,
-      openKeys: this.openKeys,
+    return h(Menu, {
+      mode: this.mode,
+      theme: this.theme,
       inlineIndent: 12,
-    }
-    const on = {
-      select: obj => {
-        if(obj.key.indexOf('http://')>-1 || obj.key.indexOf('https://')>-1) {
-          window.open(obj.key)
-        } else {
-          this.selectedKeys = obj.selectedKeys
-          this.$emit('select', obj)
-        }
+      selectedKeys: this.selectedKeys,
+      openKeys: this.openKeys,
+      items: this.menuItems,
+      'onUpdate:selectedKeys': keys => {
+        this.selectedKeys = keys
       },
-      openChange: this.onOpenChange
-    }
-
-    const menuTree = menu
-      .filter(item => !item.hidden)
-      .map(item => this.renderItem(item))
-      .filter(node => node != null)
-    // {...{ props, on: on }}
-    return (
-      <Menu vModel={this.selectedKeys} {...{ props, on: on }}>
-        {menuTree}
-      </Menu>
-    )
+      'onUpdate:openKeys': keys => {
+        this.onOpenChange(keys)
+      },
+      onClick: this.onMenuClick
+    })
   }
 }

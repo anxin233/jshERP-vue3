@@ -4,12 +4,13 @@
     <template v-if="layoutMode === 'sidemenu'">
       <a-drawer
         v-if="device === 'mobile'"
-        :wrapClassName="'drawer-sider ' + navTheme"
+        :rootClassName="'drawer-sider ' + navTheme"
+        :bodyStyle="{ padding: 0, overflow: 'hidden' }"
         placement="left"
         @close="() => this.collapsed = false"
         :closable="false"
-        :visible="collapsed"
-        width="150px"
+        :open="collapsed"
+        :width="150"
       >
         <side-menu
           mode="inline"
@@ -33,12 +34,13 @@
     <template v-else>
       <a-drawer
         v-if="device === 'mobile'"
-        :wrapClassName="'drawer-sider ' + navTheme"
+        :rootClassName="'drawer-sider ' + navTheme"
+        :bodyStyle="{ padding: 0, overflow: 'hidden' }"
         placement="left"
         @close="() => this.collapsed = false"
         :closable="false"
-        :visible="collapsed"
-        width="150px"
+        :open="collapsed"
+        :width="150"
       >
         <side-menu
           mode="inline"
@@ -93,7 +95,6 @@
   import { triggerWindowResizeEvent } from '@/utils/util'
   import { mapState, mapActions } from 'vuex'
   import { mixin, mixinDevice } from '@/utils/mixin.js'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
 
   export default {
@@ -153,10 +154,14 @@
         }
       },
       myMenuSelect(value){
-        //此处触发动态路由被点击事件
-        this.findMenuBykey(this.menus,value.key)
-        this.$emit("dynamicRouterShow",value.key, this.activeMenu.id, this.activeMenu.text, this.activeMenu.component)
-        let storeKey = 'route:title:' + this.activeMenu.url
+        // 此处触发动态路由被点击事件
+        this.activeMenu = {}
+        this.findMenuBykey(this.menus, value.key)
+        if (!this.activeMenu.url) {
+          return
+        }
+        this.$emit("dynamicRouterShow", value.key, this.activeMenu.id, this.activeMenu.text, this.activeMenu.component)
+        const storeKey = 'route:title:' + this.activeMenu.url
         storage.set(storeKey, this.activeMenu.text)
       },
       findMenuBykey(menus,key){
@@ -532,10 +537,13 @@
     }
   }
 
+  /*
   // drawer-sider 自定义
+  */
   .ant-drawer.drawer-sider {
     .sider {
       box-shadow: none;
+      position: relative;
     }
 
     &.dark {
@@ -551,7 +559,8 @@
     }
 
     .ant-drawer-body {
-      padding: 0
+      padding: 0;
+      overflow: hidden;
     }
   }
 

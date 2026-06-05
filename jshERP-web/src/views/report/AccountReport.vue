@@ -9,24 +9,24 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入名称" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入名称" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入编号" v-model="queryParam.serialNo"></a-input>
+                  <a-input placeholder="请输入编号" v-model:value="queryParam.serialNo"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="5" :sm="24">
                 <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
-                  <a-button style="margin-left: 8px" v-print="'#reportPrint'" icon="printer">打印</a-button>
-                  <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+                  <a-button style="margin-left: 8px" v-print="'#reportPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
+                  <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
                 </span>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item>
-                  <span>本月发生总额：{{allMonthAmount}}，当前总余额：{{allCurrentAmount}}</span>
+                  <span>本月发生总额：{{allMonthAmount}}（当前总余额：{{allCurrentAmount}}）</span>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -46,35 +46,34 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="customTitle">
+            <template #headerCell="{ column }">
+              <template v-if="column.dataIndex === 'rowIndex'"><span>
               <a-popover trigger="click" placement="right">
-                <template slot="content">
-                  <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                    <a-row style="width: 600px">
-                      <template v-for="(item,index) in defColumns">
-                        <template>
-                          <a-col :span="6">
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex==='rowIndex'" disabled></a-checkbox>
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex!=='rowIndex'">
-                              <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
+                <template #content>
+                  <div class="column-setting-panel">
+
+                  <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                    <a-row class="column-setting-list" style="width: 600px">
+                      <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                        <a-col :span="6" class="column-setting-item">
+                            <a-checkbox :value="item.dataIndex">
+                              <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
                             </a-checkbox>
-                          </a-col>
-                        </template>
+                        </a-col>
                       </template>
                     </a-row>
-                    <a-row style="padding-top: 10px;">
-                      <a-col>
-                        恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                      </a-col>
-                    </a-row>
                   </a-checkbox-group>
+                  <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+                  </div>
                 </template>
                 <legacy-icon type="setting" />
               </a-popover>
-            </span>
-            <span slot="action" slot-scope="text, record">
+            </span></template>
+              <template v-else>{{ column.title }}</template>
+            </template>
+            <template #action="{ text, record }"><span>
               <a @click="showAccountInOutList(record)">{{record.id?'流水':''}}</a>
-            </span>
+            </span></template>
           </a-table>
           <a-row :gutter="24" style="margin-top: 8px;text-align:right;">
             <a-col :md="24" :sm="24">
@@ -87,8 +86,8 @@
                 :page-size-options="ipagination.pageSizeOptions"
                 :total="ipagination.total"
                 :show-total="(total, range) => `共 ${total-Math.ceil(total/ipagination.pageSize)} 条`">
-                <template slot="buildOptionText" slot-scope="props">
-                  <span>{{ props.value-1 }}条/页</span>
+                <template #buildOptionText="{ value }">
+                  <span>{{ Number(value) - 1 }}条/页</span>
                 </template>
               </a-pagination>
             </a-col>
@@ -139,13 +138,13 @@
         // 默认列
         defColumns: [
           {
-            dataIndex: 'rowIndex', width:60, align:"center", slots: { title: 'customTitle' },
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:60, align:"center",
             customRender:function (t,r,index) {
               return (t !== '合计') ? (parseInt(index) + 1) : t
             }
           },
           { title: '账户流水', dataIndex: 'action', align:"center", width: 120,
-            scopedSlots: { customRender: 'action' }
+            customRender: (cell) => this.$renderColumnSlot('action', cell)
           },
           { title: '名称', dataIndex: 'name', width: 150},
           { title: '编号', dataIndex: 'serialNo', width: 150},
@@ -206,5 +205,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

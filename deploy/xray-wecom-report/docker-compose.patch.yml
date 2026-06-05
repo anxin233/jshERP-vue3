@@ -1,0 +1,11 @@
+# Replace /opt/xray/docker-compose.yml volumes section with:
+services:
+  xray:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./config/config.json:/etc/xray/config.json:ro
+      - ./logs:/var/log/xray
+    command: run -c /etc/xray/config.json

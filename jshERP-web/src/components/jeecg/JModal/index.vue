@@ -4,7 +4,7 @@
       ref="modal"
       :class="getClass(modalClass)"
       :style="getStyle(modalStyle)"
-      :visible="visible"
+      :open="modalOpen"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -14,6 +14,7 @@
       v-on="modalListeners"
       @ok="handleOk"
       @cancel="handleCancel"
+      @update:open="handleOpenChange"
     >
 
       <slot></slot>
@@ -26,15 +27,16 @@
           <a-col class="right">
             <a-tooltip title="新手引导">
               <a-button v-if="switchHelp" @click="handleHelp" style="right:112px;" class="ant-modal-close ant-modal-close-x"
-                        ghost type="link" icon="question-circle"/>
+                        type="link"><template #icon><legacy-icon type="question-circle" /></template></a-button>
             </a-tooltip>
             <a-button v-if="switchFullscreen" @click="toggleFullscreen" class="ant-modal-close ant-modal-close-x"
-                      ghost type="link" :icon="fullscreenButtonIcon"/>
+                      type="link">
+              <template #icon><legacy-icon :type="fullscreenButtonIcon" /></template>
+            </a-button>
           </a-col>
         </a-row>
       </template>
 
-      <!-- 处理 scopedSlots -->
       <template v-for="slotName of slotsKeys" v-slot:[slotName]="slotProps">
         <slot :name="slotName" v-bind="slotProps || {}"></slot>
       </template>
@@ -50,16 +52,22 @@
   import {mixinDevice} from '@/utils/mixin'
   import storage from '@/utils/storage'
 
+  const RESERVED_MODAL_LISTENER_EVENTS = new Set(['ok', 'cancel', 'update:open', 'update:visible'])
+
   export default {
     name: 'JModal',
     mixins: [mixinDevice],
     props: {
       title: String,
-      // 可使用 .sync 修饰符
+      // 外部弹窗显示状态
       visible: Boolean,
+      open: {
+        type: Boolean,
+        default: undefined
+      },
       // 前缀代号
       prefixNo: String,
-      // 是否全屏弹窗，当全屏时无论如何都会禁止 body 滚动。可使用 .sync 修饰符
+      // 是否全屏弹窗，当全屏时无论如何都会禁止 body 滚动。
       fullscreen: {
         type: Boolean,
         default: false
@@ -106,12 +114,19 @@
       modalListeners() {
         const listeners = {}
         Object.keys(this.$attrs || {}).forEach(key => {
-          if (/^on[A-Z]/.test(key)) {
-            const eventName = key.slice(2)
-            listeners[eventName.charAt(0).toLowerCase() + eventName.slice(1)] = this.$attrs[key]
+          if (!/^on[A-Z]/.test(key)) {
+            return
           }
+          const eventName = key.slice(2).replace(/^[A-Z]/, m => m.toLowerCase())
+          if (RESERVED_MODAL_LISTENER_EVENTS.has(eventName)) {
+            return
+          }
+          listeners[eventName] = this.$attrs[key]
         })
         return listeners
+      },
+      modalOpen() {
+        return this.open !== undefined ? this.open : this.visible
       },
       modalClass() {
         return {
@@ -138,9 +153,6 @@
       slotsKeys() {
         return Object.keys(this.$slots).filter(key => !this.usedSlots.includes(key))
       },
-      scopedSlotsKeys() {
-        return []
-      },
       allSlotsKeys() {
         return this.slotsKeys
       },
@@ -150,8 +162,8 @@
       },
     },
     watch: {
-      visible() {
-        if (this.visible) {
+      modalOpen() {
+        if (this.modalOpen) {
           this.innerFullscreen = this.fullscreen
         }
       },
@@ -170,14 +182,41 @@
 
       close() {
         this.$emit('update:visible', false)
+        this.$emit('update:open', false)
+      },
+      handleOpenChange(open) {
+        this.invokeAttrListener('update:open', open)
+        this.$emit('update:visible', open)
+        this.$emit('update:open', open)
       },
 
-      handleOk() {
+      /** 调用父组件透传的 onXxx（Vue 3 fallthrough attrs） */
+      invokeAttrListener(eventName, ...args) {
+        const key = 'on' + eventName.split(':').map(part =>
+          part.charAt(0).toUpperCase() + part.slice(1)
+        ).join(':')
+        const handler = this.$attrs[key]
+        if (!handler) {
+          return
+        }
+        const list = Array.isArray(handler) ? handler : [handler]
+        list.forEach(fn => {
+          if (typeof fn === 'function') {
+            fn(...args)
+          }
+        })
+      },
+
+      handleOk(e) {
+        this.invokeAttrListener('ok', e)
+        this.$emit('ok', e)
         if (this.okClose) {
           this.close()
         }
       },
-      handleCancel() {
+      handleCancel(e) {
+        this.invokeAttrListener('cancel', e)
+        this.$emit('cancel', e)
         this.close()
       },
 

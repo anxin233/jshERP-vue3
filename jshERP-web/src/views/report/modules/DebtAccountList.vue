@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1200"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,7 +12,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <!-- 查询区域 -->
@@ -22,20 +22,20 @@
           <a-row :gutter="24">
             <a-col :md="6" :sm="24">
               <a-form-item label="单据编号" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入单据编号查询" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号查询" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="商品信息" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入名称、规格、型号" v-model="queryParam.materialParam"></a-input>
+                <a-input placeholder="请输入名称、规格、型号" v-model:value="queryParam.materialParam"></a-input>
               </a-form-item>
             </a-col>
             <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
               <a-col :md="12" :sm="24">
                 <a-button type="primary" @click="searchQuery">查询</a-button>
-                <a-button style="margin-left: 8px" v-print="'#debtAccountPrint'" icon="printer">打印</a-button>
-                <a-button style="margin-left: 8px" @click="handleExportXls('欠款详情')" icon="download">导出</a-button>
-                <a-button style="margin-left: 8px" @click="handleHistoryFinancial" icon="history">{{historyText}}</a-button>
+                <a-button style="margin-left: 8px" v-print="'#debtAccountPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
+                <a-button style="margin-left: 8px" @click="handleExportXls('欠款详情')"><template #icon><legacy-icon type="download" /></template>导出</a-button>
+                <a-button style="margin-left: 8px" @click="handleHistoryFinancial"><template #icon><legacy-icon type="history" /></template>{{historyText}}</a-button>
               </a-col>
             </span>
           </a-row>
@@ -53,9 +53,9 @@
           :pagination="false"
           :loading="loading"
           @change="handleTableChange">
-          <span slot="numberCustomRender" slot-scope="text, record">
+          <template #numberCustomRender="{ text, record }"><span>
             <a @click="myHandleDetail(record)">{{record.number}}</a>
-          </span>
+          </span></template>
         </a-table>
       </section>
       <!-- table区域-end -->
@@ -72,9 +72,7 @@
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { getMpListShort } from "@/utils/util"
   import {mixinDevice} from '@/utils/mixin'
-  import { findBillDetailByNumber } from '@/api/api'
-  import Vue from 'vue'
-  import storage from '@/utils/storage'
+  import { findBillDetailByNumber } from '@/api/api'  import storage from '@/utils/storage'
   export default {
     name: 'DebtAccountList',
     mixins:[JeecgListMixin, mixinDevice],
@@ -112,18 +110,18 @@
         // 表头
         columns: [
           {
-            title: '#', dataIndex: 'rowIndex', width:40, align:"center",
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
             customRender:function (t,r,index) {
               return (t !== '合计') ? (parseInt(index) + 1) : t
             }
           },
           {
             title: '单据编号', dataIndex: 'number', width: 120,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '', dataIndex: 'organName',width:120},
           { title: '商品信息', dataIndex: 'materialsList',width:200, ellipsis:true,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(text) {
                 return text.replace(",","，");
               }

@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :keyboard="false"
     :forceRender="true"
@@ -12,7 +12,7 @@
     @cancel="handleCancel"
     :id="prefixNo"
     style="top:20px;height: 95%;">
-    <template slot="footer">
+    <template #footer>
       <a-button @click="handleCancel">取消</a-button>
       <a-button v-if="billPrintFlag && isShowPrintBtn" @click="handlePrintPro('销售退货入库')">三联打印-新版</a-button>
       <a-button v-if="billPrintFlag && isShowPrintBtn" @click="handlePrint('销售退货入库')">三联打印</a-button>
@@ -22,18 +22,18 @@
       <a-button v-if="!checkFlag" @click="handleWorkflow()" type="primary">提交流程</a-button>
     </template>
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form ref="formRef" :model="formModel" :rules="formRules">
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
-              <a-select placeholder="请选择客户" v-decorator="[ 'organId', validatorRules.organId ]" :disabled="!rowCanEdit"
+            <a-form-item name="organId" :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
+              <a-select placeholder="请选择客户" v-model:value="formModel.organId" :disabled="!rowCanEdit"
                 :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children" @change="handleOrganChange" @search="handleSearchCustomer">
-                <div slot="dropdownRender" slot-scope="menu">
+                <template #dropdownRender="{ menuNode: menu }"><div>
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
                   <div v-if="quickBtn.customer" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addCustomer"><legacy-icon type="plus" /> 新增客户</div>
                   <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initCustomer(0)"><legacy-icon type="reload" /> 刷新列表</div>
-                </div>
+                </div></template>
                 <a-select-option v-for="(item,index) in cusList" :key="index" :value="item.id">
                   {{ item.supplier }}
                 </a-select-option>
@@ -41,18 +41,18 @@
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
-              <j-date v-decorator="['operTime', validatorRules.operTime]" :show-time="true"/>
+            <a-form-item name="operTime" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
+              <j-date v-model:value="formModel.operTime" :show-time="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号">
-              <a-input placeholder="请输入单据编号" v-decorator.trim="[ 'number', validatorRules.number ]" />
+            <a-form-item name="number" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号">
+              <a-input placeholder="请输入单据编号" v-model:value="formModel.number" />
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="关联单据">
-              <a-input-search placeholder="请选择关联单据" v-decorator="[ 'linkNumber' ]" @search="onSearchLinkNumber" :readOnly="true"/>
+              <a-input-search placeholder="请选择关联单据" v-model:value="formModel.linkNumber" @search="onSearchLinkNumber" :readOnly="true"/>
             </a-form-item>
           </a-col>
         </a-row>
@@ -77,7 +77,7 @@
                 <a-button @click="scanEnter" style="margin-right: 8px">扫码录入</a-button>
               </a-col>
               <a-col v-if="!scanStatus" :md="16" :sm="24" style="padding: 0 8px 0 12px">
-                <a-input placeholder="请扫描商品条码并回车" v-model="scanBarCode" @pressEnter="scanPressEnter" ref="scanBarCode"/>
+                <a-input placeholder="请扫描商品条码并回车" v-model:value="scanBarCode" @pressEnter="scanPressEnter" ref="scanBarCode"/>
               </a-col>
               <a-col v-if="!scanStatus" :md="6" :sm="24" style="padding: 0px 24px 0 0">
                 <a-button @click="stopScan" style="margin-right: 8px">收起扫码</a-button>
@@ -96,72 +96,72 @@
         <a-row class="form-row" :gutter="24">
           <a-col :lg="24" :md="24" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="{xs: { span: 24 },sm: { span: 24 }}" label="">
-              <a-textarea :rows="1" placeholder="请输入备注" v-decorator="[ 'remark' ]" style="margin-top:8px;"/>
+              <a-textarea :rows="1" placeholder="请输入备注" v-model:value="formModel.remark" style="margin-top:8px;"/>
             </a-form-item>
           </a-col>
         </a-row>
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="优惠率">
-              <a-input style="width:80%;" placeholder="请输入优惠率" v-decorator.trim="[ 'discount' ]" suffix="%" @change="onChangeDiscount"/>
+              <a-input style="width:80%;" placeholder="请输入优惠率" v-model:value="formModel.discount" suffix="%" @change="onChangeDiscount"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="退款优惠">
-              <a-input placeholder="请输入付款优惠" v-decorator.trim="[ 'discountMoney' ]" @change="onChangeDiscountMoney"/>
+              <a-input placeholder="请输入付款优惠" v-model:value="formModel.discountMoney" @change="onChangeDiscountMoney"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="优惠后金额">
-              <a-input placeholder="请输入优惠后金额" v-decorator.trim="[ 'discountLastMoney' ]" :readOnly="true"/>
+              <a-input placeholder="请输入优惠后金额" v-model:value="formModel.discountLastMoney" :readOnly="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="其它费用">
-              <a-input placeholder="请输入其它费用" v-decorator.trim="[ 'otherMoney' ]" @change="onChangeOtherMoney"/>
+              <a-input placeholder="请输入其它费用" v-model:value="formModel.otherMoney" @change="onChangeOtherMoney"/>
             </a-form-item>
           </a-col>
         </a-row>
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="结算账户">
-              <a-select style="width:80%;" placeholder="请选择结算账户" v-decorator="[ 'accountId', validatorRules.accountId ]"
+            <a-form-item name="accountId" :labelCol="labelCol" :wrapperCol="wrapperCol" label="结算账户">
+              <a-select style="width:80%;" placeholder="请选择结算账户" v-model:value="formModel.accountId"
                         :dropdownMatchSelectWidth="false" allowClear @select="selectAccount">
-                <div slot="dropdownRender" slot-scope="menu">
+                <template #dropdownRender="{ menuNode: menu }"><div>
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
                   <div v-if="quickBtn.account" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addAccount"><legacy-icon type="plus" /> 新增</div>
                   <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initAccount(0)"><legacy-icon type="reload" /> 刷新</div>
-                </div>
+                </div></template>
                 <a-select-option v-for="(item,index) in accountList" :key="index" :value="item.id">
                   {{ item.name }}
                 </a-select-option>
               </a-select>
               <a-tooltip title="多账户明细">
-                <a-button type="default" icon="folder" style="margin-left: 8px;" size="small" v-show="manyAccountBtnStatus" @click="handleManyAccount"/>
+                <a-button type="default" style="margin-left: 8px;" size="small" v-show="manyAccountBtnStatus" @click="handleManyAccount"><template #icon><legacy-icon type="folder" /></template></a-button>
               </a-tooltip>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="本次退款">
-              <a-input placeholder="请输入本次退款" v-decorator.trim="[ 'changeAmount' ]" @change="onChangeChangeAmount"/>
+              <a-input placeholder="请输入本次退款" v-model:value="formModel.changeAmount" @change="onChangeChangeAmount"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="本次欠款">
-              <a-input placeholder="请输入本次欠款" v-decorator.trim="[ 'debt' ]" :readOnly="true"/>
+              <a-input placeholder="请输入本次欠款" v-model:value="formModel.debt" :readOnly="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="销售人员">
-              <j-select-multiple placeholder="请选择销售人员" v-model="personList.value" :options="personList.options"/>
+              <j-select-multiple placeholder="请选择销售人员" v-model:value="personList.value" :options="personList.options"/>
             </a-form-item>
           </a-col>
         </a-row>
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="附件">
-              <j-upload v-model="fileList" bizPath="bill"></j-upload>
+              <j-upload v-model:value="fileList" bizPath="bill"></j-upload>
             </a-form-item>
           </a-col>
         </a-row>
@@ -196,7 +196,6 @@
   import JSelectMultiple from '@/components/jeecg/JSelectMultiple'
   import JUpload from '@/components/jeecg/JUpload'
   import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
   import { getCurrentSystemConfig, findBySelectCus } from '@/api/api'
   import storage from '@/utils/storage'
   export default {
@@ -216,8 +215,8 @@
       JDate,
       JSelectMultiple,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -283,27 +282,11 @@
           ]
         },
         confirmLoading: false,
-        validatorRules:{
-          operTime:{
-            rules: [
-              { required: true, message: '请输入单据日期!' }
-            ]
-          },
-          number:{
-            rules: [
-              { required: true, message: '请输入单据编号!' }
-            ]
-          },
-          organId:{
-            rules: [
-              { required: true, message: '请选择客户!' }
-            ]
-          },
-          accountId:{
-            rules: [
-              { required: true, message: '请选择结算账户!' }
-            ]
-          }
+        formRules: {
+          operTime: [{ required: true, message: '请输入单据日期!', trigger: 'change' }],
+          number: [{ required: true, message: '请输入单据编号!', trigger: 'blur' }],
+          organId: [{ required: true, message: '请选择客户!', trigger: 'change' }],
+          accountId: [{ required: true, message: '请选择结算账户!', trigger: 'change' }]
         },
         url: {
           add: '/depotHead/addDepotHeadAndDetail',
@@ -355,7 +338,7 @@
           this.personList.value = this.model.salesMan
           this.fileList = this.model.fileName
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(this.model,'organId', 'operTime', 'number', 'linkNumber', 'remark',
+            Object.assign(this.formModel, pick(this.model,'organId', 'operTime', 'number', 'linkNumber', 'remark',
               'discount','discountMoney','discountLastMoney','otherMoney','accountId','changeAmount','debt','salesMan'))
           });
           // 加载子表数据

@@ -11,18 +11,18 @@
               <a-col :md="6" :sm="24">
                 <a-form-item label="类别" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-                   :treeData="categoryTree" v-model="queryParam.categoryId" placeholder="请选择类别">
+                   :treeData="categoryTree" v-model:value="queryParam.categoryId" placeholder="请选择类别">
                   </a-tree-select>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="关键词" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入条码、名称、助记码等查询" v-model="queryParam.materialParam"></a-input>
+                  <a-input placeholder="请输入条码、名称、助记码等查询" v-model:value="queryParam.materialParam"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="规格" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入规格查询" v-model="queryParam.standard"></a-input>
+                  <a-input placeholder="请输入规格查询" v-model:value="queryParam.standard"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -40,42 +40,42 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="型号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入型号查询" v-model="queryParam.model"></a-input>
+                    <a-input placeholder="请输入型号查询" v-model:value="queryParam.model"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="颜色" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入颜色查询" v-model="queryParam.color"></a-input>
+                    <a-input placeholder="请输入颜色查询" v-model:value="queryParam.color"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="品牌" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入品牌查询" v-model="queryParam.brand"></a-input>
+                    <a-input placeholder="请输入品牌查询" v-model:value="queryParam.brand"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="制造商" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入制造商查询" v-model="queryParam.mfrs"></a-input>
+                    <a-input placeholder="请输入制造商查询" v-model:value="queryParam.mfrs"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item :label="queryTitle.mp1" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input :placeholder="'请输入'+ queryTitle.mp1 +'查询'" v-model="queryParam.otherField1"></a-input>
+                    <a-input :placeholder="'请输入'+ queryTitle.mp1 +'查询'" v-model:value="queryParam.otherField1"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item :label="queryTitle.mp2" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input :placeholder="'请输入'+ queryTitle.mp2 +'查询'" v-model="queryParam.otherField2"></a-input>
+                    <a-input :placeholder="'请输入'+ queryTitle.mp2 +'查询'" v-model:value="queryParam.otherField2"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item :label="queryTitle.mp3" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input :placeholder="'请输入'+ queryTitle.mp3 +'查询'" v-model="queryParam.otherField3"></a-input>
+                    <a-input :placeholder="'请输入'+ queryTitle.mp3 +'查询'" v-model:value="queryParam.otherField3"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择状态" v-model="queryParam.enabled">
+                    <a-select placeholder="请选择状态" v-model:value="queryParam.enabled">
                       <a-select-option value="1">启用</a-select-option>
                       <a-select-option value="0">禁用</a-select-option>
                     </a-select>
@@ -83,7 +83,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="序列号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="有无序列号" v-model="queryParam.enableSerialNumber">
+                    <a-select placeholder="有无序列号" v-model:value="queryParam.enableSerialNumber">
                       <a-select-option value="1">有</a-select-option>
                       <a-select-option value="0">无</a-select-option>
                     </a-select>
@@ -91,7 +91,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="批号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="有无批号" v-model="queryParam.enableBatchNumber">
+                    <a-select placeholder="有无批号" v-model:value="queryParam.enableBatchNumber">
                       <a-select-option value="1">有</a-select-option>
                       <a-select-option value="0">无</a-select-option>
                     </a-select>
@@ -99,22 +99,22 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="仓位货架" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input style="width: 100%" placeholder="请输入仓位货架查询" v-model="queryParam.position"></a-input>
+                    <a-input style="width: 100%" placeholder="请输入仓位货架查询" v-model:value="queryParam.position"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="基础重量" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input-number style="width: 100%" placeholder="请输入基础重量查询" v-model="queryParam.weight"></a-input-number>
+                    <a-input-number style="width: 100%" placeholder="请输入基础重量查询" v-model:value="queryParam.weight"></a-input-number>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="保质期" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input-number style="width: 100%" placeholder="请输入保质期查询" v-model="queryParam.expiryNum"></a-input-number>
+                    <a-input-number style="width: 100%" placeholder="请输入保质期查询" v-model:value="queryParam.expiryNum"></a-input-number>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入备注查询" v-model="queryParam.remark"></a-input>
+                    <a-input placeholder="请输入备注查询" v-model:value="queryParam.remark"></a-input>
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -133,27 +133,24 @@
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetMaterialCurrentStock()" icon="stock">修正库存</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetMaterialCurrentUnitPrice()" icon="fund">修正成本</a-button>
           <a-popover trigger="click" placement="right">
-            <template slot="content">
-              <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                <a-row style="width: 500px">
-                  <template v-for="(item,index) in defColumns">
-                    <template>
-                      <a-col :span="8">
+            <template #content>
+              <div class="column-setting-panel">
+
+              <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                <a-row class="column-setting-list" style="width: 500px">
+                  <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                    <a-col :span="8" class="column-setting-item">
                         <a-checkbox :value="item.dataIndex">
-                          <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
+                          <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
                         </a-checkbox>
                       </a-col>
-                    </template>
                   </template>
                 </a-row>
-                <a-row style="padding-top: 10px;">
-                  <a-col>
-                    恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                  </a-col>
-                </a-row>
               </a-checkbox-group>
+              <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+              </div>
             </template>
-            <a-button icon="setting">列设置</a-button>
+            <a-button><template #icon><legacy-icon type="setting" /></template>列设置</a-button>
           </a-popover>
         </div>
         <!-- table区域-begin -->
@@ -171,14 +168,14 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange, columnWidth:'40px'}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a v-if="btnEnableList.indexOf(1)>-1" @click="handleCopyAdd(record)">复制</a>
-            </span>
-            <template slot="customPic" slot-scope="text, record">
+            </span></template>
+            <template #customPic="{ text, record }">
               <a-popover placement="right" trigger="click">
-                <template slot="content">
+                <template #content>
                   <img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" />
                 </template>
                 <div class="item-info" v-if="record.imgName">
@@ -186,25 +183,25 @@
                 </div>
               </a-popover>
             </template>
-            <template slot="customBarCode" slot-scope="text, record">
+            <template #customBarCode="{ text, record }">
               {{record.mBarCode}}
             </template>
-            <template slot="customName" slot-scope="text, record">
+            <template #customName="{ text, record }">
               {{record.name}}
               <a-tag v-if="record.enableSerialNumber==1" color="orange">序</a-tag>
               <a-tag v-if="record.enableBatchNumber==1" color="orange">批</a-tag>
             </template>
-            <template slot="customRenderInitialStock" slot-scope="text, record">
+            <template #customRenderInitialStock="{ text, record }">
               <a-tooltip :title="record.bigUnitInitialStock">
                 {{text}}
               </a-tooltip>
             </template>
-            <template slot="customRenderStock" slot-scope="text, record">
+            <template #customRenderStock="{ text, record }">
               <a-tooltip :title="record.bigUnitStock">
                 {{text}}
               </a-tooltip>
             </template>
-            <template slot="customRenderEnabled" slot-scope="enabled">
+            <template #customRenderEnabled="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
@@ -229,8 +226,8 @@
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
+  import { sanitizeSettingDataIndex } from '@/utils/columnSetting'
 
   export default {
     name: "MaterialList",
@@ -298,11 +295,11 @@
             dataIndex: 'action',
             align:"center",
             width: 100,
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
-          {title: '图片', dataIndex: 'pic', width: 60, scopedSlots: { customRender: 'customPic' }},
+          {title: '图片', dataIndex: 'pic', width: 60, customRender: (cell) => this.$renderColumnSlot('customPic', cell)},
           {title: '条码', dataIndex: 'mBarCode', width: 120},
-          {title: '名称', dataIndex: 'name', width: 160, scopedSlots: { customRender: 'customName' }},
+          {title: '名称', dataIndex: 'name', width: 160, customRender: (cell) => this.$renderColumnSlot('customName', cell)},
           {title: '规格', dataIndex: 'standard', width: 120},
           {title: '型号', dataIndex: 'model', width: 120},
           {title: '颜色', dataIndex: 'color', width: 70, ellipsis:true},
@@ -328,10 +325,10 @@
           {title: '保质期', dataIndex: 'expiryNum', width: 60},
           {title: '制造商', dataIndex: 'mfrs', width: 120, ellipsis:true},
           {title: '初始库存', dataIndex: 'initialStock', width: 80,
-            scopedSlots: { customRender: 'customRenderInitialStock' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderInitialStock', cell)
           },
           {title: '库存', dataIndex: 'stock', width: 80,
-            scopedSlots: { customRender: 'customRenderStock' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStock', cell)
           },
           {title: '采购价', dataIndex: 'purchaseDecimal', width: 80},
           {title: '零售价', dataIndex: 'commodityDecimal', width: 80},
@@ -340,7 +337,7 @@
           {title: '仓位货架', dataIndex: 'position', width: 80},
           {title: '备注', dataIndex: 'remark', width: 80},
           {title: '状态', dataIndex: 'enabled', align: "center", width: 60,
-            scopedSlots: { customRender: 'customRenderEnabled' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderEnabled', cell)
           }
         ],
         url: {
@@ -370,11 +367,16 @@
       //加载初始化列
       initColumnsSetting(){
         let columnsStr = storage.get('materialColumns')
-        if(columnsStr && columnsStr.indexOf(',')>-1) {
-          this.settingDataIndex = columnsStr.split(',')
+        if (typeof columnsStr === 'string' && columnsStr.length > 0) {
+          this.settingDataIndex = columnsStr.split(',').filter(Boolean)
         } else {
-          this.settingDataIndex = this.defDataIndex
+          this.settingDataIndex = [...this.defDataIndex]
         }
+        this.settingDataIndex = sanitizeSettingDataIndex(
+          this.settingDataIndex,
+          this.defColumns,
+          this.defDataIndex
+        )
         this.columns = this.defColumns.filter(item => {
           return this.settingDataIndex.includes(item.dataIndex)
         })
@@ -394,9 +396,7 @@
       },
       loadTreeData(){
         let that = this;
-        let params = {};
-        params.id='';
-        queryMaterialCategoryTreeList(params).then((res)=>{
+        queryMaterialCategoryTreeList({}).then((res)=>{
           if(res){
             that.categoryTree = [];
             for (let i = 0; i < res.length; i++) {
@@ -526,7 +526,7 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
 <style>
   .item-info {
@@ -544,3 +544,4 @@
     object-fit: cover;
   }
 </style>
+

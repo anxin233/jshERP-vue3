@@ -6,14 +6,14 @@
         <a-row style="margin-left: 14px">
           <a-button @click="handleAddCategory" type="primary">添加类别</a-button>
           <a-button title="删除多条数据" @click="batchDel" type="default">批量删除</a-button>
-          <a-button @click="refresh" type="default" icon="reload">刷新</a-button>
+          <a-button @click="refresh" type="default"><template #icon><legacy-icon type="reload" /></template>刷新</a-button>
         </a-row>
         <div style="background: #fff;padding-left:16px;height: 100%; margin-top: 5px">
           <a-alert type="info" :showIcon="true">
-            <div slot="message">
+            <template #message><div>
               当前选择：<span v-if="this.currSelected.title">{{ getCurrSelectedTitle() }}</span>
               <a v-if="this.currSelected.title" style="margin-left: 10px" @click="onClearSelected">取消选择</a>
-            </div>
+            </div></template>
           </a-alert>
           <!-- 树-->
           <a-col :md="10" :sm="24">
@@ -42,34 +42,34 @@
     </a-col>
     <a-col :md="12" :sm="24">
       <a-card :bordered="false" v-if="selectedKeys.length>0">
-        <a-form :form="form">
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="名称">
-            <a-input placeholder="请输入名称" v-decorator="['name', validatorRules.name ]"/>
+        <a-form ref="formRef" :model="formModel" :rules="formRules">
+          <a-form-item name="name" :labelCol="labelCol" :wrapperCol="wrapperCol" label="名称">
+            <a-input placeholder="请输入名称" v-model:value="formModel.name"/>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="编号">
-            <a-input placeholder="请输入编号" v-decorator="['serialNo', validatorRules.serialNo ]"/>
+          <a-form-item name="serialNo" :labelCol="labelCol" :wrapperCol="wrapperCol" label="编号">
+            <a-input placeholder="请输入编号" v-model:value="formModel.serialNo"/>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="上级目录">
+          <a-form-item name="parentId" :labelCol="labelCol" :wrapperCol="wrapperCol" label="上级目录">
             <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}"
                            allow-clear :treeDefaultExpandAll="true"
-                           :treeData="treeData" v-decorator="[ 'parentId' ]" placeholder="请选择上级目录">
+                           :treeData="treeData" v-model:value="formModel.parentId" placeholder="请选择上级目录">
             </a-tree-select>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序">
-            <a-input v-decorator="[ 'sort' ]"/>
+          <a-form-item name="sort" :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序">
+            <a-input v-model:value="formModel.sort"/>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注">
-            <a-textarea placeholder="请输入备注" :rows="2" v-decorator.trim="[ 'remark' ]" />
+          <a-form-item name="remark" :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注">
+            <a-textarea placeholder="请输入备注" :rows="2" v-model:value="formModel.remark" />
           </a-form-item>
         </a-form>
         <div class="anty-form-btn">
-          <a-button @click="emptyCurrForm" type="default" htmlType="button" icon="sync">重置</a-button>
-          <a-button @click="submitCurrForm" type="primary" htmlType="button" icon="form">保存</a-button>
+          <a-button @click="emptyCurrForm" type="default" htmlType="button"><template #icon><legacy-icon type="sync" /></template>重置</a-button>
+          <a-button @click="submitCurrForm" type="primary" htmlType="button"><template #icon><legacy-icon type="form" /></template>保存</a-button>
         </div>
       </a-card>
       <a-card v-else >
         <a-empty>
-          <span slot="description"> 请先选择一个类别! </span>
+          <template #description><span> 请先选择一个类别! </span></template>
         </a-empty>
       </a-card>
     </a-col>
@@ -104,7 +104,14 @@ export default {
       contextMenuY: 0,
       checkedKeys: [],
       checkStrictly: true,
-      form: this.$form.createForm(this),
+      formModel: {},
+      formRules: {
+        name: [
+          { required: true, message: '请输入名称!', trigger: 'blur' },
+          { validator: this.validateName, trigger: 'blur' }
+        ],
+        serialNo: [{ required: true, message: '请输入编号!', trigger: 'blur' }]
+      },
       labelCol: {
         xs: {span: 24},
         sm: {span: 5}
@@ -112,15 +119,6 @@ export default {
       wrapperCol: {
         xs: {span: 24},
         sm: {span: 16}
-      },
-      validatorRules:{
-        name: {
-          rules: [
-            {required: true, message: '请输入名称!'},
-            { validator: this.validateName}
-          ]
-        },
-        serialNo: {rules: [{required: true, message: '请输入编号!'}]}
       },
       url: {
         delete: '/projectCategory/delete',
@@ -207,7 +205,8 @@ export default {
     },
     setValuesToForm(record) {
       this.$nextTick(() => {
-        this.form.setFieldsValue(pick(record, 'name','serialNo', 'parentId', 'sort', 'remark'))
+        this.formModel = pick(record, 'name','serialNo', 'parentId', 'sort', 'remark')
+        this.$refs.formRef && this.$refs.formRef.clearValidate()
       })
     },
     getCurrSelectedTitle() {
@@ -215,7 +214,7 @@ export default {
     },
     onClearSelected() {
       this.currSelected = {}
-      this.form.resetFields()
+      this.formModel = {}
       this.selectedKeys = []
     },
     rightHandle(e) {
@@ -255,45 +254,38 @@ export default {
       }
     },
     submitCurrForm() {
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          if (!this.currSelected.id) {
-            this.$message.warning('请点击选择要修改类别!')
-            return
-          }
-          let formData = Object.assign(this.currSelected, values)
-          httpAction(this.url.edit, formData, 'put').then((res) => {
-            if (res.code == 200) {
-              this.$message.success('保存成功!')
-              this.loadTree()
-              let params = {}
-              params.id = formData.id
-              this.getTreeByParams(params)
-            } else {
-              this.$message.warning(res.data.message)
-            }
-          })
+      const formRef = this.$refs.formRef
+      if (!formRef) return
+      formRef.validate().then(() => {
+        if (!this.currSelected.id) {
+          this.$message.warning('请点击选择要修改类别!')
+          return
         }
-      })
+        let formData = Object.assign({}, this.currSelected, { ...this.formModel })
+        httpAction(this.url.edit, formData, 'put').then((res) => {
+          if (res.code == 200) {
+            this.$message.success('保存成功!')
+            this.loadTree()
+            let params = {}
+            params.id = formData.id
+            this.getTreeByParams(params)
+          } else {
+            this.$message.warning(res.data.message)
+          }
+        })
+      }).catch(() => {})
     },
     emptyCurrForm() {
-      this.form.resetFields()
+      this.formModel = {}
+      this.$refs.formRef && this.$refs.formRef.resetFields()
     },
-    validateName(rule, value, callback){
-      let params = {
-        name: value,
-        id: this.model.id?this.model.id:0
-      };
-      checkProjectCategory(params).then((res)=>{
+    validateName(rule, value){
+      if (!value) return Promise.resolve()
+      return checkProjectCategory({ name: value, id: this.model.id ? this.model.id : 0 }).then((res)=>{
         if(res && res.code===200) {
-          if(!res.data.status){
-            callback();
-          } else {
-            callback("名称已经存在");
-          }
-        } else {
-          callback(res.data);
+          return !res.data.status ? Promise.resolve() : Promise.reject('名称已经存在')
         }
+        return Promise.reject(res.data)
       });
     },
     handleAdd() {
@@ -317,7 +309,7 @@ export default {
       }
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.removeEventListener('click', this.closeContextMenu)
   }
 }

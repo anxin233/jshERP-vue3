@@ -1,23 +1,19 @@
 <template>
   <div :style="{ padding: '0 0 32px 32px' }">
     <h4 :style="{ marginBottom: '20px' }">{{ title }}</h4>
-    <v-chart :force-fit="true" :height="height" :data="data" :scale="scale" :onClick="handleClick">
-      <v-tooltip/>
-      <v-axis/>
-      <v-legend/>
-      <v-line position="type*y" color="x"/>
-      <v-point position="type*y" color="x" :size="4" :v-style="style" :shape="'circle'"/>
-    </v-chart>
+    <div ref="chartContainer" :style="{ height: height + 'px', width: '100%' }"></div>
   </div>
 </template>
 
 <script>
+  import { Line } from '@antv/g2plot'
   import { DataSet } from '@antv/data-set'
   import { ChartEventMixins } from './mixins/ChartMixins'
+  import { G2PlotChartMixin } from './mixins/g2plotChartMixin'
 
   export default {
     name: 'LineChartMultid',
-    mixins: [ChartEventMixins],
+    mixins: [ChartEventMixins, G2PlotChartMixin],
     props: {
       title: {
         type: String,
@@ -44,8 +40,7 @@
         type: Array,
         default: () => ['jeecg', 'jeebt']
       },
-      // 别名，需要的格式：[{field:'name',alias:'姓名'}, {field:'sex',alias:'性别'}]
-      aliases:{
+      aliases: {
         type: Array,
         default: () => []
       },
@@ -54,18 +49,8 @@
         default: 254
       }
     },
-    data() {
-      return {
-        scale: [{
-          dataKey: 'x',
-          min: 0,
-          max: 1
-        }],
-        style: { stroke: '#fff', lineWidth: 1 }
-      }
-    },
     computed: {
-      data() {
+      chartData () {
         const dv = new DataSet.View().source(this.dataSource)
         dv.transform({
           type: 'fold',
@@ -73,10 +58,9 @@
           key: 'x',
           value: 'y'
         })
-        let rows =  dv.rows
-        // 替换别名
+        const rows = dv.rows.map(row => ({ ...row }))
         rows.forEach(row => {
-          for (let item of this.aliases) {
+          for (const item of this.aliases) {
             if (item.field === row.x) {
               row.x = item.alias
               break
@@ -84,6 +68,38 @@
           }
         })
         return rows
+      }
+    },
+    watch: {
+      chartData: {
+        deep: true,
+        handler () {
+          this.renderChart()
+        }
+      },
+      height () {
+        this.$nextTick(() => this._resizeG2PlotChart())
+      }
+    },
+    mounted () {
+      this.renderChart()
+    },
+    methods: {
+      renderChart () {
+        this._syncG2PlotChart(Line, () => ({
+          data: this.chartData,
+          xField: 'type',
+          yField: 'y',
+          seriesField: 'x',
+          height: this.height,
+          autoFit: true,
+          point: {
+            size: 4,
+            shape: 'circle',
+            style: { stroke: '#fff', lineWidth: 1 }
+          },
+          legend: { position: 'top' }
+        }), { bindClick: true })
       }
     }
   }

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,11 +85,12 @@ public class BaseController
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected TableDataInfo getDataTable(List<?> list)
     {
+        List<?> rows = list != null ? list : Collections.emptyList();
         Map<String, Object> data = new HashMap<>();
         TableDataInfo rspData = new TableDataInfo();
         rspData.setCode(200);
-        data.put("rows", list);
-        data.put("total", new PageInfo(list).getTotal());
+        data.put("rows", rows);
+        data.put("total", list != null ? new PageInfo(list).getTotal() : 0L);
         rspData.setData(data);
         return rspData;
     }

@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{ top: '93px', left: '154px' }"
@@ -16,21 +16,21 @@
       @ok="handleOk"
       @cancel="handleCancel">
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" :model="formModel">
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="机器码" prop="platformKey" name="platformKey">
+        <a-form ref="formRef" :model="formModel">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="机器码" name="platformKey">
             <a-input
               :value="formModel.platformKey"
               :readOnly="true"
               @change="handleFieldChange('platformKey', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="插件激活码" prop="platformValue" name="platformValue">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="插件激活码" name="platformValue">
             <a-textarea
               :rows="2"
               placeholder="请输入插件激活码"
               :value="formModel.platformValue"
               @change="handleFieldChange('platformValue', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>
@@ -43,6 +43,7 @@
 
   export default {
     name: 'PluginModal',
+    emits: ['ok', 'close'],
     mixins: [mixinDevice],
     data() {
       return {
@@ -106,6 +107,7 @@
           postAction('/platformConfig/updatePlatformConfigByKey', formData).then((res) => {
             if (res.code === 200) {
               this.$message.info('填写成功')
+              this.$emit('ok')
             } else {
               this.$message.warning(res.data.message)
             }

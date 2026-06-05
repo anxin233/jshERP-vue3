@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     v-bind:prefixNo="prefixNo"
     fullscreen
@@ -11,45 +11,45 @@
     @cancel="handleCancel"
     :id="prefixNo"
     :style="modalStyle">
-    <template slot="footer">
+    <template #footer>
       <a-button key="back" @click="handleCancel">取消</a-button>
       <a-button type="primary" v-if="showOkFlag" :loading="confirmLoading" @click="handleOk">保存（Ctrl+S）</a-button>
     </template>
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form ref="formRef" :model="formModel" :rules="formRules">
         <a-tabs v-model:activeKey="activeKey" size="small">
           <a-tab-pane key="1" tab="基本信息" id="materialHeadModal" forceRender>
             <a-row class="form-row" :gutter="24">
               <a-col :md="6" :sm="24">
-                <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="名称" data-step="1" data-title="名称" data-intro="名称必填，可以重复">
-                  <a-input placeholder="请输入名称" v-decorator.trim="[ 'name', validatorRules.name ]" @change="handleNameChange" />
+                <a-form-item name="name" :labelCol="labelCol" :wrapperCol="wrapperCol" label="名称" data-step="1" data-title="名称" data-intro="名称必填，可以重复">
+                  <a-input placeholder="请输入名称" v-model:value="formModel.name" @change="handleNameChange" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
-                <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="规格" data-step="2" data-title="规格" data-intro="规格不必填，比如：10克">
-                  <a-input placeholder="请输入规格" v-decorator.trim="[ 'standard', validatorRules.standard ]"/>
+                <a-form-item name="standard" :labelCol="labelCol" :wrapperCol="wrapperCol" label="规格" data-step="2" data-title="规格" data-intro="规格不必填，比如：10克">
+                  <a-input placeholder="请输入规格" v-model:value="formModel.standard"/>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
-                <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="型号" data-step="3" data-title="型号" data-intro="型号是比规格更小的属性，比如：RX-01">
-                  <a-input placeholder="请输入型号" v-decorator.trim="[ 'model', validatorRules.model ]" />
+                <a-form-item name="model" :labelCol="labelCol" :wrapperCol="wrapperCol" label="型号" data-step="3" data-title="型号" data-intro="型号是比规格更小的属性，比如：RX-01">
+                  <a-input placeholder="请输入型号" v-model:value="formModel.model" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
-                <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单位"
+                <a-form-item :name="unitChecked ? 'unitId' : 'unit'" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单位"
                   data-step="4" data-title="单位" data-intro="此处支持单个单位和多单位，勾选多单位就可以切换到多单位的下拉框，多单位需要先在【多单位】页面进行录入。
                   比如牛奶有瓶和箱两种单位，12瓶=1箱，这就构成了多单位，多单位中有个换算比例">
                   <a-row class="form-row" :gutter="24">
                     <a-col :lg="15" :md="15" :sm="24" style="padding:0px 0px 0px 12px;">
-                      <a-input placeholder="输入单位" v-if="!unitChecked" v-decorator.trim="[ 'unit', validatorRules.unit ]" @change="onlyUnitOnChange" />
-                      <a-select :value="unitList" placeholder="选择多单位" v-decorator="[ 'unitId', validatorRules.unitId ]" @change="manyUnitOnChange"
+                      <a-input placeholder="输入单位" v-if="!unitChecked" v-model:value="formModel.unit" @change="onlyUnitOnChange" />
+                      <a-select placeholder="选择多单位" v-model:value="formModel.unitId" @change="manyUnitOnChange"
                         showSearch optionFilterProp="children" v-if="unitChecked" :dropdownMatchSelectWidth="false">
-                        <div slot="dropdownRender" slot-scope="menu">
+                        <template #dropdownRender="{ menuNode: menu }"><div>
                           <v-nodes :vnodes="menu" />
                           <a-divider style="margin: 4px 0;" />
                           <div style="padding: 4px 8px; cursor: pointer;"
                                @mousedown="e => e.preventDefault()" @click="addUnit"><legacy-icon type="plus" /> 新增多单位</div>
-                        </div>
+                        </div></template>
                         <a-select-option v-for="(item,index) in unitList"
                           :key="index" :value="item.id">
                           {{ item.name }}
@@ -67,26 +67,26 @@
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="颜色" data-step="5" data-title="颜色"
                              data-intro="请填写商品的颜色，如果是多属性商品可以不填（下面有多属性开关）">
-                  <a-input placeholder="请输入颜色" v-decorator.trim="[ 'color' ]" />
+                  <a-input placeholder="请输入颜色" v-model:value="formModel.color" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="品牌" data-step="6" data-title="品牌"
                              data-intro="请填写商品的品牌，方便区别不同品牌的商品">
-                  <a-input placeholder="请输入品牌" v-decorator.trim="[ 'brand' ]" />
+                  <a-input placeholder="请输入品牌" v-model:value="formModel.brand" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="助记码" data-step="7" data-title="助记码"
                              data-intro="助记码自动生成，助记码是商品名称的首字母缩写">
-                  <a-input placeholder="" v-decorator.trim="[ 'mnemonic' ]" :readOnly="true" />
+                  <a-input placeholder="" v-model:value="formModel.mnemonic" :readOnly="true" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="类别"
                              data-step="8" data-title="类别" data-intro="类别需要在【商品类别】页面进行录入，录入之后在此处进行调用">
                   <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-                                 :treeData="categoryTree" v-decorator="[ 'categoryId' ]" placeholder="请选择类别">
+                                 :treeData="categoryTree" v-model:value="formModel.categoryId" placeholder="请选择类别">
                   </a-tree-select>
                 </a-form-item>
               </a-col>
@@ -95,42 +95,42 @@
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="基础重量" data-step="9" data-title="基础重量"
                   data-intro="请填写基本单位对应的重量，用于计算按重量分摊费用时单据中各行商品分摊的费用成本">
-                  <a-input-number style="width: 100%" placeholder="请输入基础重量(kg)" v-decorator.trim="[ 'weight' ]" />
+                  <a-input-number style="width: 100%" placeholder="请输入基础重量(kg)" v-model:value="formModel.weight" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="保质期" data-step="10" data-title="保质期"
                   data-intro="保质期指的是商品的保质期(天)，主要针对带生产日期的，此类商品一般有批号">
-                  <a-input-number style="width: 100%" placeholder="请输入保质期(天)" v-decorator.trim="[ 'expiryNum' ]" />
+                  <a-input-number style="width: 100%" placeholder="请输入保质期(天)" v-model:value="formModel.expiryNum" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="仓位货架" data-step="11" data-title="仓位货架"
                              data-intro="仓位货架指的是仓库中的仓位和货架号，主要适用于仓库较大的场景，方便查找商品的准确位置">
-                  <a-input style="width: 100%" placeholder="请输入仓位货架" v-decorator.trim="[ 'position' ]" />
+                  <a-input style="width: 100%" placeholder="请输入仓位货架" v-model:value="formModel.position" />
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="制造商" data-step="12" data-title="制造商"
                              data-intro="请填写商品的制造商，一般适用于制造行业">
-                  <a-input placeholder="请输入制造商" v-decorator.trim="[ 'mfrs' ]" />
+                  <a-input placeholder="请输入制造商" v-model:value="formModel.mfrs" />
                 </a-form-item>
               </a-col>
             </a-row>
             <a-row class="form-row" :gutter="24">
               <a-col :lg="6" :md="6" :sm="6">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" :label="mpShort.otherField1.name">
-                  <a-input :placeholder="'请输入'+ mpShort.otherField1.name" v-decorator.trim="[ 'otherField1' ]" />
+                  <a-input :placeholder="'请输入'+ mpShort.otherField1.name" v-model:value="formModel.otherField1" />
                 </a-form-item>
               </a-col>
               <a-col :lg="6" :md="6" :sm="6">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" :label="mpShort.otherField2.name">
-                  <a-input :placeholder="'请输入'+ mpShort.otherField2.name" v-decorator.trim="[ 'otherField2' ]" />
+                  <a-input :placeholder="'请输入'+ mpShort.otherField2.name" v-model:value="formModel.otherField2" />
                 </a-form-item>
               </a-col>
               <a-col :lg="6" :md="6" :sm="6">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" :label="mpShort.otherField3.name">
-                  <a-input :placeholder="'请输入'+ mpShort.otherField3.name" v-decorator.trim="[ 'otherField3' ]" />
+                  <a-input :placeholder="'请输入'+ mpShort.otherField3.name" v-model:value="formModel.otherField3" />
                 </a-form-item>
               </a-col>
             </a-row>
@@ -139,7 +139,7 @@
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="序列号" data-step="13" data-title="序列号"
                   data-intro="此处是商品的序列号开关，如果选择了有，则在采购入库单据需要录入该商品的序列号，在销售出库单据需要选择该商品的序列号进行出库">
                   <a-tooltip title="如果选择为有，则在采购入库单需要录入该商品的序列号">
-                    <a-select placeholder="有无序列号" v-decorator="[ 'enableSerialNumber' ]">
+                    <a-select placeholder="有无序列号" v-model:value="formModel.enableSerialNumber">
                       <a-select-option value="1">有</a-select-option>
                       <a-select-option value="0">无</a-select-option>
                     </a-select>
@@ -150,7 +150,7 @@
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="批号" data-step="14" data-title="批号"
                   data-intro="此处是商品的批号开关，如果选择了有，则在采购入库单据需要录入该商品的批号和有效期，在销售出库单据需要选择该商品的批号进行出库">
                   <a-tooltip title="如果选择为有，则在采购入库单需要录入该商品的批号和有效期">
-                    <a-select placeholder="有无批号" v-decorator="[ 'enableBatchNumber' ]">
+                    <a-select placeholder="有无批号" v-model:value="formModel.enableBatchNumber">
                       <a-select-option value="1">有</a-select-option>
                       <a-select-option value="0">无</a-select-option>
                     </a-select>
@@ -161,14 +161,14 @@
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="多属性" data-step="15" data-title="多属性"
                   data-intro="多属性是针对的sku商品（比如服装、鞋帽、家纺行业），此处开关如果启用就可以在下方进行多sku的配置，配置具体的颜色、尺码之类的组合">
                   <a-tooltip title="多属性针对服装、鞋帽、家纺等行业（注意不要勾选多单位，因为多属性商品不支持多单位，只支持单个的单位）">
-                    <a-select mode="multiple" v-decorator="[ 'manySku' ]" showSearch optionFilterProp="children"
+                    <a-select mode="multiple" v-model:value="formModel.manySku" showSearch optionFilterProp="children"
                       placeholder="请选择多属性（可多选）" @change="onManySkuChange" :disabled="attributeStatus">
-                      <div slot="dropdownRender" slot-scope="menu">
+                      <template #dropdownRender="{ menuNode: menu }"><div>
                         <v-nodes :vnodes="menu" />
                         <a-divider style="margin: 4px 0;" />
                         <div style="padding: 4px 8px; cursor: pointer;"
                              @mousedown="e => e.preventDefault()" @click="initMaterialAttribute">没找到？点此刷新列表 <legacy-icon type="reload" /></div>
-                      </div>
+                      </div></template>
                       <a-select-option v-for="(item,index) in materialAttributeList" :key="index" :value="item.value" :disabled="item.disabled">
                         {{ item.name }}
                       </a-select-option>
@@ -180,7 +180,7 @@
             <a-row class="form-row" :gutter="24">
               <a-col :md="12" :sm="24" v-if="manySkuSelected>=1">
                 <a-form-item :labelCol="{xs: { span: 24 },sm: { span: 4 }}" :wrapperCol="{xs: { span: 24 },sm: { span: 20 }}" :label="skuOneTitle">
-                  <a-select mode="multiple" v-decorator="[ 'skuOne' ]" showSearch optionFilterProp="children"
+                  <a-select mode="multiple" v-model:value="formModel.skuOne" showSearch optionFilterProp="children"
                             placeholder="请选择（可多选）" @select="onSkuChange" @deselect="onSkuOneDeSelect">
                     <a-select-option v-for="(item,index) in skuOneList" :key="index" :value="item.value">
                       {{ item.name }}
@@ -190,7 +190,7 @@
               </a-col>
               <a-col :md="12" :sm="24" v-if="manySkuSelected>=2">
                 <a-form-item :labelCol="{xs: { span: 24 },sm: { span: 4 }}" :wrapperCol="{xs: { span: 24 },sm: { span: 20 }}" :label="skuTwoTitle">
-                  <a-select mode="multiple" v-decorator="[ 'skuTwo' ]" showSearch optionFilterProp="children"
+                  <a-select mode="multiple" v-model:value="formModel.skuTwo" showSearch optionFilterProp="children"
                             placeholder="请选择（可多选）" @select="onSkuChange" @deselect="onSkuTwoDeSelect">
                     <a-select-option v-for="(item,index) in skuTwoList" :key="index" :value="item.value">
                       {{ item.name }}
@@ -200,7 +200,7 @@
               </a-col>
               <a-col :md="12" :sm="24" v-if="manySkuSelected>=3">
                 <a-form-item :labelCol="{xs: { span: 24 },sm: { span: 4 }}" :wrapperCol="{xs: { span: 24 },sm: { span: 20 }}" :label="skuThreeTitle">
-                  <a-select mode="multiple" v-decorator="[ 'skuThree' ]" showSearch optionFilterProp="children"
+                  <a-select mode="multiple" v-model:value="formModel.skuThree" showSearch optionFilterProp="children"
                             placeholder="请选择（可多选）" @select="onSkuChange" @deselect="onSkuThreeDeSelect">
                     <a-select-option v-for="(item,index) in skuThreeList" :key="index" :value="item.value">
                       {{ item.name }}
@@ -237,7 +237,7 @@
             <a-row class="form-row" :gutter="24">
               <a-col :lg="24" :md="24" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="{xs: { span: 24 },sm: { span: 24 }}" label="">
-                  <a-textarea :rows="1" placeholder="请输入备注" v-decorator="[ 'remark' ]" style="margin-top:8px;"/>
+                  <a-textarea :rows="1" placeholder="请输入备注" v-model:value="formModel.remark" style="margin-top:8px;"/>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -266,7 +266,7 @@
             <a-row class="form-row" :gutter="24" style="padding-top:20px">
               <a-col :lg="18" :md="18" :sm="24">
                 <a-form-item :labelCol="{xs: { span: 24 },sm: { span: 3 }}" :wrapperCol="{xs: { span: 24 },sm: { span: 20 }}" label="图片信息">
-                  <j-image-upload v-model="fileList" bizPath="material" text="上传" isMultiple></j-image-upload>
+                  <j-image-upload v-model:value="fileList" bizPath="material" text="上传" isMultiple></j-image-upload>
                 </a-form-item>
               </a-col>
               <a-col :lg="6" :md="6" :sm="24"></a-col>
@@ -298,8 +298,8 @@
   import { getAction, httpAction } from '@/api/manage'
   import JImageUpload from '@/components/jeecg/JImageUpload'
   import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 
   export default {
     name: "MaterialModal",
@@ -311,8 +311,8 @@
       JDate,
       JEditableTable,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -412,34 +412,17 @@
           ]
         },
         confirmLoading: false,
-        form: this.$form.createForm(this),
-        validatorRules:{
-          name:{
-            rules: [
-              { required: true, message: '请输入名称!' },
-              { max: 100, message: '长度请小于100个字符', trigger: 'blur' }
-            ]
-          },
-          standard:{
-            rules: [
-              { max: 100, message: '长度请小于100个字符', trigger: 'blur' }
-            ]
-          },
-          model:{
-            rules: [
-              { max: 100, message: '长度请小于100个字符', trigger: 'blur' }
-            ]
-          },
-          unit:{
-            rules: [
-              { required: true, message: '请输入单位!' }
-            ]
-          },
-          unitId:{
-            rules: [
-              { required: true, message: '请选择多单位!' }
-            ]
-          }
+        formModel: {},
+        form: null,
+        formRules:{
+          name: [
+            { required: true, message: '请输入名称!', trigger: 'blur' },
+            { max: 100, message: '长度请小于100个字符', trigger: 'blur' }
+          ],
+          standard: [{ max: 100, message: '长度请小于100个字符', trigger: 'blur' }],
+          model: [{ max: 100, message: '长度请小于100个字符', trigger: 'blur' }],
+          unit: [{ validator: this.validateUnit, trigger: 'blur' }],
+          unitId: [{ validator: this.validateUnitId, trigger: 'change' }]
         },
         url: {
           add: '/material/add',
@@ -450,6 +433,7 @@
       }
     },
     created () {
+      this.form = createLegacyFormBridge(this)
       this.loadParseMaterialProperty()
       let realScreenWidth = window.screen.width
       this.width = realScreenWidth<1500?'1200px':'1400px'
@@ -457,7 +441,7 @@
     mounted() {
       document.getElementById(this.prefixNo).addEventListener('keydown', this.handleOkKey)
     },
-    beforeDestroy() {
+    beforeUnmount() {
       document.getElementById(this.prefixNo).removeEventListener('keydown', this.handleOkKey)
     },
     methods: {
@@ -469,6 +453,18 @@
           this.handleOk()
           e.preventDefault()
         }
+      },
+      validateUnit(rule, value) {
+        if (!this.unitChecked && !value) {
+          return Promise.reject('请输入单位!')
+        }
+        return Promise.resolve()
+      },
+      validateUnitId(rule, value) {
+        if (this.unitChecked && !value) {
+          return Promise.reject('请选择多单位!')
+        }
+        return Promise.resolve()
       },
       // 获取所有的editableTable实例
       getAllTable() {
@@ -518,10 +514,10 @@
             }, 5)
           }
         }
-        this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model, 'name', 'standard', 'unit', 'unitId', 'model', 'color', 'brand', 'mnemonic',
+        this.formModel = pick(this.model, 'name', 'standard', 'unit', 'unitId', 'model', 'color', 'brand', 'mnemonic',
             'categoryId','enableSerialNumber','enableBatchNumber','position','expiryNum','weight','remark','mfrs',
-            'otherField1','otherField2','otherField3','manySku','skuOne','skuTwo','skuThree'))
+            'otherField1','otherField2','otherField3','manySku','skuOne','skuTwo','skuThree')
+        this.$nextTick(() => {
           autoJumpNextInput('materialHeadModal')
           autoJumpNextInput('materialDetailModal')
         });
@@ -836,9 +832,7 @@
       },
       loadTreeData(){
         let that = this;
-        let params = {};
-        params.id='';
-        queryMaterialCategoryTreeList(params).then((res)=>{
+        queryMaterialCategoryTreeList({}).then((res)=>{
           if(res){
             that.categoryTree = [];
             for (let i = 0; i < res.length; i++) {
@@ -864,11 +858,15 @@
         //控制多属性下拉框中选择项的状态
         if(value.length < 3){
           this.materialAttributeList.forEach((item,index,array)=>{
-            (array.indexOf(item.value) === -1)?Vue.set(array[index], 'disabled', false):''
+            if (array.indexOf(item.value) === -1) {
+              array[index].disabled = false
+            }
           })
         }else{
           this.materialAttributeList.forEach((item,index,array)=>{
-            (value.indexOf(item.value) === -1)?Vue.set(array[index], 'disabled', true):''
+            if (value.indexOf(item.value) === -1) {
+              array[index].disabled = true
+            }
           })
         }
         //更新属性1和属性2和属性3的下拉框

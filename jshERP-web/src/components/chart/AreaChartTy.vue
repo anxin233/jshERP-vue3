@@ -1,84 +1,101 @@
 <template>
   <div :style="{ padding: '0' }">
     <h4 :style="{ marginBottom: '20px' }">{{ title }}</h4>
-
-    <v-chart ref="chart" :forceFit="true" :height="height" :data="dataSource" :scale="scale">
-      <v-tooltip :shared="false"/>
-      <v-axis/>
-      <v-line position="x*y" :size="lineSize" :color="lineColor"/>
-      <v-area position="x*y" :color="color"/>
-    </v-chart>
-
+    <div ref="chartContainer" :style="{ height: height + 'px', width: '100%' }"></div>
   </div>
 </template>
 
 <script>
+  import { Area } from '@antv/g2plot'
   import { triggerWindowResizeEvent } from '@/utils/util'
+  import { G2PlotChartMixin } from './mixins/g2plotChartMixin'
 
   export default {
     name: 'AreaChartTy',
+    mixins: [G2PlotChartMixin],
     props: {
-      // 图表数据
       dataSource: {
         type: Array,
         required: true
       },
-      // 图表标题
       title: {
         type: String,
         default: ''
       },
-      // x 轴别名
       x: {
         type: String,
         default: 'x'
       },
-      // y 轴别名
       y: {
         type: String,
         default: 'y'
       },
-      // Y轴最小值
       min: {
         type: Number,
         default: 0
       },
-      // Y轴最大值
       max: {
         type: Number,
         default: null
       },
-      // 图表高度
       height: {
         type: Number,
         default: 254
       },
-      // 线的粗细
       lineSize: {
         type: Number,
         default: 2
       },
-      // 面积的颜色
       color: {
         type: String,
         default: ''
       },
-      // 线的颜色
       lineColor: {
         type: String,
         default: ''
       }
     },
-    computed: {
-      scale() {
-        return [
-          { dataKey: 'x', title: this.x, alias: this.x },
-          { dataKey: 'y', title: this.y, alias: this.y, min: this.min, max: this.max }
-        ]
+    watch: {
+      dataSource: {
+        deep: true,
+        handler () {
+          this.renderChart()
+        }
+      },
+      height () {
+        this.$nextTick(() => this._resizeG2PlotChart())
       }
     },
-    mounted() {
+    mounted () {
+      this.renderChart()
       triggerWindowResizeEvent()
+    },
+    methods: {
+      renderChart () {
+        const yMeta = { alias: this.y, min: this.min }
+        if (this.max != null) {
+          yMeta.max = this.max
+        }
+        const areaColor = this.color || undefined
+        const lineStyle = {
+          lineWidth: this.lineSize,
+          stroke: this.lineColor || areaColor
+        }
+        this._syncG2PlotChart(Area, () => ({
+          data: this.dataSource,
+          xField: 'x',
+          yField: 'y',
+          height: this.height,
+          autoFit: true,
+          smooth: false,
+          areaStyle: areaColor ? { fill: areaColor, fillOpacity: 0.35 } : { fillOpacity: 0.35 },
+          line: lineStyle,
+          meta: {
+            x: { alias: this.x },
+            y: yMeta
+          }
+        }))
+      }
     }
   }
 </script>

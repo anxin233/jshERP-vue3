@@ -39,10 +39,6 @@
       },
       // update-end author:sunjianlei date:20200225 for:当 type 变化的时候重新计算值 ------
     },
-    model: {
-      prop: 'value',
-      event: 'change'
-    },
     data(){
       return {
         inputVal:''
@@ -89,7 +85,10 @@
             break;
           default:
         }
-        this.$emit("change",text)
+        this.$emit("change", text)
+        this.$emit("input", text)
+        this.$emit("update:value", text)
+        this.$emit("update:modelValue", text)
       }
     }
   }

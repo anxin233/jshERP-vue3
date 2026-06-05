@@ -3,18 +3,23 @@
  * 高级查询按钮调用 superQuery方法  高级查询组件ref定义为superQueryModal
  * data中url定义 list为查询列表  delete为删除单条记录  deleteBatch为批量删除
  */
+import { h } from 'vue'
 import { filterObj, getMpListShort, getNowFormatStr } from '@/utils/util'
 import { deleteAction, getAction, postAction, downFile, downFilePost, getFileAccessHttpUrl } from '@/api/manage'
-import Vue from 'vue'
-import VueDraggableResizable from 'vue-draggable-resizable'
+import ColumnResizeHandle from '@/components/table/ColumnResizeHandle.vue'
 import { ACCESS_TOKEN } from "@/store/mutation-types"
 import {mixinDevice} from '@/utils/mixin.js'
 import storage from '@/utils/storage'
+import {
+  getColumnSettingTitle as resolveColumnSettingTitle,
+  getColumnSettingColumns,
+  sanitizeSettingDataIndex
+} from '@/utils/columnSetting'
 
 export const JeecgListMixin = {
   mixins: [mixinDevice],
   components: {
-    VueDraggableResizable
+    ColumnResizeHandle
   },
   data(){
     return {
@@ -69,6 +74,11 @@ export const JeecgListMixin = {
       disableMixinCreated: false,
       /* 按钮权限 */
       btnEnableList: '',
+    }
+  },
+  computed: {
+    columnSettingColumns() {
+      return getColumnSettingColumns(this.defColumns)
     }
   },
   created() {
@@ -294,14 +304,22 @@ export const JeecgListMixin = {
     //加载初始化列
     initColumnsSetting(){
       let columnsStr = storage.get(this.pageName)
-      if(columnsStr && columnsStr.indexOf(',')>-1) {
-        this.settingDataIndex = columnsStr.split(',')
+      if (typeof columnsStr === 'string' && columnsStr.length > 0) {
+        this.settingDataIndex = columnsStr.split(',').filter(Boolean)
       } else {
-        this.settingDataIndex = this.defDataIndex
+        this.settingDataIndex = [...this.defDataIndex]
       }
+      this.settingDataIndex = sanitizeSettingDataIndex(
+        this.settingDataIndex,
+        this.defColumns,
+        this.defDataIndex
+      )
       this.columns = this.defColumns.filter(item => {
         return this.settingDataIndex.includes(item.dataIndex)
       })
+    },
+    getColumnSettingTitle(column) {
+      return resolveColumnSettingTitle(column, this.columnTitleMap)
     },
     //列设置更改事件
     onColChange (checkedValues) {
@@ -460,41 +478,33 @@ export const JeecgListMixin = {
         this.scroll.y = document.documentElement.clientHeight-searchWrapperDomLen-operatorDomLen-basicLength
       }
     },
-    //拖拽组件
-    handleDrag(column){
+    // 表头列宽拖拽（Ant Design Vue 4：cell 签名为 (props, { slots })，不再传入 createElement）
+    handleDrag (column) {
       return {
         header: {
-          cell: (h, props, children) => {
+          cell: (props, { slots }) => {
             const { key, ...restProps } = props
-            // 父表格列宽拖拽逻辑
-            const col = column.find((col) => {
-              const k = col.dataIndex || col.key
-              return k === key
+            const children = slots && slots.default ? slots.default() : []
+            const colKey = key != null ? key : restProps['data-column-key']
+            const col = column.find((item) => {
+              const k = item.dataIndex || item.key
+              return k === colKey
             })
             if (!col || !col.width) {
-              return h('th', { ...restProps }, children)
+              return h('th', { ...restProps, key }, children)
             }
-
-            const dragProps = {
-              key: col.dataIndex || col.key,
+            const drag = h(ColumnResizeHandle, {
+              key: `resize-${col.dataIndex || col.key}`,
               class: 'table-draggable-handle',
-              attrs: {
-                w: 10,
-                x: col.width,
-                z: 1,
-                axis: 'x',
-                draggable: true,
-                resizable: false,
-              },
-              on: {
-                dragging: (x, y) => {
-                  col.width = Math.max(x, 1)
-                },
-              },
-            }
-            const drag = h(VueDraggableResizable, { ...dragProps })
-            return h('th', { ...restProps, class: 'resize-table-th' }, [children, drag])
-          },
+              x: col.width,
+              onDragging: (x) => {
+                col.width = Math.max(x, 1)
+              }
+            })
+            const cellChildren = Array.isArray(children) ? children.slice() : [children]
+            cellChildren.push(drag)
+            return h('th', { ...restProps, key, class: 'resize-table-th' }, cellChildren)
+          }
         }
       }
     },

@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :keyboard="false"
     :forceRender="true"
@@ -13,7 +13,7 @@
     @cancel="handleCancel"
     :id="prefixNo"
     style="top:20px;height: 95%;">
-    <template slot="footer">
+    <template #footer>
       <a-button @click="handleCancel">取消</a-button>
       <a-button v-if="billPrintFlag && isShowPrintBtn" @click="handlePrintPro('零售出库')">三联打印-新版</a-button>
       <a-button v-if="billPrintFlag && isShowPrintBtn" @click="handlePrint('零售出库')">三联打印</a-button>
@@ -23,19 +23,19 @@
       <a-button v-if="!checkFlag" @click="handleWorkflow()" type="primary">提交流程</a-button>
     </template>
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form ref="formRef" :model="formModel" :rules="formRules">
         <a-row class="form-row" :gutter="24">
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="会员卡号" data-step="1" data-title="会员卡号"
                          data-intro="如果发现需要选择的会员卡号尚未录入，可以在下拉框中点击新增会员信息进行录入">
-              <a-select placeholder="请选择会员卡号" v-decorator="[ 'organId' ]"
+              <a-select placeholder="请选择会员卡号" v-model:value="formModel.organId"
                 :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children" @change="onChangeOrgan" @search="handleSearchRetail">
-                <div slot="dropdownRender" slot-scope="menu">
+                <template #dropdownRender="{ menuNode: menu }"><div>
                   <v-nodes :vnodes="menu" />
                   <a-divider style="margin: 4px 0;" />
                   <div v-if="quickBtn.member" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addMember"><legacy-icon type="plus" /> 新增会员</div>
                   <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initRetail(0)"><legacy-icon type="reload" /> 刷新列表</div>
-                </div>
+                </div></template>
                 <a-select-option v-for="(item,index) in retailList" :key="index" :value="item.id">
                   {{ item.supplier }}
                 </a-select-option>
@@ -43,20 +43,20 @@
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
-              <j-date v-decorator="['operTime', validatorRules.operTime]" :show-time="true"/>
+            <a-form-item name="operTime" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据日期">
+              <j-date v-model:value="formModel.operTime" :show-time="true"/>
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
-            <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号" data-step="2" data-title="单据编号"
+            <a-form-item name="number" :labelCol="labelCol" :wrapperCol="wrapperCol" label="单据编号" data-step="2" data-title="单据编号"
                          data-intro="单据编号自动生成、自动累加、开头是单据类型的首字母缩写，累加的规则是每次打开页面会自动占用一个新的编号">
-              <a-input placeholder="请输入单据编号" v-decorator.trim="[ 'number', validatorRules.number ]" />
+              <a-input placeholder="请输入单据编号" v-model:value="formModel.number" />
             </a-form-item>
           </a-col>
           <a-col :lg="6" :md="12" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="收款类型" data-step="3" data-title="收款类型"
                          data-intro="收款类型可以有现付和预付款两种类型，当选择了会员之后，如果该会员有预付款，在此处会显示具体预付款的金额，而且系统会优先默认选中预付款">
-              <a-select placeholder="请选择付款类型" v-decorator="[ 'payType' ]" :dropdownMatchSelectWidth="false">
+              <a-select placeholder="请选择付款类型" v-model:value="formModel.payType" :dropdownMatchSelectWidth="false">
                 <a-select-option v-for="(item,index) in payTypeList" :key="index" :value="item.value">
                   {{ item.text }}
                 </a-select-option>
@@ -86,7 +86,7 @@
                     <a-button @click="scanEnter">扫码录入</a-button>
                   </a-col>
                   <a-col v-if="!scanStatus" :md="16" :sm="24" style="padding: 0 6px 0 12px">
-                    <a-input placeholder="请扫条码或序列号并回车" v-model="scanBarCode" @pressEnter="scanPressEnter" ref="scanBarCode"/>
+                    <a-input placeholder="请扫条码或序列号并回车" v-model:value="scanBarCode" @pressEnter="scanPressEnter" ref="scanBarCode"/>
                   </a-col>
                   <a-col v-if="!scanStatus" :md="6" :sm="24" style="padding: 0px 18px 0 0">
                     <a-button @click="stopScan">收起扫码</a-button>
@@ -105,7 +105,7 @@
             <a-row class="form-row" :gutter="24">
               <a-col :lg="24" :md="24" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="{xs: { span: 24 },sm: { span: 24 }}" label="">
-                  <a-textarea :rows="1" placeholder="请输入备注" v-decorator="[ 'remark' ]" style="margin-top:8px;"/>
+                  <a-textarea :rows="1" placeholder="请输入备注" v-model:value="formModel.remark" style="margin-top:8px;"/>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -113,7 +113,7 @@
               <a-col :lg="6" :md="12" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="附件" data-step="9" data-title="附件"
                              data-intro="可以上传与单据相关的图片、文档，支持多个文件">
-                  <j-upload v-model="fileList" bizPath="bill"></j-upload>
+                  <j-upload v-model:value="fileList" bizPath="bill"></j-upload>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -125,35 +125,35 @@
                 <a-col :lg="24" :md="6" :sm="6">
                   <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" data-step="5" data-title="单据金额"
                                data-intro="单据金额等于左侧商品的总金额">
-                    <span slot="label" style="font-size: 20px;line-height:20px">单据金额</span>
-                    <a-input v-decorator.trim="[ 'changeAmount' ]" :style="{color:'purple'}" :readOnly="true"/>
+                    <template #label><span style="font-size: 20px;line-height:20px">单据金额</span></template>
+                    <a-input v-model:value="formModel.changeAmount" :style="{color:'purple'}" :readOnly="true"/>
                   </a-form-item>
                 </a-col>
                 <a-col :lg="24" :md="6" :sm="6">
                   <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" data-step="6" data-title="收款金额"
                                data-intro="收款金额为收银员收取用户的实际金额">
-                    <span slot="label" style="font-size: 20px;line-height:20px">收款金额</span>
-                    <a-input v-decorator.trim="[ 'getAmount' ]" :style="{color:'red'}" defaultValue="0" @change="onChangeGetAmount"/>
+                    <template #label><span style="font-size: 20px;line-height:20px">收款金额</span></template>
+                    <a-input v-model:value="formModel.getAmount" :style="{color:'red'}" defaultValue="0" @change="onChangeGetAmount"/>
                   </a-form-item>
                 </a-col>
                 <a-col :lg="24" :md="6" :sm="6">
                   <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" data-step="7" data-title="找零"
                                data-intro="找零等于收款金额减去实收金额">
-                    <span slot="label" style="font-size: 20px;line-height:20px">找零</span>
-                    <a-input v-decorator.trim="[ 'backAmount' ]" :style="{color:'green'}" :readOnly="true" defaultValue="0"/>
+                    <template #label><span style="font-size: 20px;line-height:20px">找零</span></template>
+                    <a-input v-model:value="formModel.backAmount" :style="{color:'green'}" :readOnly="true" defaultValue="0"/>
                   </a-form-item>
                 </a-col>
                 <a-col :lg="24" :md="6" :sm="6">
-                  <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" data-step="8" data-title="收款账户"
+                  <a-form-item name="accountId" :labelCol="labelCol" :wrapperCol="wrapperCol" data-step="8" data-title="收款账户"
                                data-intro="收款账户的信息来自基本资料菜单下的【结算账户】">
-                    <span slot="label" style="font-size: 20px;line-height:20px">收款账户</span>
-                    <a-select placeholder="请选择收款账户" style="font-size:20px;" v-decorator="[ 'accountId', validatorRules.accountId ]" :dropdownMatchSelectWidth="false">
-                      <div slot="dropdownRender" slot-scope="menu">
+                    <template #label><span style="font-size: 20px;line-height:20px">收款账户</span></template>
+                    <a-select placeholder="请选择收款账户" style="font-size:20px;" v-model:value="formModel.accountId" :dropdownMatchSelectWidth="false">
+                      <template #dropdownRender="{ menuNode: menu }"><div>
                         <v-nodes :vnodes="menu" />
                         <a-divider style="margin: 4px 0;" />
                         <div v-if="quickBtn.account" class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="addAccount"><legacy-icon type="plus" /> 新增</div>
                         <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="initAccount(0)"><legacy-icon type="reload" /> 刷新</div>
-                      </div>
+                      </div></template>
                       <a-select-option v-for="(item,index) in accountList" :key="index" :value="item.id">
                         {{ item.name }}
                       </a-select-option>
@@ -192,7 +192,6 @@
   import { getAction } from '@/api/manage'
   import JUpload from '@/components/jeecg/JUpload'
   import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
   export default {
     name: "RetailOutModal",
@@ -208,8 +207,8 @@
       JUpload,
       JDate,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -270,22 +269,10 @@
           ]
         },
         confirmLoading: false,
-        validatorRules:{
-          operTime:{
-            rules: [
-              { required: true, message: '请输入单据日期!' }
-            ]
-          },
-          number:{
-            rules: [
-              { required: true, message: '请输入单据编号!' }
-            ]
-          },
-          accountId:{
-            rules: [
-              { required: true, message: '请选择结算账户!' }
-            ]
-          }
+        formRules: {
+          operTime: [{ required: true, message: '请输入单据日期!', trigger: 'change' }],
+          number: [{ required: true, message: '请输入单据编号!', trigger: 'blur' }],
+          accountId: [{ required: true, message: '请选择结算账户!', trigger: 'change' }]
         },
         url: {
           add: '/depotHead/addDepotHeadAndDetail',
@@ -331,7 +318,7 @@
             this.payTypeList.push({"value":"现付", "text":"现付"})
           }
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(this.model,'organId', 'operTime', 'number', 'payType', 'remark',
+            Object.assign(this.formModel, pick(this.model,'organId', 'operTime', 'number', 'payType', 'remark',
               'discount','discountMoney','discountLastMoney','otherMoney','accountId','changeAmount','getAmount','backAmount'))
           });
           // 加载子表数据

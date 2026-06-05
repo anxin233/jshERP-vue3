@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    v-model="show"
+    v-model:open="show"
     :width="900"
     :keyboard="false"
     :closable="false"

@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import axios from 'axios'
 import store from '@/store'
 import { VueAxios } from './axios'
@@ -9,7 +8,7 @@ import storage from '@/utils/storage'
 /**
  * 【指定 axios的 baseURL】
  * 如果手工指定 baseURL: '/jshERP-boot'
- * 则映射后端域名，通过 vue.config.js
+ * Vite builds inject the API base into window._CONFIG from index.html.
  * @type {*|string}
  */
 let apiBaseUrl = window._CONFIG['domianURL'] || "/jshERP-boot";
@@ -88,8 +87,8 @@ service.interceptors.response.use((response) => {
 
 const installer = {
   vm: {},
-  install (Vue, router = {}) {
-    Vue.use(VueAxios, router, service)
+  install (app, router = {}) {
+    app.use(VueAxios, router, service)
   }
 }
 

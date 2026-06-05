@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import { getAction, postAction } from '@/api/manage'
 import { FormTypes } from '@/utils/JEditableTableUtil'
 import { findBillDetailByNumber, findBySelectSup, findBySelectCus, findBySelectRetail, getUserList, getAccount,
@@ -7,6 +6,11 @@ import { getCheckFlag, getFormatDate, getMpListShort, getPrevMonthFormatDate } f
 import moment from 'moment'
 import pick from 'lodash.pick'
 import storage from '@/utils/storage'
+import {
+  getColumnSettingTitle as resolveColumnSettingTitle,
+  getColumnSettingColumns,
+  sanitizeSettingDataIndex
+} from '@/utils/columnSetting'
 
 export const BillListMixin = {
   data () {
@@ -420,6 +424,9 @@ export const BillListMixin = {
     }
   },
   computed: {
+    columnSettingColumns() {
+      return getColumnSettingColumns(this.defColumns)
+    },
     importExcelUrl: function(){
       return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`;
     },
@@ -715,11 +722,16 @@ export const BillListMixin = {
     //加载初始化列
     initColumnsSetting(){
       let columnsStr = storage.get(this.prefixNo)
-      if(columnsStr && columnsStr.indexOf(',')>-1) {
-        this.settingDataIndex = columnsStr.split(',')
+      if (typeof columnsStr === 'string' && columnsStr.length > 0) {
+        this.settingDataIndex = columnsStr.split(',').filter(Boolean)
       } else {
-        this.settingDataIndex = this.defDataIndex
+        this.settingDataIndex = [...this.defDataIndex]
       }
+      this.settingDataIndex = sanitizeSettingDataIndex(
+        this.settingDataIndex,
+        this.defColumns,
+        this.defDataIndex
+      )
       this.columns = this.defColumns.filter(item => {
         if(this.purchaseBySaleFlag) {
           //以销定购-开启
@@ -736,6 +748,9 @@ export const BillListMixin = {
           }
         }
       })
+    },
+    getColumnSettingTitle(column) {
+      return resolveColumnSettingTitle(column, this.columnTitleMap)
     },
     //加载快捷按钮：转入库、转出库等
     initQuickBtn() {
@@ -1042,7 +1057,7 @@ export const BillListMixin = {
               info.width = this.defDetailColumns[i].width
             }
             if(this.defDetailColumns[i].dataIndex === 'barCode') {
-              info.scopedSlots = { customRender: 'customBarCode' }
+              info.customRender = (cell) => this.$renderColumnSlot('customBarCode', cell)
             }
             currentCol.push(info)
           }

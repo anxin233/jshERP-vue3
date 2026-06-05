@@ -2,9 +2,7 @@ import {findBySelectSup,findBySelectCus,findBySelectRetail,findBySelectOrgan,get
   getPersonByType,findInOutItemByParam,getCurrentSystemConfig} from '@/api/api'
 import { getAction } from '@/api/manage'
 import { getCheckFlag, getNowFormatDateTime } from "@/utils/util"
-import { USER_INFO } from "@/store/mutation-types"
-import Vue from 'vue'
-import storage from '@/utils/storage'
+import { USER_INFO } from "@/store/mutation-types"import storage from '@/utils/storage'
 
 export const FinancialModalMixin = {
   data() {
@@ -52,7 +50,7 @@ export const FinancialModalMixin = {
   mounted() {
     document.getElementById(this.prefixNo).addEventListener('keydown', this.handleOkKey)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.getElementById(this.prefixNo).removeEventListener('keydown', this.handleOkKey)
   },
   computed: {

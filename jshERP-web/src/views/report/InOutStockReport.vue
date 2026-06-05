@@ -9,14 +9,14 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="商品信息" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model="queryParam.materialParam"></a-input>
+                  <a-input placeholder="请输入条码、名称、助记码、规格、型号等信息" v-model:value="queryParam.materialParam"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="库存周期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-range-picker
                     style="width: 100%"
-                    v-model="queryParam.createTimeRange"
+                    v-model:value="queryParam.createTimeRange"
                     format="YYYY-MM-DD"
                     :placeholder="['开始时间', '结束时间']"
                     @change="onDateChange"
@@ -26,8 +26,8 @@
               <a-col :md="6" :sm="24">
                 <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
-                  <a-button style="margin-left: 8px" v-print="'#reportPrint'" icon="printer">打印</a-button>
-                  <a-button style="margin-left: 8px" @click="exportExcel" icon="download">导出</a-button>
+                  <a-button style="margin-left: 8px" v-print="'#reportPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
+                  <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
@@ -36,7 +36,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item>
-                  <span>本期总结存：{{totalStockStr}}，总结存金额：{{totalCountMoneyStr}}</span>
+                  <span>本期总结存：{{totalStockStr}}（总结存金额：{{totalCountMoneyStr}}）</span>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -49,7 +49,7 @@
                       optionFilterProp="children"
                       showSearch style="width: 100%"
                       placeholder="请选择仓库"
-                      v-model="depotSelected">
+                      v-model:value="depotSelected">
                       <a-select-option v-for="(depot,index) in depotList" :key="index" :value="depot.id">
                         {{ depot.depotName }}
                       </a-select-option>
@@ -59,7 +59,7 @@
                 <a-col :md="6" :sm="24">
                   <a-form-item label="类别" :labelCol="labelCol" :wrapperCol="wrapperCol">
                     <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-                                   :treeData="categoryTree" v-model="queryParam.categoryId" placeholder="请选择类别">
+                                   :treeData="categoryTree" v-model:value="queryParam.categoryId" placeholder="请选择类别">
                     </a-tree-select>
                   </a-form-item>
                 </a-col>
@@ -81,38 +81,37 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="showMaterialDepotStockList(record)">{{record.id?'分布':''}}</a>
-            </span>
-            <span slot="customTitle">
+            </span></template>
+            <template #headerCell="{ column }">
+              <template v-if="column.dataIndex === 'rowIndex'"><span>
               <a-popover trigger="click" placement="right">
-                <template slot="content">
-                  <a-checkbox-group @change="onColChange" v-model="settingDataIndex" :defaultValue="settingDataIndex">
-                    <a-row style="width: 600px">
-                      <template v-for="(item,index) in defColumns">
-                        <template>
-                          <a-col :span="6">
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex==='rowIndex'" disabled></a-checkbox>
-                            <a-checkbox :value="item.dataIndex" v-if="item.dataIndex!=='rowIndex'">
-                              <j-ellipsis :value="item.title" :length="10"></j-ellipsis>
+                <template #content>
+                  <div class="column-setting-panel">
+
+                  <a-checkbox-group @change="onColChange" v-model:value="settingDataIndex" :defaultValue="settingDataIndex">
+                    <a-row class="column-setting-list" style="width: 600px">
+                      <template v-for="(item,index) in columnSettingColumns" :key="item.dataIndex || index">
+                        <a-col :span="6" class="column-setting-item">
+                            <a-checkbox :value="item.dataIndex">
+                              <j-ellipsis :value="getColumnSettingTitle(item)" :length="10"></j-ellipsis>
                             </a-checkbox>
-                          </a-col>
-                        </template>
+                        </a-col>
                       </template>
                     </a-row>
-                    <a-row style="padding-top: 10px;">
-                      <a-col>
-                        恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button>
-                      </a-col>
-                    </a-row>
                   </a-checkbox-group>
+                  <div class="column-setting-footer">恢复默认列配置：<a-button @click="handleRestDefault" type="link" size="small">恢复默认</a-button></div>
+                  </div>
                 </template>
                 <legacy-icon type="setting" />
               </a-popover>
-            </span>
-            <template slot="customPic" slot-scope="text, record">
+            </span></template>
+              <template v-else>{{ column.title }}</template>
+            </template>
+            <template #customPic="{ text, record }">
               <a-popover placement="right" trigger="click">
-                <template slot="content">
+                <template #content>
                   <img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" />
                 </template>
                 <div class="item-info" v-if="record.imgName">
@@ -120,7 +119,7 @@
                 </div>
               </a-popover>
             </template>
-            <template slot="customRenderStock" slot-scope="text, record">
+            <template #customRenderStock="{ text, record }">
               <a-tooltip :title="record.bigUnitStock">
                 {{text}}
               </a-tooltip>
@@ -137,8 +136,8 @@
                 :page-size-options="ipagination.pageSizeOptions"
                 :total="ipagination.total"
                 :show-total="(total, range) => `共 ${total-Math.ceil(total/ipagination.pageSize)} 条`">
-                <template slot="buildOptionText" slot-scope="props">
-                  <span>{{ props.value-1 }}条/页</span>
+                <template #buildOptionText="{ value }">
+                  <span>{{ Number(value) - 1 }}条/页</span>
                 </template>
               </a-pagination>
             </a-col>
@@ -155,10 +154,9 @@
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { getAction, getFileAccessHttpUrl } from '@/api/manage'
   import {queryMaterialCategoryTreeList} from '@/api/api'
-  import { getFormatDate, getMpListShort, getPrevMonthFormatDate } from '@/utils/util'
+  import { getFormatDate, getMpListShort, getPrevMonthFormatDate, buildInOutStockQueryParams, buildInOutStockCountMoneyParams } from '@/utils/util'
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import moment from 'moment'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
   export default {
     name: "InOutStockReport",
@@ -204,15 +202,15 @@
         // 默认列
         defColumns: [
           {
-            dataIndex: 'rowIndex', width:40, align:"center", slots: { title: 'customTitle' },
+            title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
             customRender:function (t,r,index) {
               return (t !== '合计') ? (parseInt(index) + 1) : t
             }
           },
           {title: '库存详情', dataIndex: 'action', align:"center", width: 60,
-            scopedSlots: { customRender: 'action' }
+            customRender: (cell) => this.$renderColumnSlot('action', cell)
           },
-          {title: '图片', dataIndex: 'pic', width: 45, scopedSlots: { customRender: 'customPic' }},
+          {title: '图片', dataIndex: 'pic', width: 45, customRender: (cell) => this.$renderColumnSlot('customPic', cell)},
           {title: '条码', dataIndex: 'barCode', sorter: (a, b) => a.barCode - b.barCode, width: 100},
           {title: '名称', dataIndex: 'materialName', width: 120, ellipsis:true},
           {title: '规格', dataIndex: 'materialStandard', width: 80, ellipsis:true},
@@ -229,7 +227,7 @@
           {title: '入库数量', dataIndex: 'inSum', sorter: (a, b) => a.inSum - b.inSum, width: 60},
           {title: '出库数量', dataIndex: 'outSum', sorter: (a, b) => a.outSum - b.outSum, width: 60},
           {title: '本期结存数量', dataIndex: 'thisSum', sorter: (a, b) => a.thisSum - b.thisSum, width: 80,
-            scopedSlots: { customRender: 'customRenderStock' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStock', cell)
           },
           {title: '结存金额', dataIndex: 'thisAllPrice', sorter: (a, b) => a.thisAllPrice - b.thisAllPrice, width: 60}
         ],
@@ -249,21 +247,43 @@
     methods: {
       moment,
       getQueryParams() {
-        let param = Object.assign({}, this.queryParam, this.isorter);
-        if(this.depotSelected && this.depotSelected.length>0) {
-          param.depotIds = this.depotSelected.join()
+        return buildInOutStockQueryParams(this.queryParam, this.ipagination, this.depotSelected)
+      },
+      loadData(arg) {
+        if (!this.queryParam.beginTime || !this.queryParam.endTime) {
+          this.loading = false
+          return
         }
-        param.monthTime = this.queryParam.monthTime;
-        param.field = this.getQueryField();
-        param.currentPage = this.ipagination.current;
-        param.pageSize = this.ipagination.pageSize-1;
-        return param;
+        if (!this.url.list) {
+          this.$message.error('请设置url.list属性!')
+          return
+        }
+        if (arg === 1) {
+          this.ipagination.current = 1
+        }
+        const params = this.getQueryParams()
+        this.loading = true
+        getAction(this.url.list, params).then((res) => {
+          if (res.code === 200) {
+            this.dataSource = res.data.rows
+            this.ipagination.total = res.data.total
+            this.tableAddTotalRow(this.columns, this.dataSource)
+          } else if (res.code === 510) {
+            this.$message.warning(res.data)
+          } else {
+            this.$message.warning(res.data.message)
+          }
+          this.loading = false
+          this.onClearSelected()
+        })
       },
       onDateChange: function (value, dateString) {
-        this.queryParam.beginTime=dateString[0]
-        this.queryParam.endTime=dateString[1]
-        if(dateString[0] && dateString[1]) {
+        this.queryParam.beginTime = dateString[0]
+        this.queryParam.endTime = dateString[1]
+        if (dateString[0] && dateString[1]) {
           this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+        } else {
+          this.queryParam.createTimeRange = []
         }
       },
       getDepotData() {
@@ -276,11 +296,10 @@
         })
       },
       getTotalCountMoney(){
-        let param = Object.assign({}, this.queryParam, this.isorter);
-        if(this.depotSelected && this.depotSelected.length>0) {
-          param.depotIds = this.depotSelected.join()
+        if (!this.queryParam.endTime) {
+          return
         }
-        param.monthTime = this.queryParam.monthTime;
+        const param = buildInOutStockCountMoneyParams(this.queryParam, this.depotSelected)
         getAction(this.url.totalCountMoney, param).then((res)=>{
           if(res && res.code === 200) {
             this.totalStockStr = res.data.totalStock.toFixed(2)
@@ -316,7 +335,7 @@
       },
       searchQuery() {
         if(this.queryParam.beginTime === '' || this.queryParam.endTime === ''){
-          this.$message.warning('请选择库存周期！')
+          this.$message.warning('请选择库存周期：')
         } else {
           this.loadData(1);
           this.getTotalCountMoney();
@@ -328,7 +347,7 @@
           depotIds = this.depotSelected.join()
         }
         this.$refs.materialDepotStockListWithTime.show(record, depotIds, this.queryParam.beginTime, this.queryParam.endTime);
-        this.$refs.materialDepotStockListWithTime.title = "查看进销存统计库存分布（条码：" + record.barCode + "，名称：" + record.materialName + "）";
+        this.$refs.materialDepotStockListWithTime.title = "查看进销存统计库存分布（条码：" + record.barCode + "，名称：" + record.materialName + "）"
         this.$refs.materialDepotStockListWithTime.disableSubmit = false;
       },
       exportExcel() {
@@ -350,7 +369,7 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
 <style scoped>
   .item-info {
@@ -368,3 +387,4 @@
     object-fit: cover;
   }
 </style>
+

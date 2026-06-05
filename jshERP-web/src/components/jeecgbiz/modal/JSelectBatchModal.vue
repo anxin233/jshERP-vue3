@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :width="modalWidth"
-    :visible="visible"
+    :open="visible"
     :title="title"
     @ok="handleSubmit"
     @cancel="close"
@@ -17,7 +17,7 @@
             <a-row :gutter="24">
               <a-col :md="12" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="批号">
-                  <a-input ref="name" placeholder="请输入批号" v-model="queryParam.name"></a-input>
+                  <a-input ref="name" placeholder="请输入批号" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -50,6 +50,7 @@
   import { getAction } from '@/api/manage'
   import {getBatchNumberList} from '@/api/api'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 
   export default {
     name: 'JSelectBatchModal',
@@ -97,7 +98,8 @@
         departTree: [],
         depotList: [],
         visible: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         loading: false,
         expandedKeys: [],
       }

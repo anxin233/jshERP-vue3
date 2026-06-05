@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="700"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -15,36 +15,28 @@
       cancelText="取消"
       okText="保存"
       style="top:100px; height:55%;">
-      <template slot="footer">
-        <a-button key="back" v-if="isReadOnly" @click="handleCancel">
-          取消
-        </a-button>
+      <template #footer>
+        <a-button key="back" v-if="isReadOnly" @click="handleCancel">取消</a-button>
       </template>
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form" id="unitModal">
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="基本单位">
-            <a-input placeholder="请输入基本单位(小单位)" v-decorator.trim="[ 'basicUnit', validatorRules.basicUnit]" />
+        <a-form ref="formRef" :model="formModel" :rules="formRules" id="unitModal">
+          <a-form-item name="basicUnit" :labelCol="labelCol" :wrapperCol="wrapperCol" label="基本单位">
+            <a-input placeholder="请输入基本单位(小单位)" v-model:value="formModel.basicUnit" />
           </a-form-item>
-        </a-form>
-        <a-form :form="form">
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="副单位">
-            <a-input placeholder="请输入副单位(大单位)" style="width:48%" v-decorator.trim="[ 'otherUnit' ]" />
+            <a-input placeholder="请输入副单位(大单位)" style="width:48%" v-model:value="formModel.otherUnit" />
             =
-            <a-input suffix="基本单位" placeholder="请输入比例" style="width:48%" v-decorator.trim="[ 'ratio' ]" />
+            <a-input suffix="基本单位" placeholder="请输入比例" style="width:48%" v-model:value="formModel.ratio" />
           </a-form-item>
-        </a-form>
-        <a-form :form="form">
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="副单位2">
-            <a-input placeholder="请输入副单位2(大单位)" style="width:48%" v-decorator.trim="[ 'otherUnitTwo' ]" />
+            <a-input placeholder="请输入副单位2(大单位)" style="width:48%" v-model:value="formModel.otherUnitTwo" />
             =
-            <a-input suffix="基本单位" placeholder="请输入比例2" style="width:48%" v-decorator.trim="[ 'ratioTwo' ]" />
+            <a-input suffix="基本单位" placeholder="请输入比例2" style="width:48%" v-model:value="formModel.ratioTwo" />
           </a-form-item>
-        </a-form>
-        <a-form :form="form">
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="副单位3">
-            <a-input placeholder="请输入副单位3(大单位)" style="width:48%" v-decorator.trim="[ 'otherUnitThree' ]" />
+            <a-input placeholder="请输入副单位3(大单位)" style="width:48%" v-model:value="formModel.otherUnitThree" />
             =
-            <a-input suffix="基本单位" placeholder="请输入比例3" style="width:48%" v-decorator.trim="[ 'ratioThree' ]" />
+            <a-input suffix="基本单位" placeholder="请输入比例3" style="width:48%" v-model:value="formModel.ratioThree" />
           </a-form-item>
         </a-form>
       </a-spin>
@@ -53,7 +45,7 @@
 </template>
 <script>
   import pick from 'lodash.pick'
-  import {addUnit,editUnit,checkUnit } from '@/api/api'
+  import {addUnit,editUnit } from '@/api/api'
   import {autoJumpNextInput} from "@/utils/util"
   import {isDecimalThree} from "@/utils/validate"
   import {mixinDevice} from '@/utils/mixin'
@@ -65,48 +57,27 @@
         title:"操作",
         visible: false,
         model: {},
+        formModel: {},
         isReadOnly: false,
-        labelCol: {
-          xs: { span: 24 },
-          sm: { span: 5 },
-        },
-        wrapperCol: {
-          xs: { span: 24 },
-          sm: { span: 16 },
-        },
+        labelCol: { xs: { span: 24 }, sm: { span: 5 } },
+        wrapperCol: { xs: { span: 24 }, sm: { span: 16 } },
         confirmLoading: false,
-        form: this.$form.createForm(this),
-        validatorRules:{
-          basicUnit:{
-            rules: [
-              { required: true, message: '请输入基本单位!' },
-              { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-            ]},
-          otherUnit:{
-            rules: [
-              { required: true, message: '请输入副单位!' },
-              { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
-            ]},
-          ratio:{
-            rules: [
-              { required: true, message: '请输入比例!' },
-              { validator: this.validateRatio}
-            ]}
+        formRules:{
+          basicUnit: [
+            { required: true, message: '请输入基本单位!', trigger: 'blur' },
+            { min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'blur' }
+          ]
         },
       }
     },
-    created () {
-    },
     methods: {
-      add () {
-        this.edit({});
-      },
+      add () { this.edit({}); },
       edit (record) {
-        this.form.resetFields();
         this.model = Object.assign({}, record);
+        this.formModel = pick(this.model, 'basicUnit','otherUnit','ratio','otherUnitTwo','ratioTwo','otherUnitThree','ratioThree')
         this.visible = true;
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model,'basicUnit','otherUnit','ratio','otherUnitTwo','ratioTwo','otherUnitThree','ratioThree'))
+          this.$refs.formRef && this.$refs.formRef.clearValidate()
           autoJumpNextInput('unitModal')
         });
       },
@@ -116,104 +87,74 @@
       },
       handleOk () {
         const that = this;
-        // 触发表单验证
-        this.form.validateFields((err, values) => {
-          if (!err) {
-            that.confirmLoading = true;
-            let formData = Object.assign(this.model, values);
-            if(!formData.otherUnit) {
-              that.$message.warning('抱歉，副单位不能为空！');
-              that.confirmLoading = false;
-              return;
-            }
-            if(formData.otherUnit) {
-              if(!formData.ratio) {
-                that.$message.warning('抱歉，比例不能为空！');
-                that.confirmLoading = false;
-                return;
-              }
-              if(!isDecimalThree(formData.ratio)) {
-                that.$message.warning('抱歉，比例只能为数字，最多三位小数！')
-                that.confirmLoading = false
-                return
-              }
-            }
-            if(formData.otherUnitTwo) {
-              if(!formData.ratioTwo) {
-                that.$message.warning('抱歉，比例2不能为空！');
-                that.confirmLoading = false;
-                return;
-              }
-              if(!isDecimalThree(formData.ratioTwo)) {
-                that.$message.warning('抱歉，比例2只能为数字，最多三位小数！')
-                that.confirmLoading = false
-                return
-              }
-            }
-            if(formData.otherUnitThree) {
-              if(!formData.ratioThree) {
-                that.$message.warning('抱歉，比例3不能为空！');
-                that.confirmLoading = false;
-                return;
-              }
-              if(!isDecimalThree(formData.ratioThree)) {
-                that.$message.warning('抱歉，比例3只能为数字，最多三位小数！')
-                that.confirmLoading = false
-                return
-              }
-            }
-            if(!formData.otherUnitTwo && formData.otherUnitThree) {
-              that.$message.warning('抱歉，需要先输入副单位2再输入副单位3！');
-              that.confirmLoading = false;
-              return;
-            }
-            if(formData.basicUnit === formData.otherUnit) {
-              that.$message.warning('抱歉，基本单位与副单位不能相同！');
-              that.confirmLoading = false;
-              return;
-            }
-            if(formData.basicUnit === formData.otherUnitTwo) {
-              that.$message.warning('抱歉，基本单位与副单位2不能相同！');
-              that.confirmLoading = false;
-              return;
-            }
-            if(formData.basicUnit === formData.otherUnitThree) {
-              that.$message.warning('抱歉，基本单位与副单位3不能相同！');
-              that.confirmLoading = false;
-              return;
-            }
-            let obj;
-            if(!this.model.id){
-              obj=addUnit(formData);
-            }else{
-              obj=editUnit(formData);
-            }
-            obj.then((res)=>{
-              if(res.code === 200){
-                that.$emit('ok');
-              }else{
-                that.$message.warning(res.data.message);
-              }
-            }).finally(() => {
-              that.confirmLoading = false;
-              that.close();
-            })
+        const formRef = this.$refs.formRef
+        if (!formRef) return
+        formRef.validate().then(() => {
+          const values = { ...that.formModel }
+          if (values.basicUnit) values.basicUnit = String(values.basicUnit).trim()
+          let formData = Object.assign({}, this.model, values);
+          if(!formData.otherUnit) {
+            that.$message.warning('抱歉，副单位不能为空！');
+            return;
           }
-        })
+          if(formData.otherUnit) {
+            if(!formData.ratio) {
+              that.$message.warning('抱歉，比例不能为空！');
+              return;
+            }
+            if(!isDecimalThree(formData.ratio)) {
+              that.$message.warning('抱歉，比例只能为数字，最多三位小数！')
+              return
+            }
+          }
+          if(formData.otherUnitTwo) {
+            if(!formData.ratioTwo) {
+              that.$message.warning('抱歉，比例2不能为空！');
+              return;
+            }
+            if(!isDecimalThree(formData.ratioTwo)) {
+              that.$message.warning('抱歉，比例2只能为数字，最多三位小数！')
+              return
+            }
+          }
+          if(formData.otherUnitThree) {
+            if(!formData.ratioThree) {
+              that.$message.warning('抱歉，比例3不能为空！');
+              return;
+            }
+            if(!isDecimalThree(formData.ratioThree)) {
+              that.$message.warning('抱歉，比例3只能为数字，最多三位小数！')
+              return
+            }
+          }
+          if(!formData.otherUnitTwo && formData.otherUnitThree) {
+            that.$message.warning('抱歉，需要先输入副单位2再输入副单位3！');
+            return;
+          }
+          if(formData.basicUnit === formData.otherUnit) {
+            that.$message.warning('抱歉，基本单位与副单位不能相同！');
+            return;
+          }
+          if(formData.basicUnit === formData.otherUnitTwo) {
+            that.$message.warning('抱歉，基本单位与副单位2不能相同！');
+            return;
+          }
+          if(formData.basicUnit === formData.otherUnitThree) {
+            that.$message.warning('抱歉，基本单位与副单位3不能相同！');
+            return;
+          }
+          that.confirmLoading = true;
+          let obj = !this.model.id ? addUnit(formData) : editUnit(formData);
+          obj.then((res)=>{
+            if(res.code === 200){ that.$emit('ok'); }
+            else { that.$message.warning(res.data.message); }
+          }).finally(() => {
+            that.confirmLoading = false;
+            that.close();
+          })
+        }).catch(() => {})
       },
-      handleCancel () {
-        this.close()
-      },
-      validateRatio(rule, value, callback) {
-        if (value > 1) {
-          callback();
-        } else {
-          callback("比例必须大于1");
-        }
-      }
+      handleCancel () { this.close() }
     }
   }
 </script>
-<style scoped>
-
-</style>

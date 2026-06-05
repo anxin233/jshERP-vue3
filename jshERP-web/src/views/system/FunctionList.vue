@@ -10,7 +10,7 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入名称查询" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -24,8 +24,8 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator"  style="margin-top: 5px">
-          <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button @click="batchDel" icon="delete">删除</a-button>
+          <a-button @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
           <a-button-group style="margin-left: 8px">
             <a-button :type="viewMode === 'list' ? 'primary' : 'default'" @click="switchViewMode('list')">
               <legacy-icon type="unordered-list" />列表
@@ -51,7 +51,7 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleAddChild(record)" style="color: #52c41a;">新增</a>
               <a-divider type="vertical" />
               <a @click="handleEdit(record)">编辑</a>
@@ -59,9 +59,9 @@
               <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a style="color: #f5222d;">删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
+            <template #customRenderFlag="{ text: enabled }">
               <a-tag v-if="enabled==1" color="green">启用</a-tag>
               <a-tag v-if="enabled==0" color="orange">禁用</a-tag>
             </template>
@@ -82,7 +82,7 @@
             :defaultExpandAllRows="true"
             :childrenColumnName="'children'"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleAddChild(record)" style="color: #52c41a;">新增</a>
               <a-divider type="vertical" />
               <a @click="handleEdit(record)">编辑</a>
@@ -90,9 +90,9 @@
               <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a style="color: #f5222d;">删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
+            <template #customRenderFlag="{ text: enabled }">
               <a-tag v-if="enabled==1" color="green">启用</a-tag>
               <a-tag v-if="enabled==0" color="orange">禁用</a-tag>
             </template>
@@ -127,7 +127,7 @@
           span: 18,
           offset: 1
         },
-        // 视图模式：list=列表，tree=树形
+        // 视图模式（歭ist=列表（宼ree=树形
         viewMode: 'list',
         // 树形数据
         treeData: [],
@@ -150,7 +150,7 @@
             dataIndex: 'action',
             width: 200,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {title: '编号 ', dataIndex: 'number', width: 80},
           {title: '名称', dataIndex: 'name', width: 120, ellipsis:true},
@@ -161,7 +161,7 @@
           {title: '排序', dataIndex: 'sort', width: 60},
           {
             title: '是否启用', dataIndex: 'enabled', width: 80, align: "center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           },
           {title: '图标', dataIndex: 'icon', width: 120}
         ],
@@ -172,7 +172,7 @@
             dataIndex: 'action',
             width: 200,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {title: '编号 ', dataIndex: 'number', width: 100},
           {title: '名称', dataIndex: 'name', width: 200, ellipsis:true},
@@ -181,7 +181,7 @@
           {title: '排序', dataIndex: 'sort', width: 80},
           {
             title: '是否启用', dataIndex: 'enabled', width: 100, align: "center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           },
           {title: '图标', dataIndex: 'icon', width: 120}
         ],
@@ -223,7 +223,7 @@
         }
 
         this.loading = true
-        // 构建查询参数，设置一个很大的 pageSize 来获取所有数据
+        // 构建查询参数（设置一个很大的 pageSize 来获取所有数据）
         let params = {
           search: JSON.stringify(this.queryParam),
           currentPage: 1,
@@ -299,7 +299,7 @@
         this.treeData = roots
         console.log('树形数据:', this.treeData)
       },
-      // 覆盖 mixin 的 modalFormOk：树形模式下重新加载全量数据，避免分页截断导致节点消失
+      // 覆盖 mixin 的 modalFormOk：树形模式下重新加载全量数据（避免分页导致子节点消失）
       modalFormOk() {
         if (this.viewMode === 'tree') {
           this.loadAllDataForTree()
@@ -324,5 +324,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

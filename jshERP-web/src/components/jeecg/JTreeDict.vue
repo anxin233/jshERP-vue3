@@ -90,10 +90,6 @@
       this.loadRoot()
       this.loadViewInfo()
     },
-    model: {
-      prop: 'value',
-      event: 'change'
-    },
     methods:{
       loadViewInfo(){
         if(!this.value || this.value=="0"){
@@ -181,9 +177,15 @@
       onChange(value){
         console.log(value)
         if(!value){
-          this.$emit('change', '');
+          this.$emit('change', '')
+        this.$emit('input', '')
+        this.$emit('update:value', '')
+        this.$emit('update:modelValue', '')
         }else{
-          this.$emit('change', value.value);
+          this.$emit('change', value.value)
+        this.$emit('input', value.value)
+        this.$emit('update:value', value.value)
+        this.$emit('update:modelValue', value.value)
         }
         this.treeValue = value
       },

@@ -8,19 +8,19 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="操作模块" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入操作模块" v-model="queryParam.operation"></a-input>
+                  <a-input placeholder="请输入操作模块" v-model:value="queryParam.operation"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="操作详情" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入操作详情" v-model="queryParam.content"></a-input>
+                  <a-input placeholder="请输入操作详情" v-model:value="queryParam.content"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="创建时间" :labelCol="labelCol" :wrapperCol="wrapperCol">
                   <a-range-picker
                     style="width: 100%"
-                    v-model="queryParam.createTimeRange"
+                    v-model:value="queryParam.createTimeRange"
                     format="YYYY-MM-DD"
                     :placeholder="['开始时间', '结束时间']"
                     @change="onDateChange"
@@ -43,22 +43,22 @@
               <a-row :gutter="24">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="操作员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入操作员账号或姓名" v-model="queryParam.userInfo"></a-input>
+                    <a-input placeholder="请输入操作员账号或姓名" v-model:value="queryParam.userInfo"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="操作IP" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入操作IP" v-model="queryParam.clientIp"></a-input>
+                    <a-input placeholder="请输入操作IP" v-model:value="queryParam.clientIp"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24" v-if="isManage">
                   <a-form-item label="租户账号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-input placeholder="请输入租户账号" v-model="queryParam.tenantLoginName"></a-input>
+                    <a-input placeholder="请输入租户账号" v-model:value="queryParam.tenantLoginName"></a-input>
                   </a-form-item>
                 </a-col>
                 <a-col :md="6" :sm="24" v-if="isManage">
                   <a-form-item label="租户类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select v-model="queryParam.tenantType" placeholder="请选择租户类型">
+                    <a-select v-model:value="queryParam.tenantType" placeholder="请选择租户类型">
                       <a-select-option value="">请选择</a-select-option>
                       <a-select-option value="0">试用租户</a-select-option>
                       <a-select-option value="1">付费租户</a-select-option>
@@ -81,10 +81,12 @@
           :scroll="scroll"
           :loading="loading"
           @change="handleTableChange">
-          <!-- 字符串超长截取省略号显示-->
-          <span slot="content" slot-scope="text, record">
+          <!-- 字段超长截取省略号显示-->
+          <template #bodyCell="{ column, text }">
+            <template v-if="column.dataIndex === 'content'">
               <j-ellipsis :value="text" :length="40"/>
-            </span>
+            </template>
+          </template>
         </a-table>
         <!-- table区域-end -->
       </a-card>
@@ -95,7 +97,7 @@
 <script>
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import JEllipsis from '@/components/jeecg/JEllipsis'
-  import { getFormatDate, getPrevMonthFormatDate } from '@/utils/util'
+  import { getFormatDate, getPrevMonthFormatDate, buildLogListQueryParams } from '@/utils/util'
   import {getAction } from '@/api/manage'
   import moment from 'moment'
 
@@ -134,7 +136,7 @@
             }
           },
           {title: '操作模块', dataIndex: 'operation', width: 120, align: "left"},
-          {title: '操作详情', dataIndex: 'content', scopedSlots: { customRender: 'content' }, width: 360, align:"left" },
+          {title: '操作详情', dataIndex: 'content', width: 360, align:"left" },
           {title: '操作员账号', dataIndex: 'loginName', width: 80, align: "left"},
           {title: '操作员姓名', dataIndex: 'userName', width: 80, align: "left"},
           {title: '操作IP', dataIndex: 'clientIp', width: 100, align: "left"},
@@ -162,11 +164,16 @@
       this.initUserInfo()
     },
     methods: {
+      getQueryParams() {
+        return buildLogListQueryParams(this.queryParam, this.ipagination)
+      },
       onDateChange: function (value, dateString) {
-        this.queryParam.beginTime=dateString[0]
-        this.queryParam.endTime=dateString[1]
-        if(dateString[0] && dateString[1]) {
+        this.queryParam.beginTime = dateString[0]
+        this.queryParam.endTime = dateString[1]
+        if (dateString[0] && dateString[1]) {
           this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+        } else {
+          this.queryParam.createTimeRange = []
         }
       },
       onDateOk(value) {
@@ -202,5 +209,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

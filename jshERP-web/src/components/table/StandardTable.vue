@@ -2,7 +2,7 @@
   <div class="standard-table">
     <div class="alert">
       <a-alert type="info" :show-icon="true">
-        <div slot="message">
+        <template #message><div>
           已选择&nbsp;<a style="font-weight: 600">{{ selectedRows.length }}</a>&nbsp;&nbsp;
           <template v-for="(item, index) in needTotalList" v-if="item.needTotal" :key="index">
             {{ item.title }} 总计&nbsp;
@@ -11,7 +11,7 @@
             </a>&nbsp;&nbsp;
           </template>
           <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-        </div>
+        </div></template>
       </a-alert>
     </div>
     <a-table

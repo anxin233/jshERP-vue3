@@ -1,8 +1,8 @@
 <!-- b y 7 5 2 7  1 8 9 2 0 -->
 <template>
   <div class="main user-layout-register" :style="mainStyle">
-    <a-form-model ref="formRegister" :model="formModel" :rules="formRules" id="formRegister">
-      <a-form-model-item prop="username" name="username">
+    <a-form ref="formRegister" :model="formModel" :rules="formRules" id="formRegister">
+      <a-form-item name="username">
         <a-input
           size="large"
           type="text"
@@ -11,9 +11,9 @@
           :value="formModel.username"
           @change="handleFieldChange('username', $event)"
         />
-      </a-form-model-item>
+      </a-form-item>
 
-      <a-popover placement="rightTop" trigger="click" :visible="state.passwordLevelChecked">
+      <a-popover placement="rightTop" trigger="click" :open="state.passwordLevelChecked">
         <template #content>
           <div :style="{ width: '240px' }">
             <div :class="['user-register', passwordLevelClass]">强度：<span>{{ passwordLevelName }}</span></div>
@@ -23,7 +23,7 @@
             </div>
           </div>
         </template>
-        <a-form-model-item prop="password" name="password">
+        <a-form-item name="password">
           <a-input-password
             size="large"
             type="password"
@@ -33,10 +33,10 @@
             @click="handlePasswordInputClick"
             @change="handleFieldChange('password', $event)"
           />
-        </a-form-model-item>
+        </a-form-item>
       </a-popover>
 
-      <a-form-model-item prop="password2" name="password2">
+      <a-form-item name="password2">
         <a-input-password
           size="large"
           type="password"
@@ -45,11 +45,11 @@
           :value="formModel.password2"
           @change="handleFieldChange('password2', $event)"
         />
-      </a-form-model-item>
+      </a-form-item>
 
       <a-row :gutter="0" v-if="checkcodeFlag==='1'">
         <a-col :span="14">
-          <a-form-model-item prop="inputCode" name="inputCode">
+          <a-form-item name="inputCode">
             <a-input
               size="large"
               type="text"
@@ -62,7 +62,7 @@
                 <legacy-icon type="smile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
               </template>
             </a-input>
-          </a-form-model-item>
+          </a-form-item>
         </a-col>
         <a-col :span="10" style="text-align: right">
           <img v-if="requestCodeSuccess" style="margin-top: 2px;" :src="randCodeImage" @click="handleChangeCheckCode"/>
@@ -70,7 +70,7 @@
         </a-col>
       </a-row>
 
-      <a-form-model-item :style="btnStyle">
+      <a-form-item :style="btnStyle">
         <a-button
           size="large"
           type="primary"
@@ -83,7 +83,7 @@
           注册租户
         </a-button>
         <router-link class="login" :to="{ name: 'login' }">使用已有租户登录</router-link>
-      </a-form-model-item>
+      </a-form-item>
 
       <div class="login-copyright" v-if="device === 'mobile'">
         <a-row>
@@ -93,7 +93,7 @@
           </a-col>
         </a-row>
       </div>
-    </a-form-model>
+    </a-form>
   </div>
 </template>
 

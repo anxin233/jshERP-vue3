@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -35,6 +35,7 @@
   import {mixinDevice} from '@/utils/mixin'
   import {addUserBusiness,editUserBusiness,checkUserBusiness} from '@/api/api'
   import {getAction} from '../../../api/manage'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
   export default {
     name: "UserCustomerModal",
     mixins: [mixinDevice],
@@ -52,7 +53,8 @@
         selectedRowKeys: [],
         loading:false,
         confirmLoading: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         url: {
           cusList: "/supplier/getAllCustomer",
           selectedList: "/supplier/getUserCustomerValue",

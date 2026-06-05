@@ -1,7 +1,7 @@
 <template>
   <a-modal
     centered
-    :visible="visible"
+    :open="visible"
     @cancel="handleCancel"
     :maskClosable="false"
   >
@@ -18,7 +18,7 @@
     </template>
 
     <a-spin :spinning="stepLoading">
-      <a-form-model ref="formRef" layout="vertical" :model="formModel" :rules="formRules">
+      <a-form ref="formRef" layout="vertical" :model="formModel" :rules="formRules">
         <div class="step-form-wrapper">
           <p v-if="!stepLoading" style="text-align: center">
             请在手机中打开 Google Authenticator 或两步验证 APP<br />输入 6 位动态码
@@ -26,10 +26,10 @@
           <p v-else style="text-align: center">
             正在验证..<br />请稍后
           </p>
-          <a-form-model-item
+          <a-form-item
             :style="{ textAlign: 'center' }"
             hasFeedback
-            prop="stepCode"
+           
             name="stepCode"
           >
             <a-input
@@ -39,12 +39,12 @@
               @keyup.enter="handleStepOk"
               placeholder="000000"
             />
-          </a-form-model-item>
+          </a-form-item>
           <p style="text-align: center">
             <a @click="onForgeStepCode">遗失手机?</a>
           </p>
         </div>
-      </a-form-model>
+      </a-form>
     </a-spin>
   </a-modal>
 </template>

@@ -18,15 +18,13 @@
       <legacy-icon :type="uploadLoading ? 'loading' : 'plus'" />
       <div class="ant-upload-text">{{ text }}</div>
     </div>
-    <a-modal :visible="previewVisible" :width="1000" :footer="null" @cancel="handleCancel()">
+    <a-modal :open="previewVisible" :width="1000" :footer="null" @cancel="handleCancel()">
       <img alt="example" style="width: 100%" :src="previewImage"/>
     </a-modal>
   </a-upload>
 </template>
 
-<script>
-  import Vue from 'vue'
-  import { ACCESS_TOKEN } from "@/store/mutation-types"
+<script>  import { ACCESS_TOKEN } from "@/store/mutation-types"
   import { getFileAccessHttpUrl } from '@/api/manage'
   import { fileSizeLimit } from '@/api/api'
   import storage from '@/utils/storage'
@@ -98,6 +96,12 @@
       this.headers = {"X-Access-Token":token}
     },
     methods:{
+      emitValue(value) {
+        this.$emit('change', value)
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
+      },
       initFileSizeLimit() {
         fileSizeLimit().then((res)=>{
           if(res.code === 200) {
@@ -203,7 +207,7 @@
         if(arr.length>0){
           path = arr.join(",")
         }
-        this.$emit('change', path);
+        this.emitValue(path);
       },
       handleDelete(file){
         //如有需要新增 删除逻辑
@@ -216,10 +220,6 @@
       close () {
 
       },
-    },
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

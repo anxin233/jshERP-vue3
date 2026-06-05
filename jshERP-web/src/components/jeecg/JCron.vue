@@ -1,8 +1,8 @@
 <template>
   <div class="components-input-demo-presuffix">
-    <a-input @click="openModal" placeholder="corn表达式" v-model="cron" @change="handleOK">
-      <legacy-icon slot="prefix" type="schedule" title="corn控件"/>
-      <legacy-icon v-if="cron" slot="suffix" type="close-circle" @click="handleEmpty" title="清空"/>
+    <a-input @click="openModal" placeholder="corn表达式" v-model:value="cron" @change="handleOK">
+      <template #prefix><legacy-icon type="schedule" title="corn控件"/></template>
+      <template #suffix><legacy-icon v-if="cron" type="close-circle" @click="handleEmpty" title="清空"/></template>
     </a-input>
     <JCronModal ref="innerVueCron" :data="cron" @ok="handleOK"></JCronModal>
   </div>
@@ -36,16 +36,15 @@
       },
       handleOK(val){
         this.cron = val;
-        this.$emit("change", this.cron);
+        this.$emit("change", this.cron)
+        this.$emit("input", this.cron)
+        this.$emit("update:value", this.cron)
+        this.$emit("update:modelValue", this.cron)
         //this.$emit("change", Object.assign({},  this.cron));
       },
       handleEmpty(){
         this.handleOK('')
       }
-    },
-    model: {
-      prop: 'value',
-      event: 'change'
     }
   }
 </script>

@@ -3,7 +3,7 @@
     <a-modal
       title="文件上传"
       :width="width"
-      :visible="visible"
+      :open="visible"
       @ok="ok"
       cancelText="取消"
       @cancel="close">

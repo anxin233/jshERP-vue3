@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="width"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -14,7 +14,7 @@
       cancelText="取消"
       okText="保存"
       style="top:5%;height: 90%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">
           取消
         </a-button>
@@ -41,6 +41,7 @@
   import pick from 'lodash.pick'
   import {getAction} from '../../../api/manage'
   import {mixinDevice} from '@/utils/mixin'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
   export default {
     name: "FunctionTreeModal",
     mixins: [mixinDevice],
@@ -66,7 +67,8 @@
           sm: { span: 16 },
         },
         confirmLoading: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
       }
     },
     created () {

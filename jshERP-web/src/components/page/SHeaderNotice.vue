@@ -1,6 +1,6 @@
 <template>
   <a-popover trigger="click" placement="bottomRight" :overlayStyle="{ width: '300px' }">
-    <template slot="content">
+    <template #content>
       <a-spin :spinning="loadding">
         <a-tabs>
           <a-tab-pane v-for="(tab, k) in tabs" :tab="tab.title" :key="k">

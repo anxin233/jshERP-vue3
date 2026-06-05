@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="600"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{ top: '93px', left: '154px' }"
@@ -16,20 +16,20 @@
       @ok="handleOk"
       @cancel="handleCancel">
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" :model="formModel" :rules="formRules">
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="字典名称" prop="dictName" name="dictName">
+        <a-form ref="formRef" :model="formModel" :rules="formRules">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="字典名称" name="dictName">
             <a-input
               placeholder="请输入字典名称"
               :value="formModel.dictName"
               @change="handleFieldChange('dictName', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="字典类型" prop="dictType" name="dictType">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="字典类型" name="dictType">
             <a-input
               placeholder="请输入字典类型"
               :value="formModel.dictType"
               @change="handleFieldChange('dictType', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="状态" prop="status" name="status">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="状态" name="status">
             <a-select
               style="width:100%"
               placeholder="请选择状态"
@@ -39,15 +39,15 @@
                 {{ dict.label }}
               </a-select-option>
             </a-select>
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注" prop="remark" name="remark">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注" name="remark">
             <a-textarea
               :rows="2"
               placeholder="请输入备注"
               :value="formModel.remark"
               @change="handleFieldChange('remark', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>

@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -15,55 +15,55 @@
       cancelText="取消"
       okText="保存"
       style="top:2%;height:95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" v-if="isReadOnly" @click="handleCancel">
           取消
         </a-button>
       </template>
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form" id="userModal">
-          <a-form-item label="登录名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-            <a-input placeholder="请输入登录名称" v-decorator.trim="[ 'loginName', validatorRules.loginName]" :readOnly="!!model.id" />
+        <a-form ref="formRef" :model="formModel" :rules="formRules" id="userModal">
+          <a-form-item label="登录名称" name="loginName" :labelCol="labelCol" :wrapperCol="wrapperCol">
+            <a-input placeholder="请输入登录名称" v-model:value="formModel.loginName" :readOnly="!!model.id" />
           </a-form-item>
-          <a-form-item label="用户密码" :labelCol="labelCol" :wrapperCol="wrapperCol" v-if="!model.id">
-            <a-input-password placeholder="请输入用户密码" v-decorator.trim="[ 'password', validatorRules.password]" />
+          <a-form-item label="用户密码" name="password" :labelCol="labelCol" :wrapperCol="wrapperCol" v-if="!model.id">
+            <a-input-password placeholder="请输入用户密码" v-model:value="formModel.password" />
           </a-form-item>
-          <a-form-item label="用户姓名" :labelCol="labelCol" :wrapperCol="wrapperCol" >
-            <a-input placeholder="请输入用户姓名" v-decorator.trim="[ 'username', validatorRules.username]" />
+          <a-form-item label="用户姓名" name="username" :labelCol="labelCol" :wrapperCol="wrapperCol">
+            <a-input placeholder="请输入用户姓名" v-model:value="formModel.username" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="角色">
-            <a-select v-if="!model.id||model.id!==model.tenantId" placeholder="选择角色" v-decorator="[ 'roleId', validatorRules.roleId]" :dropdownMatchSelectWidth="false">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="角色" name="roleId">
+            <a-select v-if="!model.id||model.id!==model.tenantId" placeholder="选择角色" v-model:value="formModel.roleId" :dropdownMatchSelectWidth="false">
               <a-select-option v-for="(item,index) in roleList" :key="index" :value="item.id">
                 {{ item.name }}
               </a-select-option>
             </a-select>
             <a-col v-if="model.id===model.tenantId"><a-row>{{ tenantRoleName }}</a-row></a-col>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="部门">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="部门" name="orgaId">
             <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
-               :treeData="orgaTree" v-decorator="[ 'orgaId' ]" placeholder="请选择部门">
+               :treeData="orgaTree" v-model:value="formModel.orgaId" placeholder="请选择部门">
             </a-tree-select>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="职位">
-            <a-input placeholder="请输入职位" v-decorator.trim="[ 'position' ]" />
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="职位" name="position">
+            <a-input placeholder="请输入职位" v-model:value="formModel.position" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="是否经理">
-            <a-select placeholder="请选择是否经理" v-decorator="[ 'leaderFlag' ]">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="是否经理" name="leaderFlag">
+            <a-select placeholder="请选择是否经理" v-model:value="formModel.leaderFlag">
               <a-select-option value="1">是</a-select-option>
               <a-select-option value="0">否</a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="电话号码">
-            <a-input placeholder="请输入电话号码" v-decorator.trim="[ 'phonenum' ]" />
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="电话号码" name="phonenum">
+            <a-input placeholder="请输入电话号码" v-model:value="formModel.phonenum" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="电子邮箱">
-            <a-input placeholder="请输入电子邮箱" v-decorator.trim="[ 'email' ]" />
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="电子邮箱" name="email">
+            <a-input placeholder="请输入电子邮箱" v-model:value="formModel.email" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序">
-            <a-input placeholder="请输入排序" v-decorator.trim="[ 'userBlngOrgaDsplSeq' ]" />
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="排序" name="userBlngOrgaDsplSeq">
+            <a-input placeholder="请输入排序" v-model:value="formModel.userBlngOrgaDsplSeq" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注">
-            <a-textarea :rows="2" placeholder="请输入备注" v-decorator="[ 'description' ]" />
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注" name="description">
+            <a-textarea :rows="2" placeholder="请输入备注" v-model:value="formModel.description" />
           </a-form-item>
         </a-form>
       </a-spin>
@@ -72,7 +72,6 @@
 </template>
 <script>
   import pick from 'lodash.pick'
-  import Vue from 'vue'
   import md5 from 'md5'
   import JSelectPosition from '@/components/jeecgbiz/JSelectPosition'
   import { ACCESS_TOKEN } from "@/store/mutation-types"
@@ -96,33 +95,25 @@
         drawerWidth:700,
         orgaTree: [],
         roleList: [],
-        userId:"", //保存用户id
-        tenantRoleName: '', //租户的角色名称
+        userId:"",
+        tenantRoleName: '',
         isReadOnly: false,
         disableSubmit:false,
         dateFormat:"YYYY-MM-DD",
-        validatorRules:{
-          loginName:{
-            rules: [{
-              required: true, message: '请输入登录名称!'
-            }]
-          },
-          password: {
-            rules: [
-              { required: true, message: '请输入用户密码!' },
-              { pattern: /^(?=.*[a-z])(?=.*\d).{6,}$/, message: '用户密码至少要有数字和小写字母，并且长度至少6位!' }
-            ]
-          },
-          username:{
-            rules: [{
-              required: true, message: '请输入用户姓名!'
-            }]
-          },
-          roleId:{
-            rules: [{
-              required: true, message: '请选择角色!'
-            }]
-          }
+        formModel: {},
+        formRules: {
+          loginName: [
+            { required: true, message: '请输入登录名称!', trigger: 'blur' }
+          ],
+          password: [
+            { validator: this.validatePassword, trigger: 'blur' }
+          ],
+          username: [
+            { required: true, message: '请输入用户姓名!', trigger: 'blur' }
+          ],
+          roleId: [
+            { required: true, message: '请选择角色!', trigger: 'change' }
+          ]
         },
         model: {},
         labelCol: {
@@ -136,7 +127,6 @@
         uploadLoading:false,
         confirmLoading: false,
         headers:{},
-        form:this.$form.createForm(this)
       }
     },
     created () {
@@ -144,19 +134,36 @@
       this.headers = {"X-Access-Token":token}
     },
     methods: {
+      validatePassword(rule, value) {
+        if (this.model.id) {
+          return Promise.resolve()
+        }
+        if (!value) {
+          return Promise.reject('请输入用户密码!')
+        }
+        if (!/^(?=.*[a-z])(?=.*\d).{6,}$/.test(value)) {
+          return Promise.reject('用户密码至少要有数字和小写字母，并且长度至少6位!')
+        }
+        return Promise.resolve()
+      },
       add () {
         this.edit({});
       },
       edit (record) {
         this.loadOrgaData()
         this.loadRoleData()
-        this.form.resetFields();
         this.userId = record.id;
         this.visible = true;
         this.model = Object.assign({}, record);
+        this.formModel = pick(this.model, 'loginName', 'username', 'roleId', 'orgaId', 'position', 'leaderFlag',
+          'phonenum', 'email', 'userBlngOrgaDsplSeq', 'description', 'password')
+        if (!this.formModel.password) {
+          this.formModel.password = ''
+        }
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model,'loginName','username','roleId','orgaId','position','leaderFlag',
-            'phonenum','email','userBlngOrgaDsplSeq','description'))
+          if (this.$refs.formRef) {
+            this.$refs.formRef.clearValidate()
+          }
           this.tenantRoleName = this.model.roleName
           autoJumpNextInput('userModal')
         });
@@ -168,31 +175,39 @@
       },
       handleOk() {
         const that = this;
-        // 触发表单验证
-        this.form.validateFields((err, values) => {
-          if (!err) {
-            that.confirmLoading = true;
-            let formData = Object.assign(this.model, values);
-            let obj;
-            if(!this.model.id){
-              formData.id = this.userId;
-              formData.password = md5(values.password);
-              obj=addUser(formData);
-            }else{
-              obj=editUser(formData);
-            }
-            obj.then((res)=>{
-              if(res.code === 200){
-                that.$emit('ok');
-                that.close();
-              }else{
-                that.$message.warning(res.data.message);
-              }
-            }).finally(() => {
-              that.confirmLoading = false;
-            })
+        const formRef = this.$refs.formRef
+        if (!formRef) {
+          return
+        }
+        formRef.validate().then(() => {
+          const values = { ...that.formModel }
+          if (values.loginName) {
+            values.loginName = String(values.loginName).trim()
           }
-        })
+          if (values.username) {
+            values.username = String(values.username).trim()
+          }
+          that.confirmLoading = true;
+          let formData = Object.assign({}, this.model, values);
+          let obj;
+          if(!this.model.id){
+            formData.id = this.userId;
+            formData.password = md5(values.password);
+            obj=addUser(formData);
+          }else{
+            obj=editUser(formData);
+          }
+          obj.then((res)=>{
+            if(res.code === 200){
+              that.$emit('ok');
+              that.close();
+            }else{
+              that.$message.warning(res.data.message);
+            }
+          }).finally(() => {
+            that.confirmLoading = false;
+          })
+        }).catch(() => {})
       },
       handleCancel() {
         this.close()

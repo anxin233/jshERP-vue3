@@ -2,7 +2,7 @@
   <a-modal
     title="从项目库导入"
     :width="800"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     @ok="handleOk"
     @cancel="handleCancel"
@@ -10,10 +10,10 @@
     <!-- 搜索 -->
     <a-row :gutter="12" style="margin-bottom:12px">
       <a-col :span="10">
-        <a-input v-model="searchName" placeholder="项目名称搜索" allowClear @pressEnter="doSearch" />
+        <a-input v-model:value="searchName" placeholder="项目名称搜索" allowClear @pressEnter="doSearch" />
       </a-col>
       <a-col :span="14">
-        <a-button type="primary" icon="search" @click="doSearch">查询</a-button>
+        <a-button type="primary" @click="doSearch"><template #icon><legacy-icon type="search" /></template>查询</a-button>
         <a-button style="margin-left:8px" @click="resetSearch">重置</a-button>
         <span style="margin-left:16px;color:#999;font-size:12px">已选 {{ selectedRowKeys.length }} 项</span>
       </a-col>
@@ -30,8 +30,9 @@
       bordered
       :scroll="{y:340}"
       @change="handleTableChange">
-      <template slot="totalPrice" slot-scope="text">
-        <span style="color:#f5222d">¥ {{ text }}</span>
+      <template #bodyCell="{ column, text }">
+        <span v-if="column.dataIndex === 'totalPrice'" style="color:#f5222d">? {{ text }}</span>
+        <template v-else>{{ text }}</template>
       </template>
     </a-table>
   </a-modal>
@@ -42,6 +43,7 @@ import { getAction } from '@/api/manage'
 
 export default {
   name: 'ProjectSelectModal',
+  emits: ['ok'],
   data() {
     return {
       visible: false,
@@ -56,8 +58,7 @@ export default {
       columns: [
         { title: '项目名称', dataIndex: 'name', ellipsis: true },
         { title: '类别',     dataIndex: 'categoryName', width: 120 },
-        { title: '参考价格', dataIndex: 'totalPrice', width: 110, align: 'right',
-          scopedSlots: { customRender: 'totalPrice' } },
+        { title: '参考价格', dataIndex: 'totalPrice', width: 110, align: 'right' },
         { title: '说明',     dataIndex: 'description', ellipsis: true }
       ]
     }

@@ -53,11 +53,17 @@
       }
     },
     methods:{
+      emitValue(value) {
+        this.$emit('change', value)
+        this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
+      },
       onChange (selectedValue) {
         if(this.triggerChange){
-          this.$emit('change', selectedValue.join(","));
+          this.emitValue(selectedValue.join(','));
         }else{
-          this.$emit('input', selectedValue.join(","));
+          this.emitValue(selectedValue.join(','));
         }
       },
     },

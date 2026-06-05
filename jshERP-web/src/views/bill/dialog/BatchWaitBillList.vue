@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1300"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -11,7 +11,7 @@
       :maskClosable="false"
       @cancel="handleCancel"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <!-- 查询区域 -->
@@ -21,19 +21,19 @@
           <a-row :gutter="24">
             <a-col :md="6" :sm="24">
               <a-form-item label="单据编号" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入单据编号查询" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号查询" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="商品信息" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="条码|名称|规格|型号" v-model="queryParam.materialParam"></a-input>
+                <a-input placeholder="条码|名称|规格|型号" v-model:value="queryParam.materialParam"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                 <a-range-picker
                   style="width: 100%"
-                  v-model="queryParam.createTimeRange"
+                  v-model:value="queryParam.createTimeRange"
                   format="YYYY-MM-DD"
                   :placeholder="['开始时间', '结束时间']"
                   @change="onDateChange"
@@ -52,7 +52,7 @@
       </div>
       <!-- 操作按钮区域 -->
       <div class="table-operator"  style="margin-top: 5px">
-        <a-button @click="handleBatchInOut" type="primary" icon="plus">批量{{queryParam.type}}</a-button>
+        <a-button @click="handleBatchInOut" type="primary"><template #icon><legacy-icon type="plus" /></template>批量{{queryParam.type}}</a-button>
         <span style="padding-left:10px">注意：含有序列号、批号商品或部分入库状态不能批量{{queryParam.type}}，需要到新增界面关联单据</span>
       </div>
       <!-- table区域-begin -->
@@ -68,11 +68,11 @@
         :loading="loading"
         :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
         @change="handleTableChange">
-        <span slot="numberCustomRender" slot-scope="text, record">
+        <template #numberCustomRender="{ text, record }"><span>
           <a v-if="!queryParam.purchaseStatus" @click="myHandleDetail(record)">{{record.number}}</a>
           <span v-if="queryParam.purchaseStatus">{{record.number}}</span>
-        </span>
-        <template slot="customRenderStatus" slot-scope="text, record">
+        </span></template>
+        <template #customRenderStatus="{ text, record }">
           <template>
             <a-tag v-if="record.status === '1'" color="green">已审核</a-tag>
             <a-tag v-if="record.status === '3' && queryParam.type === '入库'" color="blue">部分入库</a-tag>
@@ -126,10 +126,10 @@
         columns: [
           { title: '', dataIndex: 'organName',width:120, ellipsis:true},
           { title: '单据编号', dataIndex: 'number',width:130,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '商品信息', dataIndex: 'materialsList',width:280, ellipsis:true,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(text) {
                 return text.replace(",","，");
               }
@@ -139,7 +139,7 @@
           { title: '操作员', dataIndex: 'userName',width:70},
           { title: '数量', dataIndex: 'materialCount',width:60},
           { title: '状态', dataIndex: 'status', width: 70, align: "center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           }
         ],
         dataSource:[],

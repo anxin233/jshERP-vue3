@@ -19,13 +19,13 @@
     </a-col>
 
     <a-col v-if="buttons" class="right">
-      <a-button type="primary" icon="search" :disabled="disabled" @click="visible=true">{{selectButtonText}}</a-button>
+      <a-button type="primary" :disabled="disabled" @click="visible=true"><template #icon><legacy-icon type="search" /></template>{{selectButtonText}}</a-button>
     </a-col>
 
     <j-select-biz-component-modal
-      v-model="selectValue"
-      :visible="visible"
-      @update:visible="visible = $event"
+      v-model:value="selectValue"
+      :open="visible"
+      @update:open="visible = $event"
       v-bind="modalProps"
       @options="handleOptions"
     />
@@ -123,6 +123,8 @@
           this.$emit('select', rows)
           let data = val.join(',')
           this.$emit('input', data)
+          this.$emit('update:value', data)
+          this.$emit('update:modelValue', data)
           this.$emit('change', data)
         }
       }
@@ -163,7 +165,7 @@
       width: 100%;
     }
 
-    /deep/ .ant-select-search__field {
+    :deep(.ant-select-search__field) {
       display: none !important;
     }
   }

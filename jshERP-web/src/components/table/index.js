@@ -1,4 +1,5 @@
 import T from "ant-design-vue/es/table/Table";
+import { h, resolveComponent } from 'vue'
 import get from "lodash.get"
 export default {
   data() {
@@ -155,7 +156,7 @@ export default {
       this.updateSelect([], [])
       this.$emit('clearAll')
     },
-    renderMsg(h) {
+    renderMsg() {
       const _vm = this
       let d = []
       // 构建 已选择
@@ -193,29 +194,24 @@ export default {
         style: {
           marginLeft: '24px'
         },
-        on: {
-          click: _vm.onClearSelected
-        }
+        onClick: _vm.onClearSelected
       }, '清空'))
 
       return d
     },
-    renderAlert(h) {
-      return h('span', {
-        slot: 'message'
-      }, this.renderMsg(h))
-    },
     getScopedSlots() {
-      return Object.assign({}, this['$' + 'scopedSlots'] || {}, this.$slots || {})
+      return Object.assign({}, this.$slots || {})
     },
     getDefaultSlot() {
       const slot = this.$slots.default
-      return typeof slot === 'function' ? slot() : slot
+      return typeof slot === 'function' ? slot : () => slot
     },
   },
 
-  render(h) {
+  render() {
     const _vm = this
+    const ATable = resolveComponent('a-table')
+    const AAlert = resolveComponent('a-alert')
 
     let props = {},
       localKeys = Object.keys(this.$data);
@@ -241,35 +237,33 @@ export default {
       };
 
       return h('div', {}, [
-        h("a-alert", {
+        h(AAlert, {
           style: {
             marginBottom: '16px'
           },
-          props: {
-            type: 'info',
-            showIcon: true
-          }
-        }, [_vm.renderAlert(h)]),
-        h("a-table", {
-          tag: "component",
-          attrs: props,
-          on: {
-            change: _vm.loadData
-          },
-          scopedSlots: _vm.getScopedSlots()
-        }, _vm.getDefaultSlot())
+          type: 'info',
+          showIcon: true
+        }, {
+          message: () => _vm.renderMsg()
+        }),
+        h(ATable, {
+          ...props,
+          onChange: _vm.loadData
+        }, {
+          ..._vm.getScopedSlots(),
+          default: _vm.getDefaultSlot()
+        })
       ]);
 
     }
 
-    return h("a-table", {
-      tag: "component",
-      attrs: props,
-      on: {
-        change: _vm.loadData
-      },
-      scopedSlots: _vm.getScopedSlots()
-    }, _vm.getDefaultSlot());
+    return h(ATable, {
+      ...props,
+      onChange: _vm.loadData
+    }, {
+      ..._vm.getScopedSlots(),
+      default: _vm.getDefaultSlot()
+    });
 
   }
 };

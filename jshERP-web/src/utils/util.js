@@ -1,8 +1,88 @@
 import { isURL } from '@/utils/validate'
 import { downFilePost} from '@/api/manage'
-import Vue from 'vue'
 import introJs from 'intro.js'
 import storage from '@/utils/storage'
+
+/**
+ * Vite 动态路由：import.meta.glob 预扫描（支持 bill/RetailOutList 等多级路径）
+ * 后台 menu.component 示例：/layouts/TabLayout、/bill/PurchaseApplyList
+ */
+const routeLayoutModules = import.meta.glob('../components/layouts/*.vue')
+const routeViewModules = import.meta.glob('../views/**/*.vue')
+const routeComponentLoaders = Object.create(null)
+const routeComponentLoadersLower = Object.create(null)
+
+function registerRouteModule (filePath, loader, segment, keyPrefix) {
+  const normalized = filePath.replace(/\\/g, '/')
+  const marker = `/${segment}/`
+  const index = normalized.indexOf(marker)
+  if (index === -1) {
+    return
+  }
+  const suffix = normalized.slice(index + marker.length).replace(/\.vue$/i, '')
+  // 菜单 component 与 Webpack 时代一致：/layouts/TabLayout → @/components/layouts/TabLayout
+  const key = keyPrefix ? `${keyPrefix}/${suffix}` : `/${suffix}`
+  routeComponentLoaders[key] = loader
+  routeComponentLoadersLower[key.toLowerCase()] = loader
+}
+
+Object.entries(routeLayoutModules).forEach(([filePath, loader]) => {
+  registerRouteModule(filePath, loader, 'layouts', '/layouts')
+})
+Object.entries(routeViewModules).forEach(([filePath, loader]) => {
+  registerRouteModule(filePath, loader, 'views')
+})
+
+function normalizeMenuComponentKey (component) {
+  if (!component) {
+    return ''
+  }
+  let key = String(component).trim().replace(/\\/g, '/')
+  if (!key.startsWith('/')) {
+    key = `/${key}`
+  }
+  return key.replace(/\.vue$/i, '')
+}
+
+function resolveRouteModuleLoader (key) {
+  if (routeComponentLoaders[key]) {
+    return routeComponentLoaders[key]
+  }
+  return routeComponentLoadersLower[key.toLowerCase()]
+}
+
+function unwrapRouteModule (module) {
+  return module.default || module
+}
+
+function createRouteComponentLoader (component) {
+  const key = normalizeMenuComponentKey(component)
+  const loader = resolveRouteModuleLoader(key)
+  if (loader) {
+    return () => loader().then(unwrapRouteModule)
+  }
+  console.warn(`[router] Cannot resolve menu component: ${component} (key: ${key})`)
+  return () => import('@/views/exception/404').then(unwrapRouteModule)
+}
+
+/** 后端注入的首页项与 constantRouterMap 的 /dashboard 重复，不再动态注册 */
+function isDupDashboardHomeRoute (item) {
+  const url = item.url || ''
+  const comp = String(item.component || '')
+  return url === '/dashboard/analysis' && comp.includes('TabLayout')
+}
+
+/**
+ * 有子菜单的目录节点应使用 RouteView 透传，避免 TabLayout 套 TabLayout
+ */
+function resolveMenuRouteComponent (item) {
+  const hasChildren = item.children && item.children.length > 0
+  const comp = String(item.component || '')
+  if (hasChildren && (comp.includes('TabLayout') || comp.includes('RouteView'))) {
+    return createRouteComponentLoader('/layouts/RouteView')
+  }
+  return createRouteComponentLoader(item.component)
+}
 
 export function timeFix() {
   const time = new Date()
@@ -45,6 +125,194 @@ export function filterObj(obj) {
   return obj;
 }
 
+/** 采购/销售/零售统计：仅传后端白名单参数，避免 createTimeRange、isorter 等导致 400 */
+export function buildBuySaleReportQueryParams(queryParam, ipagination) {
+  let param = {
+    materialParam: queryParam.materialParam != null ? queryParam.materialParam : '',
+    beginTime: queryParam.beginTime,
+    endTime: queryParam.endTime,
+    mpList: queryParam.mpList,
+    organId: queryParam.organId,
+    depotId: queryParam.depotId,
+    categoryId: queryParam.categoryId,
+    organizationId: queryParam.organizationId,
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize - 1,
+  }
+  param = filterObj(param)
+  param.materialParam = queryParam.materialParam != null ? queryParam.materialParam : ''
+  if (param.beginTime == null) param.beginTime = queryParam.beginTime || ''
+  if (param.endTime == null) param.endTime = queryParam.endTime || ''
+  return param
+}
+
+/** 进销存统计列表查询参数 */
+export function buildInOutStockQueryParams(queryParam, ipagination, depotSelected) {
+  let param = {
+    materialParam: queryParam.materialParam != null ? queryParam.materialParam : '',
+    beginTime: queryParam.beginTime,
+    endTime: queryParam.endTime,
+    mpList: queryParam.mpList,
+    categoryId: queryParam.categoryId,
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize - 1,
+  }
+  if (depotSelected && depotSelected.length > 0) {
+    param.depotIds = depotSelected.join()
+  }
+  param = filterObj(param)
+  param.materialParam = queryParam.materialParam != null ? queryParam.materialParam : ''
+  if (param.beginTime == null) param.beginTime = queryParam.beginTime || ''
+  if (param.endTime == null) param.endTime = queryParam.endTime || ''
+  return param
+}
+
+/** 进销存统计总计金额查询参数 */
+export function buildInOutStockCountMoneyParams(queryParam, depotSelected) {
+  let param = {
+    materialParam: queryParam.materialParam != null ? queryParam.materialParam : '',
+    endTime: queryParam.endTime,
+    categoryId: queryParam.categoryId,
+  }
+  if (depotSelected && depotSelected.length > 0) {
+    param.depotIds = depotSelected.join()
+  }
+  param = filterObj(param)
+  param.materialParam = queryParam.materialParam != null ? queryParam.materialParam : ''
+  if (param.endTime == null) param.endTime = queryParam.endTime || ''
+  return param
+}
+
+/** 入库/出库明细：仅传后端白名单参数，保留 column/order，避免 createTimeRange、field 导致 400 */
+export function buildInOutDetailQueryParams(queryParam, ipagination, isorter) {
+  const sort = isorter || {}
+  let param = {
+    organId: queryParam.organId,
+    number: queryParam.number != null ? queryParam.number : '',
+    materialParam: queryParam.materialParam != null ? queryParam.materialParam : '',
+    depotId: queryParam.depotId,
+    beginTime: queryParam.beginTime,
+    endTime: queryParam.endTime,
+    type: queryParam.type,
+    creator: queryParam.creator,
+    categoryId: queryParam.categoryId,
+    organizationId: queryParam.organizationId,
+    remark: queryParam.remark != null ? queryParam.remark : '',
+    column: sort.column || 'createTime',
+    order: sort.order || 'desc',
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize - 1,
+  }
+  param = filterObj(param)
+  param.number = queryParam.number != null ? queryParam.number : ''
+  param.materialParam = queryParam.materialParam != null ? queryParam.materialParam : ''
+  param.remark = queryParam.remark != null ? queryParam.remark : ''
+  param.type = queryParam.type || ''
+  if (param.beginTime == null) param.beginTime = queryParam.beginTime || ''
+  if (param.endTime == null) param.endTime = queryParam.endTime || ''
+  return param
+}
+
+/** 调拨明细：仅传后端白名单参数，保留 column/order，避免 createTimeRange、field 导致 400 */
+export function buildAllocationDetailQueryParams(queryParam, ipagination, isorter) {
+  const sort = isorter || {}
+  let param = {
+    number: queryParam.number != null ? queryParam.number : '',
+    materialParam: queryParam.materialParam != null ? queryParam.materialParam : '',
+    depotId: queryParam.depotId,
+    depotIdF: queryParam.depotIdF,
+    categoryId: queryParam.categoryId,
+    organizationId: queryParam.organizationId,
+    beginTime: queryParam.beginTime,
+    endTime: queryParam.endTime,
+    subType: queryParam.subType,
+    remark: queryParam.remark != null ? queryParam.remark : '',
+    column: sort.column || 'createTime',
+    order: sort.order || 'desc',
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize - 1,
+  }
+  param = filterObj(param)
+  param.number = queryParam.number != null ? queryParam.number : ''
+  param.materialParam = queryParam.materialParam != null ? queryParam.materialParam : ''
+  param.remark = queryParam.remark != null ? queryParam.remark : ''
+  param.subType = queryParam.subType || '调拨'
+  if (param.beginTime == null) param.beginTime = queryParam.beginTime || ''
+  if (param.endTime == null) param.endTime = queryParam.endTime || ''
+  return param
+}
+
+/** 入库/出库汇总：仅传后端白名单参数，保留 column/order，避免 createTimeRange、field 导致 400 */
+export function buildInOutMaterialCountQueryParams(queryParam, ipagination, isorter) {
+  const sort = isorter || {}
+  let param = {
+    materialParam: queryParam.materialParam != null ? queryParam.materialParam : '',
+    beginTime: queryParam.beginTime,
+    endTime: queryParam.endTime,
+    type: queryParam.type,
+    organId: queryParam.organId,
+    depotId: queryParam.depotId,
+    categoryId: queryParam.categoryId,
+    organizationId: queryParam.organizationId,
+    column: sort.column || 'createTime',
+    order: sort.order || 'desc',
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize - 1,
+  }
+  param = filterObj(param)
+  param.materialParam = queryParam.materialParam != null ? queryParam.materialParam : ''
+  param.type = queryParam.type || ''
+  if (param.beginTime == null) param.beginTime = queryParam.beginTime || ''
+  if (param.endTime == null) param.endTime = queryParam.endTime || ''
+  return param
+}
+
+/** 客户/供应商对账：仅传后端白名单参数，避免 createTimeRange、field 导致 400 */
+export function buildStatementAccountQueryParams(queryParam, ipagination) {
+  let hasDebt = queryParam.hasDebt
+  if (hasDebt !== undefined && hasDebt !== null && hasDebt !== '') {
+    hasDebt = Number(hasDebt)
+    if (Number.isNaN(hasDebt)) {
+      hasDebt = undefined
+    }
+  } else {
+    hasDebt = undefined
+  }
+  let param = {
+    beginTime: queryParam.beginTime,
+    endTime: queryParam.endTime,
+    supplierType: queryParam.supplierType,
+    organId: queryParam.organId,
+    hasDebt: hasDebt,
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize - 1,
+  }
+  param = filterObj(param)
+  param.beginTime = queryParam.beginTime || ''
+  param.endTime = queryParam.endTime || ''
+  param.supplierType = queryParam.supplierType || ''
+  return param
+}
+
+/** 日志管理 /log/list：search 仅含后端解析字段，不传 createTimeRange、field、column/order */
+export function buildLogListQueryParams(queryParam, ipagination) {
+  const search = {
+    operation: queryParam.operation != null ? queryParam.operation : '',
+    content: queryParam.content != null ? queryParam.content : '',
+    userInfo: queryParam.userInfo != null ? queryParam.userInfo : '',
+    clientIp: queryParam.clientIp != null ? queryParam.clientIp : '',
+    tenantLoginName: queryParam.tenantLoginName != null ? queryParam.tenantLoginName : '',
+    tenantType: queryParam.tenantType != null ? queryParam.tenantType : '',
+    beginTime: queryParam.beginTime || '',
+    endTime: queryParam.endTime || '',
+  }
+  return filterObj({
+    search: JSON.stringify(search),
+    currentPage: ipagination.current,
+    pageSize: ipagination.pageSize,
+  })
+}
+
 /**
  * 时间格式化
  * @param value
@@ -81,21 +349,21 @@ export function formatDate(value, fmt) {
   }
 }
 
-// 生成首页路由
+// 生成首页路由（所有业务菜单作为 TabLayout 的 children，与 Vue Router 4 匹配规则一致）
 export function generateIndexRouter(data) {
-  let indexRouter = generateChildRouters(data)
-  indexRouter.splice(0,0, {
+  const children = generateChildRouters(data)
+  return [{
     path: '/',
-    name: '首页',
-    component: () => import('@/components/layouts/TabLayout'),
+    name: 'RootLayout',
+    component: createRouteComponentLoader('/layouts/TabLayout'),
     meta: {
       title: '首页',
       icon: 'icon-present',
       url: '/dashboard/analysis'
     },
-    redirect: '/dashboard/analysis'
-  })
-  return indexRouter;
+    redirect: '/dashboard/analysis',
+    children
+  }]
 }
 
 // 生成嵌套路由（子路由）
@@ -103,15 +371,20 @@ export function generateIndexRouter(data) {
 function generateChildRouters (data) {
   const routers = [];
   for (let item of data) {
-    let componentPath = "";
-    item.route = "1";
-    if(item.component.indexOf("layouts")>=0){
-      componentPath = () => import('@/components'+item.component);
-    } else {
-      componentPath = () => import('@/views'+item.component);
+    if (isDupDashboardHomeRoute(item)) {
+      continue
     }
-    // eslint-disable-next-line
-    let URL = (item.url|| '').replace(/{{([^}}]+)?}}/g, (s1, s2) => eval(s2)) // URL支持{{ window.xxx }}占位符变量
+    item.route = "1";
+    const componentPath = resolveMenuRouteComponent(item);
+    let URL = (item.url || '').replace(/{{([^}}]+)?}}/g, (match, expression) => {
+      const path = (expression || '').trim()
+      if (!path.startsWith('window.')) {
+        return ''
+      }
+      return path.split('.').slice(1).reduce((target, key) => {
+        return target && target[key] != null ? target[key] : ''
+      }, window)
+    }) // URL支持{{ window.xxx }}占位符变量
     if (isURL(URL)) {
       item.url = URL;
     }
@@ -120,9 +393,13 @@ function generateChildRouters (data) {
       let index = item.component.lastIndexOf("\/");
       componentName = item.component.substring(index + 1, item.component.length);
     }
+    // 路由 name 保留中文 text，与历史 keep-alive / 菜单习惯一致；唯一性靠 id
+    const routeName = item.id != null
+      ? `${item.text}_${item.id}`
+      : (componentName ? `${item.text}_${componentName}` : item.text)
     let menu = {
       path: item.url,
-      name: item.text,
+      name: routeName,
       meta: {
         id: item.id,
         title: item.text,
@@ -133,7 +410,7 @@ function generateChildRouters (data) {
         keepAlive: true
       }
     }
-    if(item.component.indexOf("IframePageView")>-1){
+    if(item.component && item.component.indexOf("IframePageView")>-1){
       //给带iframe的页面进行改造
       menu.iframeComponent = componentPath
     } else {

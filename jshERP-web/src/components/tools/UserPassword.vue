@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="modalWidth"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -16,17 +16,17 @@
       style="top:20%;height: 50%;"
     >
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" :model="formModel" :rules="formRules">
-          <a-form-model-item label="旧密码" prop="oldpassword" name="oldpassword" :label-col="labelCol" :wrapper-col="wrapperCol">
+        <a-form ref="formRef" :model="formModel" :rules="formRules">
+          <a-form-item label="旧密码" name="oldpassword" :label-col="labelCol" :wrapper-col="wrapperCol">
             <a-input-password type="password" placeholder="请输入旧密码" :value="formModel.oldpassword" @change="handleFieldChange('oldpassword', $event)" />
-          </a-form-model-item>
-          <a-form-model-item label="新密码" prop="password" name="password" :label-col="labelCol" :wrapper-col="wrapperCol">
+          </a-form-item>
+          <a-form-item label="新密码" name="password" :label-col="labelCol" :wrapper-col="wrapperCol">
             <a-input-password type="password" placeholder="新密码至少6位，区分大小写" :value="formModel.password" @change="handleFieldChange('password', $event)" />
-          </a-form-model-item>
-          <a-form-model-item label="确认新密码" prop="confirmPassword" name="confirmPassword" :label-col="labelCol" :wrapper-col="wrapperCol">
+          </a-form-item>
+          <a-form-item label="确认新密码" name="confirmPassword" :label-col="labelCol" :wrapper-col="wrapperCol">
             <a-input-password type="password" placeholder="请确认新密码" :value="formModel.confirmPassword" @change="handleFieldChange('confirmPassword', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>

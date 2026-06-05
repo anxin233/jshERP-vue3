@@ -1,10 +1,10 @@
-<!-- by 7527 18920 -->
+﻿<!-- by 7527 18920 -->
 <template>
   <div ref="container">
     <a-modal
       :title="title"
       :width="1600"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -13,7 +13,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:20px;height: 95%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <!-- 查询区域 -->
@@ -23,12 +23,12 @@
           <a-row :gutter="24">
             <a-col :md="6" :sm="24">
               <a-form-item label="单据编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-input placeholder="请输入单据编号" v-model="queryParam.billNo"></a-input>
+                <a-input placeholder="请输入单据编号" v-model:value="queryParam.billNo"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="操作员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-select placeholder="请选择操作员" showSearch optionFilterProp="children" v-model="queryParam.creator">
+                <a-select placeholder="请选择操作员" showSearch optionFilterProp="children" v-model:value="queryParam.creator">
                   <a-select-option v-for="(item,index) in userList" :key="index" :value="item.id">
                     {{ item.userName }}
                   </a-select-option>
@@ -37,7 +37,7 @@
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="单据状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-select placeholder="请选择单据状态" v-model="queryParam.status">
+                <a-select placeholder="请选择单据状态" v-model:value="queryParam.status">
                   <a-select-option value="0">未审核</a-select-option>
                   <a-select-option value="1">已审核</a-select-option>
                 </a-select>
@@ -56,7 +56,7 @@
             <template v-if="toggleSearchStatus">
               <a-col :md="6" :sm="24">
                 <a-form-item label="财务人员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="请选择财务人员" showSearch optionFilterProp="children" v-model="queryParam.handsPersonId">
+                  <a-select placeholder="请选择财务人员" showSearch optionFilterProp="children" v-model:value="queryParam.handsPersonId">
                     <a-select-option v-for="(item,index) in personList" :key="index" :value="item.id">
                       {{ item.name }}
                     </a-select-option>
@@ -65,7 +65,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="账户信息" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="请选择账户信息" showSearch optionFilterProp="children" v-model="queryParam.accountId">
+                  <a-select placeholder="请选择账户信息" showSearch optionFilterProp="children" v-model:value="queryParam.accountId">
                     <a-select-option v-for="(item,index) in accountList" :key="index" :value="item.id">
                       {{ item.name }}
                     </a-select-option>
@@ -74,12 +74,12 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="单据备注" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入单据备注" v-model="queryParam.remark"></a-input>
+                  <a-input placeholder="请输入单据备注" v-model:value="queryParam.remark"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="销售单号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入销售单号" v-model="queryParam.number"></a-input>
+                  <a-input placeholder="请输入销售单号" v-model:value="queryParam.number"></a-input>
                 </a-form-item>
               </a-col>
             </template>
@@ -98,10 +98,10 @@
         :pagination="ipagination"
         :loading="loading"
         @change="handleTableChange">
-        <span slot="billNoCustomRender" slot-scope="text, record">
+        <template #billNoCustomRender="{ text, record }"><span>
           <a @click="myHandleDetail(record, queryParam.type, prefixNo)">{{text}}</a>
-        </span>
-        <template slot="customRenderStatus" slot-scope="status">
+        </span></template>
+        <template #customRenderStatus="{ text: status }">
           <a-tag v-if="status == '0'" color="red">未审核</a-tag>
           <a-tag v-if="status == '1'" color="green">已审核</a-tag>
           <a-tag v-if="status == '9'" color="orange">审核中</a-tag>
@@ -117,9 +117,7 @@
   import FinancialDetail from '../../financial/dialog/FinancialDetail'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { FinancialListMixin } from '../../financial/mixins/FinancialListMixin'
-  import JDate from '@/components/jeecg/JDate'
-  import Vue from 'vue'
-  export default {
+  import JDate from '@/components/jeecg/JDate'  export default {
     name: "HistoryFinancialList",
     mixins:[JeecgListMixin, FinancialListMixin],
     components: {
@@ -167,7 +165,7 @@
             }
           },
           {
-            title: '单据编号', dataIndex: 'billNo', width: 120, scopedSlots: { customRender: 'billNoCustomRender' },
+            title: '单据编号', dataIndex: 'billNo', width: 120, customRender: (cell) => this.$renderColumnSlot('billNoCustomRender', cell),
           },
           { title: '客户', dataIndex: 'organName',width:140, ellipsis:true},
           { title: '单据日期 ', dataIndex: 'billTimeStr',width:140},
@@ -178,7 +176,7 @@
           { title: '实际收款', dataIndex: 'changeAmount',width:80},
           { title: '备注', dataIndex: 'remark',width:160},
           { title: '状态', dataIndex: 'status', width: 80, align: "center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           }
         ],
         url: {
@@ -229,5 +227,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

@@ -1,49 +1,98 @@
-import Vue from 'vue'
-import VueStorage from 'vue-ls'
 import config from '@/defaultSettings'
 
-let storageInstance = null
+const storageOptions = config.storageOptions || {}
+const namespace = storageOptions.namespace || ''
+const storageType = storageOptions.storage || 'local'
+let memoryStore = {}
 
-function getStorageInstance() {
-  if (!storageInstance) {
-    if (!Vue.ls) {
-      Vue.use(VueStorage, config.storageOptions)
-    }
-    storageInstance = Vue.ls
+function getBackend() {
+  if (storageType === 'session' && typeof window !== 'undefined' && window.sessionStorage) {
+    return window.sessionStorage
   }
-  return storageInstance
+  if (storageType === 'local' && typeof window !== 'undefined' && window.localStorage) {
+    return window.localStorage
+  }
+  return {
+    getItem(key) {
+      return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null
+    },
+    setItem(key, value) {
+      memoryStore[key] = String(value)
+    },
+    removeItem(key) {
+      delete memoryStore[key]
+    },
+    clear() {
+      memoryStore = {}
+    }
+  }
+}
+
+function buildKey(name) {
+  return `${namespace}${name}`
+}
+
+function decodeValue(raw, name, def) {
+  if (raw == null) return def
+  try {
+    const parsed = JSON.parse(raw)
+    if (parsed && typeof parsed === 'object' && Object.prototype.hasOwnProperty.call(parsed, 'value')) {
+      if (parsed.expire && parsed.expire < Date.now()) {
+        storage.remove(name)
+        return def
+      }
+      return parsed.value
+    }
+    return parsed
+  } catch (e) {
+    return raw
+  }
 }
 
 const storage = {
   get(name, def = null) {
-    return getStorageInstance().get(name, def)
+    return decodeValue(getBackend().getItem(buildKey(name)), name, def)
   },
   set(name, value, expire = null) {
-    return getStorageInstance().set(name, value, expire)
+    const expireAt = expire && !isNaN(parseInt(expire)) ? Date.now() + parseInt(expire) : null
+    getBackend().setItem(buildKey(name), JSON.stringify({ value, expire: expireAt }))
+    return value
   },
   remove(name) {
-    return getStorageInstance().remove(name)
+    getBackend().removeItem(buildKey(name))
   },
   clear() {
-    return getStorageInstance().clear()
+    const backend = getBackend()
+    if (!namespace || !backend.length) {
+      backend.clear()
+      return
+    }
+    const keys = []
+    for (let i = 0; i < backend.length; i++) {
+      const key = backend.key(i)
+      if (key && key.indexOf(namespace) === 0) keys.push(key)
+    }
+    keys.forEach(key => backend.removeItem(key))
   },
   on(name, callback) {
-    return getStorageInstance().on(name, callback)
+    if (typeof window === 'undefined' || !callback) return
+    window.addEventListener('storage', event => {
+      if (event.key === buildKey(name)) {
+        callback(this.get(name), event)
+      }
+    })
   },
-  off(name, callback) {
-    return getStorageInstance().off(name, callback)
-  }
+  off() {}
 }
 
 export function installStorage(app) {
-  const instance = getStorageInstance()
   if (app && app.config && app.config.globalProperties) {
     if (!('$ls' in app.config.globalProperties)) {
-      app.config.globalProperties.$ls = instance
+      app.config.globalProperties.$ls = storage
     }
     app.config.globalProperties.$storage = storage
   }
-  return instance
+  return storage
 }
 
 export const setStore = (name, content, maxAge = null) => {

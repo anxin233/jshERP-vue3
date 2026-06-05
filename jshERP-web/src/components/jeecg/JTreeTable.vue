@@ -77,30 +77,8 @@
           return this.url
         }
       },
-      slots() {
-        let slots = []
-        for (let column of this.columns) {
-          if (column.scopedSlots && column.scopedSlots.customRender) {
-            slots.push(column.scopedSlots.customRender)
-          }
-        }
-        return slots
-      },
       resolvedColumns() {
-        return this.columns.map(column => {
-          const slotName = column.scopedSlots && column.scopedSlots.customRender
-          if (!slotName) {
-            return column
-          }
-          const { scopedSlots, ...rest } = column
-          return {
-            ...rest,
-            customRender: (text, record, index) => {
-              const slot = this.$slots[slotName]
-              return slot ? slot({ text, record, index }) : text
-            }
-          }
-        })
+        return this.columns
       },
       tableAttrs() {
         const attrs = Object.assign({}, this.$attrs, this.tableProps)

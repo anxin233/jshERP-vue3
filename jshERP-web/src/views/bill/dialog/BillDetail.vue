@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :maskClosable="false"
     :forceRender="true"
     :style="modalStyle"
@@ -10,7 +10,7 @@
     switchFullscreen
     @cancel="handleCancel"
     wrapClassName="ant-modal-cust-warp">
-    <template slot="footer">
+    <template #footer>
       <!--打印-->
       <a-button key="back" @click="handleCancel">取消(ESC)</a-button>
       <template v-if="isShowPrintBtn">
@@ -46,14 +46,13 @@
       <!--反审核-->
       <a-button v-if="checkFlag && isCanBackCheck && model.status==='1'" @click="handleBackCheck()">反审核</a-button>
     </template>
-    <a-form :form="form">
+    <a-form>
       <!--零售出库-->
       <template v-if="billType === '零售出库'">
         <section ref="print" id="retailOutPrint">
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="会员卡号">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -85,10 +84,10 @@
                   :loading="loading"
                   :columns="columns"
                   :dataSource="dataSource">
-                  <template slot="customBarCode" slot-scope="text, record">
+                  <template #customBarCode="{ text, record }">
                     <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                     <a-popover placement="right" trigger="click">
-                      <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                      <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                       <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                     </a-popover>
                   </template>
@@ -142,7 +141,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="会员卡号">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -174,10 +172,10 @@
                   :loading="loading"
                   :columns="columns"
                   :dataSource="dataSource">
-                  <template slot="customBarCode" slot-scope="text, record">
+                  <template #customBarCode="{ text, record }">
                     <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                     <a-popover placement="right" trigger="click">
-                      <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                      <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                       <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                     </a-popover>
                   </template>
@@ -247,10 +245,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -271,7 +269,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="供应商">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -306,10 +303,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -362,7 +359,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="供应商">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -392,10 +388,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -476,7 +472,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="供应商">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -506,10 +501,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -571,7 +566,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -601,10 +595,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -657,7 +651,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -687,10 +680,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -776,7 +769,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -806,10 +798,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -874,7 +866,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="供应商">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -907,10 +898,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -931,7 +922,6 @@
           <a-row class="form-row" :gutter="24">
             <a-col :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="客户">
-                <a-input v-decorator="['id']" hidden/>
                 {{model.organName}}
               </a-form-item>
             </a-col>
@@ -964,10 +954,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -1009,10 +999,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -1054,10 +1044,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -1099,10 +1089,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -1148,10 +1138,10 @@
               :loading="loading"
               :columns="columns"
               :dataSource="dataSource">
-              <template slot="customBarCode" slot-scope="text, record">
+              <template #customBarCode="{ text, record }">
                 <div :style="record.imgName?'float:left;line-height:30px':'float:left;'">{{record.barCode}}</div>
                 <a-popover placement="right" trigger="click">
-                  <template slot="content"><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
+                  <template #content><img :src="getImgUrl(record.imgName, record.imgLarge)" width="500px" /></template>
                   <div class="item-info" v-if="record.imgName"><img v-if="record.imgName" :src="getImgUrl(record.imgName, record.imgSmall)" class="item-img" title="查看大图" /></div>
                 </a-popover>
               </template>
@@ -1170,7 +1160,7 @@
         <a-row class="form-row" :gutter="24">
           <a-col :span="10">
             <a-form-item :labelCol="{xs: { span: 24 },sm: { span: 3 }}" :wrapperCol="{xs: { span: 24 },sm: { span: 21 }}" label="附件">
-              <j-upload v-model="fileList" bizPath="bill" :disabled="true" :buttonVisible="false"></j-upload>
+              <j-upload v-model:value="fileList" bizPath="bill" :disabled="true" :buttonVisible="false"></j-upload>
             </a-form-item>
           </a-col>
           <a-col :span="14"></a-col>
@@ -1191,9 +1181,7 @@
   import BillPrintIframe from './BillPrintIframe'
   import BillPrintProIframe from './BillPrintProIframe'
   import FinancialDetail from '../../financial/dialog/FinancialDetail'
-  import JUpload from '@/components/jeecg/JUpload'
-  import Vue from 'vue'
-  import storage from '@/utils/storage'
+  import JUpload from '@/components/jeecg/JUpload'  import storage from '@/utils/storage'
   export default {
     name: 'BillDetail',
     components: {
@@ -1233,8 +1221,7 @@
         wrapperCol: {
           xs: { span: 24 },
           sm: { span: 16 },
-        },
-        form: this.$form.createForm(this),
+        },
         loading: false,
         dataSource: [],
         url: {
@@ -1731,7 +1718,7 @@
               info.width = this.defColumns[i].width
             }
             if(this.defColumns[i].dataIndex === 'barCode') {
-              info.scopedSlots = { customRender: 'customBarCode' }
+              info.customRender = (cell) => this.$renderColumnSlot('customBarCode', cell)
             }
             currentCol.push(info)
           }
@@ -1833,9 +1820,7 @@
               this.model.getAmount = this.model.changeAmount
             }
             this.model.debt = (this.model.discountLastMoney + this.model.otherMoney - (this.model.deposit + this.model.changeAmount)).toFixed(2)
-            this.$nextTick(() => {
-              this.form.setFieldsValue(pick(this.model, 'id'))
-            });
+            this.$nextTick(() => {});
             let showType = 'basic'
             if(item.subType === '采购' || item.subType === '采购退货' || item.subType === '销售' || item.subType === '销售退货') {
               if (item.status === '3') {

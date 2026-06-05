@@ -1,5 +1,5 @@
 <template>
-  <a-menu :style="style" class="contextmenu" v-show="visible" @click="handleClick" :selectedKeys="selectedKeys">
+  <a-menu :style="style" class="contextmenu" v-show="isOpen" @click="handleClick" :selectedKeys="selectedKeys">
     <a-menu-item :key="item.key" v-for="item in itemList">
       <legacy-icon role="menuitemicon" v-if="item.icon" :type="item.icon" />{{ item.text }}
     </a-menu-item>
@@ -14,6 +14,11 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    open: {
+      type: Boolean,
+      required: false,
+      default: undefined
     },
     itemList: {
       type: Array,
@@ -30,6 +35,9 @@ export default {
     }
   },
   computed: {
+    isOpen () {
+      return this.open !== undefined ? this.open : this.visible
+    },
     style () {
       return {
         left: this.left + 'px',
@@ -43,8 +51,9 @@ export default {
   },
   methods: {
     closeMenu (e) {
-      if (this.visible === true && ['menuitemicon', 'menuitem'].indexOf(e.target.getAttribute('role')) < 0) {
+      if (this.isOpen === true && ['menuitemicon', 'menuitem'].indexOf(e.target.getAttribute('role')) < 0) {
         this.$emit('update:visible', false)
+        this.$emit('update:open', false)
       }
     },
     setPosition (e) {
@@ -55,6 +64,7 @@ export default {
     handleClick ({key}) {
       this.$emit('select', key, this.target)
       this.$emit('update:visible', false)
+      this.$emit('update:open', false)
     }
   }
 }

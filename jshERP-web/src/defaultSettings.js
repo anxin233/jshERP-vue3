@@ -9,7 +9,7 @@
  * autoHideHeader - 向下滚动时，隐藏 Header : boolean
  * contentWidth - 内容区布局： 流式 |  固定
  *
- * storageOptions: {} - Vue-ls 插件配置项 (localStorage/sessionStorage)
+ * storageOptions: {} - 本地存储配置项 (localStorage/sessionStorage)
  *
  */
 
@@ -23,10 +23,10 @@ export default {
   autoHideHeader: false, //  auto hide header
   colorWeak: false,
   multipage: true, //默认多页签模式
-  // vue-ls options
+  // storage options
   storageOptions: {
     namespace: 'pro__', // key prefix
-    name: 'ls', // name variable Vue.[ls] or this.[$ls],
+    name: 'ls', // global property name, e.g. this.$ls
     storage: 'local', // storage name session, local, memory
   }
 }

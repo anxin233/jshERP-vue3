@@ -2,10 +2,10 @@
   <a-modal
     :title="currTitle"
     :width="450"
-    :visible="visible"
+    :open="visible"
     :closable="false"
     :maskClosable="closable">
-    <template slot="footer">
+    <template #footer>
       <a-button v-if="closable" @click="close">关闭</a-button>
       <a-button type="primary" @click="departOk">确认</a-button>
     </template>
@@ -17,13 +17,15 @@
         style="margin-bottom:10px"
         :validate-status="validate_status">
         <a-tooltip placement="topLeft" >
-          <template slot="title">
+          <template #title>
             <span>您隶属于多部门，请选择当前所在部门</span>
           </template>
-          <a-avatar style="backgroundColor:#87d068" icon="gold" />
+          <a-avatar style="backgroundColor:#87d068">
+            <template #icon><legacy-icon type="gold" /></template>
+          </a-avatar>
         </a-tooltip>
-        <a-select v-model="departSelected" :class="{'valid-error':validate_status=='error'}" placeholder="请选择登录部门" style="margin-left:10px;width: 80%">
-          <legacy-icon slot="suffixIcon" type="gold" />
+        <a-select v-model:value="departSelected" :class="{'valid-error':validate_status=='error'}" placeholder="请选择登录部门" style="margin-left:10px;width: 80%">
+          <template #suffixIcon><legacy-icon type="gold" /></template>
           <a-select-option
             v-for="d in departList"
             :key="d.id"
@@ -40,9 +42,7 @@
 </template>
 
 <script>
-  import { getAction,putAction } from '@/api/manage'
-  import Vue from 'vue'
-  import store from '@/store/'
+  import { getAction,putAction } from '@/api/manage'  import store from '@/store/'
   import { USER_INFO } from "@/store/mutation-types"
   import storage from '@/utils/storage'
 

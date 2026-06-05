@@ -5,9 +5,9 @@
     :autoAdjustOverflow="true"
     :arrowPointAtCenter="true"
     overlayClassName="header-notice-wrapper"
-    @visibleChange="handleHoverChange"
+    @openChange="handleHoverChange"
     :overlayStyle="{ width: '300px', top: '50px' }">
-    <template slot="content">
+    <template #content>
       <a-spin :spinning="loadding">
         <a-tabs>
           <a-tab-pane :tab="msg1Title" key="1">
@@ -173,7 +173,7 @@
       },
       websocketOnmessage: function (e) {
         console.log("-----接收消息-------",e.data);
-        var data = eval("(" + e.data + ")"); //解析对象
+        var data = JSON.parse(e.data); //解析对象
         if(data.cmd == "topic"){
             //系统通知
           this.loadData();

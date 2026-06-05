@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-select
-      v-bind="$attrs"
+      v-bind="selectAttrs"
       show-search
       :filter-option="false"
       :value="normalizedValue"
@@ -32,14 +32,14 @@
 
     <!-- 未输入搜索词时点击“添加”则弹出输入框 -->
     <a-modal
-      :visible="addModalVisible"
+      :open="addModalVisible"
       title="添加新选项"
       okText="确定"
       cancelText="取消"
       @ok="onAddModalOk"
       @cancel="addModalVisible = false">
       <a-form-item label="显示名称" :label-col="{span:6}" :wrapper-col="{span:16}">
-        <a-input v-model="addModalLabel" placeholder="请输入新选项的显示名称" @pressEnter="onAddModalOk"/>
+        <a-input v-model:value="addModalLabel" placeholder="请输入新选项名称" @pressEnter="onAddModalOk"/>
       </a-form-item>
     </a-modal>
   </div>
@@ -58,6 +58,9 @@ export default {
     },
     value: {
       default: undefined
+    },
+    modelValue: {
+      default: undefined
     }
   },
   data () {
@@ -72,9 +75,12 @@ export default {
     }
   },
   computed: {
+    currentValue () {
+      return this.value !== undefined ? this.value : this.modelValue
+    },
     normalizedValue () {
-      if (this.value === undefined || this.value === null) return undefined
-      return String(this.value)
+      if (this.currentValue === undefined || this.currentValue === null) return undefined
+      return String(this.currentValue)
     },
     filteredOptions () {
       if (!this.searchText) return this.options
@@ -87,7 +93,7 @@ export default {
     showAddEntry () {
       return this.dropdownVisible
     },
-    // 有搜索词且无精确匹配时显示“添加'xxx'”，否则显示“＋ 添加新选项”
+    // 有搜索词且无精确匹配时显示“添加 xxx”，否则显示“+ 添加新选项”
     addEntryLabel () {
       const kw = (this.searchText || '').trim()
       if (kw && !this.options.some(o =>
@@ -95,7 +101,16 @@ export default {
       )) {
         return `添加"${kw}"`
       }
-      return '＋ 添加新选项'
+      return '）添加新选项'
+    },
+    // 勿将父组件 change / v-model 监听器透传给内部 a-select，避免与 @change 合并成数组触发 prop 校验警告
+    selectAttrs () {
+      const attrs = { ...this.$attrs }
+      delete attrs.onChange
+      delete attrs.onInput
+      delete attrs['onUpdate:value']
+      delete attrs['onUpdate:modelValue']
+      return attrs
     }
   },
   watch: {
@@ -118,13 +133,12 @@ export default {
             label: r.label
           }))
           // 没有当前值时，自动填入默认选项
-          const hasValue = this.value !== undefined && this.value !== null && this.value !== ''
+          const hasValue = this.currentValue !== undefined && this.currentValue !== null && this.currentValue !== ''
           if (!hasValue && rows.length > 0) {
             const def = rows.find(r => r.isDefault) || rows[0]
             const val = String(def.value)
             this.$nextTick(() => {
-              this.$emit('change', val)
-              this.$emit('input', val)
+              this.emitValue(val)
             })
           }
         }
@@ -159,8 +173,7 @@ export default {
         return
       }
       this.searchText = ''
-      this.$emit('change', val)
-      this.$emit('input', val)
+      this.emitValue(val)
     },
 
     onAddModalOk () {
@@ -202,8 +215,7 @@ export default {
               const newOpt = this.options.find(o => o.label === label)
               if (newOpt) {
                 this.searchText = ''
-                this.$emit('change', newOpt.value)
-                this.$emit('input', newOpt.value)
+                this.emitValue(newOpt.value)
               }
             }
           }).finally(() => {
@@ -215,16 +227,23 @@ export default {
       }).finally(() => {
         this.adding = false
       })
+    },
+    emitValue (val) {
+      this.$emit('change', val)
+      this.$emit('input', val)
+      this.$emit('update:value', val)
+      this.$emit('update:modelValue', val)
     }
   }
 }
 </script>
 
 <style>
-/* 让"添加"条目更突出 */
+/* 让“添加”条目更突出 */
 .dynamic-option-add-entry {
   border-top: 1px dashed #d9d9d9 !important;
   margin-top: 4px !important;
   padding-top: 6px !important;
 }
 </style>
+

@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1200"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -16,43 +16,43 @@
       okText="保存"
       style="top:5%;height: 90%;">
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form" id="projectModal">
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="项目名称">
-            <a-input placeholder="请输入项目名称" v-decorator.trim="[ 'name', validatorRules.name]" />
+        <a-form ref="formRef" :model="formModel" :rules="formRules" id="projectModal">
+          <a-form-item name="name" :labelCol="labelCol" :wrapperCol="wrapperCol" label="项目名称">
+            <a-input placeholder="请输入项目名称" v-model:value="formModel.name" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="项目类别">
-            <a-select placeholder="请选择项目类别" v-decorator="[ 'categoryId', validatorRules.categoryId]">
+          <a-form-item name="categoryId" :labelCol="labelCol" :wrapperCol="wrapperCol" label="项目类别">
+            <a-select placeholder="请选择项目类别" v-model:value="formModel.categoryId">
               <a-select-option v-for="item in categoryList" :key="item.id" :value="item.id">
                 {{ item.name }}
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="工时单价">
+          <a-form-item name="hourlyRate" :labelCol="labelCol" :wrapperCol="wrapperCol" label="工时单价">
             <a-input-number
               placeholder="请输入工时单价(元/小时)"
-              v-decorator.trim="[ 'hourlyRate', validatorRules.hourlyRate]"
+              v-model:value="formModel.hourlyRate"
               :min="0"
               :precision="2"
               @change="onHourlyRateChange"
               style="width: 100%" />
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="默认工时">
+          <a-form-item name="defaultHours" :labelCol="labelCol" :wrapperCol="wrapperCol" label="默认工时">
             <a-input-number
               placeholder="请输入默认工时(小时)"
-              v-decorator.trim="[ 'defaultHours', validatorRules.defaultHours]"
+              v-model:value="formModel.defaultHours"
               :min="0"
               :precision="2"
               @change="onDefaultHoursChange"
               style="width: 100%" />
           </a-form-item>
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="是否启用">
-            <a-switch checked-children="启用" un-checked-children="禁用" v-model="enabledSwitch" @change="onChange"/>
+            <a-switch checked-children="启用" un-checked-children="禁用" v-model:checked="enabledSwitch" @change="onChange"/>
           </a-form-item>
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注">
-            <a-textarea placeholder="请输入备注" v-decorator.trim="[ 'remark' ]" :rows="4" />
+          <a-form-item name="remark" :labelCol="labelCol" :wrapperCol="wrapperCol" label="备注">
+            <a-textarea placeholder="请输入备注" v-model:value="formModel.remark" :rows="4" />
           </a-form-item>
           <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="关联商品">
-            <a-button type="primary" icon="plus" @click="openMaterialSelectModal">添加商品</a-button>
+            <a-button type="primary" @click="openMaterialSelectModal"><template #icon><legacy-icon type="plus" /></template>添加商品</a-button>
             <!-- 已选商品表格 -->
             <a-table
               v-if="selectedMaterials.length > 0"
@@ -63,17 +63,19 @@
               style="margin-top: 10px"
               rowKey="id"
               bordered>
-              <span slot="quantity" slot-scope="text, record">
-                <a-input-number
-                  :value="record.quantity"
-                  :min="1"
-                  :precision="0"
-                  style="width: 100px"
-                  @change="(val) => onQuantityChange(record, val)" />
-              </span>
-              <span slot="action" slot-scope="text, record">
-                <a @click="removeMaterial(record.id)" style="color: #f5222d;">删除</a>
-              </span>
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'quantity'">
+                  <a-input-number
+                    :value="record.quantity"
+                    :min="1"
+                    :precision="0"
+                    style="width: 100px"
+                    @change="(val) => onQuantityChange(record, val)" />
+                </template>
+                <template v-else-if="column.dataIndex === 'action'">
+                  <a @click="removeMaterial(record.id)" style="color: #f5222d;">删除</a>
+                </template>
+              </template>
             </a-table>
             <div v-else style="margin-top: 10px; color: #999; text-align: center; padding: 20px; border: 1px dashed #d9d9d9;">
               暂无关联商品，请点击"添加商品"按钮选择
@@ -161,8 +163,7 @@
           {
             title: '数量',
             dataIndex: 'quantity',
-            width: '12%',
-            scopedSlots: { customRender: 'quantity' }
+            width: '12%'
           },
           {
             title: '小计',
@@ -177,8 +178,7 @@
           {
             title: '操作',
             dataIndex: 'action',
-            width: '12%',
-            scopedSlots: { customRender: 'action' }
+            width: '12%'
           }
         ],
         labelCol: {
@@ -190,29 +190,15 @@
           sm: { span: 16 },
         },
         confirmLoading: false,
-        form: this.$form.createForm(this),
-        validatorRules:{
-          name:{
-            rules: [
-              { required: true, message: '请输入项目名称!' },
-              { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' }
-            ]
-          },
-          categoryId:{
-            rules: [
-              { required: true, message: '请选择项目类别!' }
-            ]
-          },
-          hourlyRate:{
-            rules: [
-              { required: true, message: '请输入工时单价!' }
-            ]
-          },
-          defaultHours:{
-            rules: [
-              { required: true, message: '请输入默认工时!' }
-            ]
-          }
+        formModel: {},
+        formRules:{
+          name: [
+            { required: true, message: '请输入项目名称!', trigger: 'blur' },
+            { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' }
+          ],
+          categoryId: [{ required: true, message: '请选择项目类别!', trigger: 'change' }],
+          hourlyRate: [{ required: true, message: '请输入工时单价!', trigger: 'blur' }],
+          defaultHours: [{ required: true, message: '请输入默认工时!', trigger: 'blur' }]
         },
       }
     },
@@ -282,7 +268,7 @@
       onQuantityChange(record, value) {
         const idx = this.selectedMaterials.findIndex(m => m.id === record.id);
         if (idx !== -1) {
-          this.$set(this.selectedMaterials, idx, { ...this.selectedMaterials[idx], quantity: value });
+          (this.selectedMaterials[idx] = { ...this.selectedMaterials[idx], quantity: value });
         }
       },
       removeMaterial(materialId) {
@@ -293,18 +279,13 @@
         this.model.enabled = true
         this.enabledSwitch = true
         this.selectedMaterials = []
-        this.$nextTick(() => {
-          this.form.setFieldsValue({
-            defaultHours: 1
-          })
-          // 手动设置计算属性依赖的值
-          this.formHourlyRate = 0
-          this.formDefaultHours = 1
-        })
+        this.formModel = { defaultHours: 1 }
+        this.formHourlyRate = 0
+        this.formDefaultHours = 1
       },
       edit (record) {
-        this.form.resetFields();
         this.model = Object.assign({}, record);
+        this.formModel = pick(this.model,'name', 'categoryId', 'hourlyRate', 'defaultHours', 'remark')
         this.visible = true;
         this.selectedMaterials = []
         if(record.enabled!=null){
@@ -326,8 +307,6 @@
           });
         }
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model,'name', 'categoryId', 'hourlyRate', 'defaultHours', 'remark'))
-          // 同步表单值到 data 以便计算属性能响应式更新
           this.formHourlyRate = this.model.hourlyRate || 0
           this.formDefaultHours = this.model.defaultHours || 0
           autoJumpNextInput('projectModal')
@@ -339,10 +318,11 @@
       },
       handleOk () {
         const that = this;
-        this.form.validateFields((err, values) => {
-          if (!err) {
+        const formRef = this.$refs.formRef
+        if (!formRef) return
+        formRef.validate().then(() => {
             that.confirmLoading = true;
-            let formData = Object.assign({}, this.model, values);
+            let formData = Object.assign({}, this.model, { ...that.formModel });
             // 计算并设置项目总价
             const materialsTotal = parseFloat(this.materialsTotalPrice);
             const labor = parseFloat(this.laborCost);
@@ -370,8 +350,7 @@
             }).finally(() => {
               that.confirmLoading = false;
             })
-          }
-        })
+        }).catch(() => {})
       },
       handleCancel () {
         this.close()

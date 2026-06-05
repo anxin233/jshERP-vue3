@@ -2,7 +2,7 @@
   <a-modal
     title="用户列表"
     :width="1000"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     @ok="handleSubmit"
     @cancel="handleCancel">

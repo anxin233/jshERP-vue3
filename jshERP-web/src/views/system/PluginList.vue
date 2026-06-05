@@ -9,7 +9,7 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入名称查询" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -27,10 +27,10 @@
         <div class="table-operator"  style="margin-top: 5px">
           <a-upload name="file" :showUploadList="false" :multiple="false" :headers="tokenHeader" :action="importUrl" @change="handleImportJar">
             <a-popover title="导入注意点">
-              <template slot="content">
+              <template #content>
                 <p>请选择需要导入的插件jar包</p>
               </template>
-              <a-button type="primary" icon="import">上传插件包</a-button>
+              <a-button type="primary"><template #icon><legacy-icon type="import" /></template>上传插件包</a-button>
             </a-popover>
           </a-upload>
         </div>
@@ -47,25 +47,25 @@
             :scroll="scroll"
             :loading="loading"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="uploadTemplate(record)" >上传页面</a>
               <a-divider type="vertical" />
-              <a-popconfirm title="确定要开启该插件吗?" @confirm="() => startPlugin(record.pluginDescriptor.pluginId)">
+              <a-popconfirm title="确定要开启该插件吗" @confirm="() => startPlugin(record.pluginDescriptor.pluginId)">
                 <a>开启</a>
               </a-popconfirm>
               <a-divider type="vertical" />
-              <a-popconfirm title="确定要停止该插件吗?" @confirm="() => stopPlugin(record.pluginDescriptor.pluginId)">
+              <a-popconfirm title="确定要停止该插件吗" @confirm="() => stopPlugin(record.pluginDescriptor.pluginId)">
                 <a>停止</a>
               </a-popconfirm>
               <a-divider type="vertical" />
-              <a-popconfirm title="确定要卸载该插件吗?" @confirm="() => uninstallPlugin(record.pluginDescriptor.pluginId)">
+              <a-popconfirm title="确定要卸载该插件吗" @confirm="() => uninstallPlugin(record.pluginDescriptor.pluginId)">
                 <a>卸载</a>
               </a-popconfirm>
-            </span>
-            <span slot="linkInfo" slot-scope="text, record">
+            </span></template>
+            <template #linkInfo="{ text, record }"><span>
               <a :href="linkUrl(record)" target='_blank' :title="linkUrl(record)">{{linkUrl(record)}}</a>
-            </span>
-            <template slot="customRenderFlag" slot-scope="pluginState">
+            </span></template>
+            <template #customRenderFlag="{ text: pluginState }">
               <a-tag v-if="pluginState=='STARTED'" color="green">启用</a-tag>
               <a-tag v-if="pluginState=='STOPPED'" color="orange">停止</a-tag>
             </template>
@@ -74,7 +74,7 @@
         <!-- table区域-end -->
         <!-- 表单区域 -->
         <plugin-modal ref="modalForm" @ok="modalFormOk"></plugin-modal>
-        <plugin-app-modal ref="appModalForm" @ok="appModalFormOk"></plugin-app-modal>
+        <plugin-app-modal ref="appModalForm" @ok="modalFormOk"></plugin-app-modal>
       </a-card>
     </a-col>
   </a-row>
@@ -123,7 +123,7 @@
             dataIndex: 'action',
             width: 200,
             align:"center",
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {title: '名称', dataIndex: '', width: 120,
             customRender:function (t,r,index) {
@@ -158,10 +158,10 @@
             }
           },
           {title: '页面链接', dataIndex: '', width: 250, ellipsis:true,
-            scopedSlots: { customRender: 'linkInfo' }
+            customRender: (cell) => this.$renderColumnSlot('linkInfo', cell)
           },
           {title: '状态', dataIndex: 'pluginState', width: 60, align: "center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -212,7 +212,7 @@
       },
       uploadTemplate(record) {
         var rootPath = record.path.substring(0, record.path.indexOf("plugins"));
-        this.$message.info('请将页面上传到服务器目录：' + " /前端根目录/plugins/");
+        this.$message.info('请将页面上传到服务器目录（' + " /前端根目录/plugins/");
       },
       startPlugin(pluginId) {
         postAction('/plugin/start/' + pluginId).then((res)=>{
@@ -258,5 +258,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

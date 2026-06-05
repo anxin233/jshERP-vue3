@@ -1,6 +1,6 @@
 <template>
   <div class="head-info" :class="center && 'left'">
-    <p>￥{{ content }}</p>
+    <p>￥{{ displayContent }}</p>
     <em v-if="bordered"/>
   </div>
 </template>
@@ -14,8 +14,8 @@
         default: ''
       },
       content: {
-        type: Number,
-        default: ''
+        type: [Number, String],
+        default: 0
       },
       bordered: {
         type: Boolean,
@@ -24,6 +24,15 @@
       center: {
         type: Boolean,
         default: true
+      }
+    },
+    computed: {
+      displayContent () {
+        const val = this.content
+        if (val === '' || val === null || val === undefined) {
+          return 0
+        }
+        return val
       }
     }
   }

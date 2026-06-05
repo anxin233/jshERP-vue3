@@ -56,10 +56,7 @@ function globalDisabledAuth(code){
   console.log("全局页面禁用权限--Global--开始");
 
   let permissionList = [];
-  let allPermissionList = [];
-
-  //let authList = Vue.ls.get(USER_AUTH);
-  let authList = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
+  let allPermissionList = [];  let authList = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
   for (let auth of authList) {
     if(auth.type == '2') {
       permissionList.push(auth);
@@ -176,10 +173,7 @@ function hasColoum(item,authList){
 //根据授权码前缀获取未授权的列信息
 function getNoAuthCols(pre){
   let permissionList = [];
-  let allPermissionList = [];
-
-  //let authList = Vue.ls.get(USER_AUTH);
-  let authList = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
+  let allPermissionList = [];  let authList = JSON.parse(sessionStorage.getItem(USER_AUTH) || "[]");
   for (let auth of authList) {
     //显示策略，有效状态
     if(auth.type == '1'&&startWith(auth.action,pre)) {

@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :width="modalWidth"
-    :visible="visible"
+    :open="visible"
     :title="title"
     @ok="handleSubmit"
     @cancel="close"
@@ -17,7 +17,7 @@
             <a-row :gutter="24">
               <a-col :md="12" :sm="24">
                 <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="序列号">
-                  <a-input ref="name" placeholder="多个序列号用逗号隔开" v-model="queryParam.name"></a-input>
+                  <a-input ref="name" placeholder="多个序列号用逗号隔开" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
@@ -49,9 +49,11 @@
           :pagination="ipagination"
           :loading="loading"
           @change="handleTableChange">
-          <span slot="action" slot-scope="text, record">
-              <a @click="checkSn(record)">选中</a>
-          </span>
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.dataIndex === 'action'">
+              <a @click="checkSn(record)">选择</a>
+            </template>
+          </template>
         </a-table>
       </a-col>
       <a-col :md="8" :sm="24">
@@ -65,9 +67,11 @@
           :pagination="false"
           :loading="loading"
           @change="handleTableChange">
-           <span slot="action" slot-scope="text, record">
-              <a @click="removeSn(record)">移除</a>
-           </span>
+           <template #bodyCell="{ column, record }">
+             <template v-if="column.dataIndex === 'action'">
+               <a @click="removeSn(record)">删除</a>
+             </template>
+           </template>
         </a-table>
         <div style="width:200px; float:right; text-align: right; padding: 18px 30px 18px 0">已选中共{{checkDataSource.length}}条</div>
       </a-col>
@@ -79,6 +83,7 @@
   import { getAction } from '@/api/manage'
   import {getEnableSerialNumberList} from '@/api/api'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 
   export default {
     name: 'JSelectSnModal',
@@ -107,11 +112,11 @@
           {dataIndex: 'serialNumber', title: '序列号', width: 100, align: 'left'},
           {dataIndex: 'inBillNo', title: '入库单号', width: 100, align: 'left'},
           {dataIndex: 'createTimeStr', title: '创建时间', width: 100, align: 'left'},
-          {dataIndex: 'action', title: '操作', align:"center", width: 50, scopedSlots: { customRender: 'action' }}
+          {dataIndex: 'action', title: '操作', align:"center", width: 50}
         ],
         rightColumns: [
           {dataIndex: 'serialNumber', title: '序列号', width: 100, align: 'left'},
-          {tdataIndex: 'action', title: '操作', align:"center", width: 50, scopedSlots: { customRender: 'action' }}
+          {dataIndex: 'action', title: '操作', align:"center", width: 50}
         ],
         scrollTrigger: {y: 460},
         dataSource: [],
@@ -138,7 +143,8 @@
         departTree: [],
         depotList: [],
         visible: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         loading: false,
         expandedKeys: [],
       }

@@ -1,13 +1,15 @@
 <template>
   <a-tooltip placement="topLeft">
-    <template slot="title">
+    <template #title>
       <span>{{value}}</span>
     </template>
-    {{ value | ellipsis(length) }}
+    <span class="j-ellipsis-text">{{ ellipsisText(value, length) }}</span>
   </a-tooltip>
 </template>
 
 <script>
+  import { ellipsis } from '@/utils/filter'
+
   export default {
     name: 'JEllipsis',
     props: {
@@ -19,6 +21,11 @@
         type: Number,
         required: false,
         default: 25,
+      }
+    },
+    methods: {
+      ellipsisText(value, length) {
+        return ellipsis(value, length)
       }
     }
   }

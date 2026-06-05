@@ -2,7 +2,7 @@
   <a-modal
     :title="title"
     :width="modalWidth"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :maskClosable="false"
     :footer="null"

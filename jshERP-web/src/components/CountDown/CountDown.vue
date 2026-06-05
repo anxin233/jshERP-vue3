@@ -1,17 +1,14 @@
 <template>
-  <span>
-    {{ lastTime | format }}
-  </span>
+  <span>{{ formatTime(lastTime) }}</span>
 </template>
 
 <script>
-
   function fixedZero(val) {
-    return val * 1 < 10 ? `0${val}` : val;
+    return val * 1 < 10 ? `0${val}` : val
   }
 
   export default {
-    name: "CountDown",
+    name: 'CountDown',
     props: {
       format: {
         type: Function,
@@ -19,12 +16,11 @@
       },
       target: {
         type: [Date, Number],
-        required: true,
+        required: true
       },
       onEnd: {
         type: Function,
-        default: () => {
-        }
+        default: () => {}
       }
     },
     data() {
@@ -36,25 +32,24 @@
         interval: 1000
       }
     },
-    filters: {
-      format(time) {
-        const hours = 60 * 60 * 1000;
-        const minutes = 60 * 1000;
-
-        const h = Math.floor(time / hours);
-        const m = Math.floor((time - h * hours) / minutes);
-        const s = Math.floor((time - h * hours - m * minutes) / 1000);
-        return `${fixedZero(h)}:${fixedZero(m)}:${fixedZero(s)}`
-      }
-    },
     created() {
       this.initTime()
       this.tick()
     },
     methods: {
+      formatTime(time) {
+        if (typeof this.format === 'function') {
+          return this.format(time)
+        }
+        const hours = 60 * 60 * 1000
+        const minutes = 60 * 1000
+        const h = Math.floor(time / hours)
+        const m = Math.floor((time - h * hours) / minutes)
+        const s = Math.floor((time - h * hours - m * minutes) / 1000)
+        return `${fixedZero(h)}:${fixedZero(m)}:${fixedZero(s)}`
+      },
       initTime() {
-        let lastTime = 0;
-        let targetTime = 0;
+        let targetTime = 0
         this.originTargetTime = this.target
         try {
           if (Object.prototype.toString.call(this.target) === '[object Date]') {
@@ -65,39 +60,38 @@
         } catch (e) {
           throw new Error('invalid target prop')
         }
-
-        lastTime = targetTime - new Date().getTime();
-
+        const lastTime = targetTime - new Date().getTime()
         this.lastTime = lastTime < 0 ? 0 : lastTime
       },
       tick() {
-        const {onEnd} = this
-
+        const { onEnd } = this
         this.timer = setTimeout(() => {
           if (this.lastTime < this.interval) {
             clearTimeout(this.timer)
             this.lastTime = 0
             if (typeof onEnd === 'function') {
-              onEnd();
+              onEnd()
             }
           } else {
             this.lastTime -= this.interval
             this.tick()
           }
         }, this.interval)
+      },
+      clearTimer() {
+        clearTimeout(this.timer)
       }
     },
-    beforeUpdate () {
+    beforeUpdate() {
       if (this.originTargetTime !== this.target) {
         this.initTime()
       }
     },
-    beforeDestroy() {
-      clearTimeout(this.timer)
+    beforeUnmount() {
+      this.clearTimer()
+    },
+    beforeUnmount() {
+      this.clearTimer()
     }
   }
 </script>
-
-<style scoped>
-
-</style>

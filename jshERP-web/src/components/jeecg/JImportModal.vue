@@ -2,7 +2,7 @@
   <a-modal
     title="导入EXCEL"
     :width="600"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="uploading"
     @cancel="handleClose">
 
@@ -19,7 +19,7 @@
       </a-button>
     </a-upload>
 
-    <template slot="footer">
+    <template #footer>
       <a-button @click="handleClose">关闭</a-button>
       <a-button
         type="primary"

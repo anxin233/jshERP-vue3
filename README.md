@@ -23,39 +23,92 @@
 * 初学JAVA的小伙伴可以下载源代码来进行学习交流
 
 # 技术框架
-* 核心框架：SpringBoot 2.0.0
-* 持久层框架：Mybatis 1.3.2
-* 日志管理：SLF4J 1.7
-* 前端框架：Vue 2.7.16
-* UI框架: Ant-Design-Vue 1.5.2
-* 模板框架: Jeecg-Boot 2.2.0
-* 项目管理框架: Maven 3.3.9
+
+**以下为当前仓库实际版本**（详见 `jshERP-boot/pom.xml`、`jshERP-web/package.json`）：
+
+| 层级 | 技术 | 版本 |
+|------|------|------|
+| 后端 | Spring Boot | 2.7.18 |
+| 持久层 | MyBatis Plus | 3.0.7.1 |
+| 数据库迁移 | Flyway | 启用（`db/migration/V*.sql`） |
+| 前端 | Vue | 3.5.35 |
+| UI | Ant Design Vue | 4.2.6 |
+| 构建 | Vite | 8.0.16 |
+| 路由 / 状态 | Vue Router / Vuex | 4.x |
+| 模板风格 | Jeecg-Boot 系 | 侧栏 + 动态菜单 |
+| 构建工具 | Maven | 3.3.9+ |
+
+> 说明：上游 README 曾写 Vue 2.7 + Ant Design Vue 1.x；本仓库 **`jshERP-web` 已迁移为 Vue 3 + Ant Design Vue 4 + Vite**，不再使用 `vue.config.js`。AI 协作与开发细节见根目录 [`CLAUDE.md`](CLAUDE.md)。
+
+# 仓库结构
+
+```text
+jshERP/
+├── jshERP-boot/     # Spring Boot 后端
+├── jshERP-web/      # Vue 3 前端（唯一 Web 端）
+├── deploy/docker/   # Docker / Nginx 部署示例
+└── *.md             # 升级记录、排查与方案文档
+```
+
+# 快速开始
+
+### 依赖服务
+
+* MySQL 8.0（库名 `jsh_erp`）
+* Redis 6.2+
+
+### 后端
+
+```bash
+cd jshERP-boot && mvn clean package
+java -jar target/jshERP.jar
+# 服务：http://localhost:9999/jshERP-boot
+# 接口文档：http://localhost:9999/jshERP-boot/doc.html
+```
+
+已有老库首次接入 Flyway，见 [`jshERP-boot/src/main/resources/db/migration/README.md`](jshERP-boot/src/main/resources/db/migration/README.md)。
+
+### 前端
+
+```bash
+cd jshERP-web && npm install
+npm run serve
+# 开发地址：http://localhost:3000
+# API 代理见 vite.config.js（默认 /erp/jshERP-boot → 9999）
+```
+
+生产构建：`npm run build`。子路径部署参考 `jshERP-web/.env.subpath.example`。
 
 # 开发环境
-建议开发者使用以下环境，可以避免版本带来的问题
-* IDE: IntelliJ IDEA 2025.1.4.1
-* DB: Mysql 8.0.24
-* JDK: JDK 1.8
-* Node: Node 20.17.0
-* Maven: Maven 3.3.9
-* Redis: 6.2.1
-* Nginx: 1.12.2 
+
+建议开发者使用以下环境，可以避免版本带来的问题：
+
+* IDE: IntelliJ IDEA 2025.1.4.1（后端）、VS Code / Cursor（前端）
+* DB: MySQL 8.0.24+
+* JDK: **JDK 11+**（与 `pom.xml` 一致）
+* Node: **Node 20.x**（如 20.17.0）
+* Maven: Maven 3.3.9+
+* Redis: 6.2.1+
+* Nginx: 1.12.2+（生产部署）
 
 # 服务器环境
-* 数据库：Mysql8.0.24
-* JAVA平台：JRE1.8
-* Redis库：redis6.2.1
-* Nginx代理：nginx1.12.2
-* 操作系统：Windows、Linux等
+
+* 数据库：MySQL 8.0.24+
+* JAVA 平台：**JRE 11+**（运行 Spring Boot 2.7 打包产物）
+* Redis：6.2.1+
+* Nginx 代理：1.12.2+（静态资源 + 反向代理 `/jshERP-boot`）
+* 操作系统：Windows、Linux 等
 
 # 配套资料
+
 * 需要用户手册请访问这里 https://www.gyjerp.com/doc/archive/user-manual.html
-* 需要接口文档请查看这里 https://www.gyjerp.com/doc/archive/apidoc.html
-* 喜欢视频教程可以看这里 https://space.bilibili.com/540003552/channel/series 
-* 为方便大家搭建运行环境，分享了下载地址 https://pan.baidu.com/s/1jlild9uyGdQ7H2yaMx76zw  提取码:814g
+* 需要接口文档请查看这里 https://www.gyjerp.com/doc/archive/apidoc.html（本地亦可访问 `/jshERP-boot/doc.html`）
+* 喜欢视频教程可以看这里 https://space.bilibili.com/540003552/channel/series
+* 为方便大家搭建运行环境，分享了下载地址 https://pan.baidu.com/s/1jlild9uyGdQ7H2yaMx76zw  提取码:814g
 * 不会打包的小伙伴，请下载此打包后的文件 https://share.weiyun.com/NDJNLhry 密码：vd3aig
-* 不会部署的小伙伴，请参考部署教程 https://www.gyjerp.com/doc/archive/deploy.html
+* 不会部署的小伙伴，请参考部署教程 https://www.gyjerp.com/doc/archive/deploy.html；本仓库 Docker 示例见 [`deploy/docker/README.md`](deploy/docker/README.md)
 * 部署后登录系统的默认租户账号：jsh，默认超管账户：admin，默认密码均为：123456
+* 开发者文档：[`CLAUDE.md`](CLAUDE.md)（AI 协作 / 架构速查）、[`jshERP-web/docs/ANTDV4_MIGRATION_STATUS.md`](jshERP-web/docs/ANTDV4_MIGRATION_STATUS.md)（前端迁移状态）
 
 # 开源说明
 * 本系统100%开源，遵守Apache-2.0协议，企业可以商用

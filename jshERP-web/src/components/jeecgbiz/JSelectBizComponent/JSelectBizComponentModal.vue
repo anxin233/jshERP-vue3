@@ -3,7 +3,7 @@
     centered
     :title="name + '选择'"
     :width="width"
-    :visible="visible"
+    :open="modalOpen"
     @ok="handleOk"
     @cancel="close"
     cancelText="关闭">
@@ -17,13 +17,13 @@
 
               <a-col :span="14">
                 <a-form-item :label="(queryParamText||name)">
-                  <a-input v-model="queryParam[queryParamCode||valueKey]" :placeholder="'请输入' + (queryParamText||name)" @pressEnter="searchQuery"/>
+                  <a-input v-model:value="queryParam[queryParamCode||valueKey]" :placeholder="'请输入' + (queryParamText||name)" @pressEnter="searchQuery"/>
                 </a-form-item>
               </a-col>
               <a-col :span="8">
                   <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                    <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
-                    <a-button type="primary" @click="searchReset" icon="reload" style="margin-left: 8px">重置</a-button>
+                    <a-button type="primary" @click="searchQuery"><template #icon><legacy-icon type="search" /></template>查询</a-button>
+                    <a-button type="primary" @click="searchReset" style="margin-left: 8px"><template #icon><legacy-icon type="reload" /></template>重置</a-button>
                   </span>
               </a-col>
 
@@ -50,9 +50,11 @@
         <a-card :title="'已选' + name" :bordered="false" :head-style="{padding:0}" :body-style="{padding:0}">
 
           <a-table size="small" :rowKey="rowKey" bordered v-bind="selectedTable">
-              <span slot="action" slot-scope="text, record, index">
-                <a @click="handleDeleteSelected(record, index)">删除</a>
-              </span>
+              <template #bodyCell="{ column, record, index }">
+                <template v-if="column.dataIndex === 'action'">
+                  <a @click="handleDeleteSelected(record, index)">删除</a>
+                </template>
+              </template>
           </a-table>
 
         </a-card>
@@ -62,6 +64,7 @@
 </template>
 
 <script>
+  import { h } from 'vue'
   import { getAction } from '@/api/manage'
   import Ellipsis from '@/components/Ellipsis'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
@@ -79,6 +82,10 @@
       visible: {
         type: Boolean,
         default: false
+      },
+      open: {
+        type: Boolean,
+        default: undefined
       },
       valueKey: {
         type: String,
@@ -148,15 +155,11 @@
               ...this.columns[0],
               width: this.columns[0].widthRight || this.columns[0].width,
             },
-            { title: '操作', dataIndex: 'action', align: 'center', width: 60, scopedSlots: { customRender: 'action' }, }
+            { title: '操作', dataIndex: 'action', align: 'center', width: 60, }
           ],
           dataSource: [],
         },
-        renderEllipsis: (value) => this.$createElement(Ellipsis, {
-          props: {
-            length: this.ellipsisLength
-          }
-        }, [value]),
+        renderEllipsis: (value) => h(Ellipsis, { length: this.ellipsisLength }, () => value),
         url: { list: this.listUrl },
         /* 分页参数 */
         ipagination: {
@@ -175,13 +178,20 @@
       }
     },
     computed: {
+      modalOpen() {
+        return this.open !== undefined ? this.open : this.visible
+      },
+
       // 表头
       innerColumns() {
         let columns = cloneObject(this.columns)
         columns.forEach(column => {
           // 给所有的列加上过长裁剪
           if (this.ellipsisLength !== -1) {
-            column.customRender = (text) => this.renderEllipsis(text)
+            column.customRender = (payload) => {
+              const text = payload && Object.prototype.hasOwnProperty.call(payload, 'text') ? payload.text : payload
+              return this.renderEllipsis(text)
+            }
           }
         })
         return columns
@@ -234,6 +244,7 @@
       /** 关闭弹窗 */
       close() {
         this.$emit('update:visible', false)
+        this.$emit('update:open', false)
       },
 
       valueWatchHandler(val) {
@@ -300,6 +311,8 @@
       handleOk() {
         let value = this.selectedTable.dataSource.map(data => data[this.valueKey])
         this.$emit('input', value)
+        this.$emit('update:value', value)
+        this.$emit('update:modelValue', value)
         this.close()
       },
 

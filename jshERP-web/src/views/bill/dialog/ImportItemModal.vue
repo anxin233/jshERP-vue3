@@ -2,27 +2,27 @@
   <a-modal
     :title="title"
     :width="500"
-    :visible="visible"
+    :open="visible"
     :confirmLoading="confirmLoading"
     :maskStyle="{'top':'93px','left':'154px'}"
     @cancel="handleCancel"
     cancelText="关闭"
     wrapClassName="ant-modal-cust-warp"
     style="top:20%;height: 55%;overflow-y: hidden">
-    <template slot="footer">
+    <template #footer>
       <a-button key="back" @click="handleCancel">
         关闭
       </a-button>
     </template>
     <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
+      <a-form>
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="模板">
           <span><a :href="tmpUrl" target="_blank"><b>明细Excel模板[下载]</b></a></span>
         </a-form-item>
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="文件">
           <a-upload name="file" :showUploadList="false" :multiple="false" :headers="tokenHeader"
                     :data="setFileData" :action="importExcelUrl" @change="handleImportExcel">
-            <a-button type="primary" icon="import">导入</a-button>
+            <a-button type="primary"><template #icon><legacy-icon type="import" /></template>导入</a-button>
           </a-upload>
         </a-form-item>
       </a-form>
@@ -32,7 +32,6 @@
 
 <script>
   import { ACCESS_TOKEN } from '@/store/mutation-types'
-  import Vue from 'vue'
   import storage from '@/utils/storage'
 
   export default {
@@ -56,7 +55,6 @@
           sm: { span: 16 },
         },
         confirmLoading: false,
-        form: this.$form.createForm(this),
         url: {
           importExcelUrl: "/depotItem/importItemExcel",
         }

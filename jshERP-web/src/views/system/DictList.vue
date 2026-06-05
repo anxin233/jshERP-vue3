@@ -8,17 +8,17 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="字典名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入字典名称" v-model="queryParam.dictName"></a-input>
+                  <a-input placeholder="请输入字典名称" v-model:value="queryParam.dictName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="字典类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入字典类型" v-model="queryParam.dictType"></a-input>
+                  <a-input placeholder="请输入字典类型" v-model:value="queryParam.dictType"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select v-model="queryParam.status" placeholder="请选择状态" allow-clear>
+                  <a-select v-model:value="queryParam.status" placeholder="请选择状态" allow-clear>
                     <a-select-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :value="dict.value">
                       {{ dict.label }}
                     </a-select-option>
@@ -41,7 +41,7 @@
                 <a-col :md="6" :sm="24">
                   <a-form-item label="创建时间" :labelCol="labelCol" :wrapperCol="wrapperCol">
                     <a-range-picker
-                      v-model="queryParam.createTimeRange"
+                      v-model:value="queryParam.createTimeRange"
                       format="YYYY-MM-DD"
                       :placeholder="['开始日期', '结束日期']"
                       @change="onCreateDateChange"
@@ -55,9 +55,9 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="border-top: 5px">
-          <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button @click="batchDel" icon="delete">删除</a-button>
-          <a-button @click="handleRefreshCache" icon="reload">刷新缓存</a-button>
+          <a-button @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button @click="handleRefreshCache"><template #icon><legacy-icon type="reload" /></template>刷新缓存</a-button>
         </div>
         <!-- table区域-begin -->
         <div>
@@ -73,18 +73,18 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
               <a-divider type="vertical" />
               <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.dictId)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
-            <span slot="customRenderDictType" slot-scope="text, record">
+            </span></template>
+            <template #customRenderDictType="{ text, record }"><span>
               <a @click="handleShowData(record)">{{text}}</a>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderStatus" slot-scope="status">
+            <template #customRenderStatus="{ text: status }">
               <dict-tag :options="dict.type.sys_normal_disable" :value="status"/>
             </template>
           </a-table>
@@ -139,17 +139,17 @@
           {
             title: '操作',
             dataIndex: 'action',
-            scopedSlots: {customRender: 'action'},
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
             align: "center",
             width: 80
           },
           { title: '字典名称', dataIndex: 'dictName', width: 100},
           { title: '字典类型', dataIndex: 'dictType', width: 100,
-            scopedSlots: { customRender: 'customRenderDictType' },
+            customRender: (cell) => this.$renderColumnSlot('customRenderDictType', cell),
           },
           { title: '备注', dataIndex: 'remark', width: 200, ellipsis:true},
-          { title: '状态',dataIndex: 'status',width: 60,align:"center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+          { title: '状态', dataIndex: 'status',width: 60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           },
           { title: '创建时间', dataIndex: 'createTime', width: 100},
           { title: '更新时间', dataIndex: 'updateTime', width: 100}
@@ -187,5 +187,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

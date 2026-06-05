@@ -2,7 +2,7 @@
   <j-modal
     :title="title"
     :width="width"
-    :visible="visible"
+    :open="visible"
     :maskClosable="false"
     :forceRender="true"
     :style="modalStyle"
@@ -10,10 +10,10 @@
     switchFullscreen
     @cancel="handleCancel"
     wrapClassName="ant-modal-cust-warp">
-    <template slot="footer">
+    <template #footer>
       <a-button key="back" @click="handleCancel">取消(ESC)</a-button>
     </template>
-    <a-form :form="form">
+    <a-form>
       <template>
         <iframe :src="billPrintUrl" :height="height" style="width: 100%; border: none;"></iframe>
       </template>
@@ -21,7 +21,6 @@
         <a-row>
           <a-col>
             <a-form-item>
-              <a-input v-decorator="['id']" hidden/>
             </a-form-item>
           </a-col>
         </a-row>
@@ -44,8 +43,7 @@
         modalStyle: '',
         billPrintUrl: '',
         height: "",
-        model: {},
-        form: this.$form.createForm(this),
+        model: {},
         loading: false
       }
     },

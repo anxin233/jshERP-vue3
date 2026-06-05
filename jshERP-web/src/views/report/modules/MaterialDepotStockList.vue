@@ -3,8 +3,9 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
-      :getContainer="() => $refs.container"
+      :open="visible"
+      :destroyOnClose="true"
+      :getContainer="getModalContainer"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
       :mask="isDesktop()"
@@ -12,7 +13,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:100px;height: 80%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消(ESC)</a-button>
       </template>
       <!-- table区域-begin -->
@@ -92,6 +93,9 @@
     created() {
     },
     methods: {
+      getModalContainer() {
+        return this.$refs.container || document.body
+      },
       getQueryParams() {
         let param = Object.assign({}, this.queryParam, this.isorter)
         param.field = this.getQueryField()
@@ -114,13 +118,10 @@
       },
       handleCancel () {
         this.close()
-      },
-      onDateOk(value) {
-        console.log(value);
       }
     }
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

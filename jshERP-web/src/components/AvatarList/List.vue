@@ -7,6 +7,8 @@
 </template>
 
 <script>
+import { computed } from 'vue'
+
 export default {
   name: 'AvatarList',
   props: {
@@ -28,6 +30,11 @@ export default {
         color: '#f56a00',
         backgroundColor: '#fde3cf'
       })
+    }
+  },
+  provide() {
+    return {
+      avatarListSize: computed(() => this.size)
     }
   }
 }

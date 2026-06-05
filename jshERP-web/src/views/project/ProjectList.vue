@@ -1,4 +1,4 @@
-<!-- 项目信息管理页面 -->
+﻿<!-- 项目信息管理页面 -->
 <template>
   <a-row :gutter="24">
     <a-col :md="24">
@@ -9,12 +9,12 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="项目名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入项目名称查询" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入项目名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="项目类别" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="全部类别" v-model="queryParam.categoryId" allowClear>
+                  <a-select placeholder="全部类别" v-model:value="queryParam.categoryId" allowClear>
                     <a-select-option v-for="item in categoryList" :key="item.id" :value="item.id">
                       {{ item.name }}
                     </a-select-option>
@@ -23,7 +23,7 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="是否启用" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="请选择" v-model="queryParam.enabled">
+                  <a-select placeholder="请选择" v-model:value="queryParam.enabled">
                     <a-select-option value="">全部</a-select-option>
                     <a-select-option value="1">启用</a-select-option>
                     <a-select-option value="0">禁用</a-select-option>
@@ -41,8 +41,8 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="margin-top: 5px">
-          <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button @click="batchDel" icon="delete">删除</a-button>
+          <a-button @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
         </div>
         <!-- table区域 -->
         <div>
@@ -58,18 +58,22 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+                      <template #bodyCell="{ column, text, record }">
+            <template v-if="column.dataIndex === 'action'">
               <a @click="handleEdit(record)">编辑</a>
               <a-divider type="vertical" />
               <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a style="color: #f5222d;">删除</a>
               </a-popconfirm>
-            </span>
-            <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
-              <a-tag v-if="enabled==1" color="green">启用</a-tag>
-              <a-tag v-if="enabled==0" color="orange">禁用</a-tag>
+            
             </template>
+            <template v-else-if="column.dataIndex === 'enabled'">
+              <a-tag v-if="text==1" color="green">启用</a-tag>
+              <a-tag v-if="text==0" color="orange">禁用</a-tag>
+            
+            </template>
+            <template v-else>{{ text }}</template>
+          </template>
           </a-table>
         </div>
         <!-- 表单区域 -->
@@ -117,16 +121,14 @@
             dataIndex: 'action',
             width: 150,
             align:"center",
-            scopedSlots: { customRender: 'action' },
           },
-          {title: '项目名称', dataIndex: 'name', width: 200},
-          {title: '项目类别', dataIndex: 'categoryName', width: 150},
-          {title: '工时单价(元/小时)', dataIndex: 'hourlyRate', width: 150, align: 'right', customRender: (text) => text ? `¥${parseFloat(text).toFixed(2)}` : '-'},
           {title: '默认工时(小时)', dataIndex: 'defaultHours', width: 150, align: 'right'},
-          {title: '项目总价(元)', dataIndex: 'totalPrice', width: 150, align: 'right', customRender: (text) => text ? `¥${parseFloat(text).toFixed(2)}` : '-'},
+          {title: '项目类别', dataIndex: 'categoryName', width: 150},
+          {title: '工时单价(元/小时)', dataIndex: 'hourlyRate', width: 150, align: 'right', customRender: (text) => text ? `￥${parseFloat(text).toFixed(2)}` : '-'},
+          {title: '项目总价(元)', dataIndex: 'defaultHours', width: 150, align: 'right'},
+          {title: '项目总价(元)', dataIndex: 'totalPrice', width: 150, align: 'right', customRender: (text) => text ? `￥${parseFloat(text).toFixed(2)}` : '-'},
           {
-            title: '是否启用', dataIndex: 'enabled', width: 100, align: "center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+            title: '是否启用', dataIndex: 'enabled', width: 100, align: "center"
           },
           {title: '备注', dataIndex: 'remark', width: 200, ellipsis:true}
         ],
@@ -152,5 +154,6 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>
+

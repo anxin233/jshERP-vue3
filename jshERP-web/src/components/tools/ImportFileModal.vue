@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="500"
-      :visible="visible"
+      :open="visible"
       :confirm-loading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -12,7 +12,7 @@
       :maskClosable="false"
       @cancel="handleCancel"
       style="top:20%;height: 55%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <a-spin :spinning="confirmLoading">
@@ -28,7 +28,7 @@
           <a-col :md="24" :sm="24">
             <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="第二步：">
               <a-upload name="file" :showUploadList="false" :multiple="false" :headers="tokenHeader" :action="importExcelUrl" @change="handleImportExcel">
-                <a-button type="primary" icon="import">导入</a-button>
+                <a-button type="primary"><template #icon><legacy-icon type="import" /></template>导入</a-button>
               </a-upload>
             </a-form-item>
           </a-col>

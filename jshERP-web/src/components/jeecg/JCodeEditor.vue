@@ -6,7 +6,7 @@
       <textarea ref="textarea"></textarea>
       <span @click="nullTipClick" class="null-tip" :class="{'null-tip-hidden':hasCode}" :style="nullTipStyle">{{ placeholderShow }}</span>
       <template v-if="languageChange">
-        <a-select v-model="mode" size="small" class="code-mode-select" @change="changeMode" placeholder="请选择主题">
+        <a-select v-model:value="mode" size="small" class="code-mode-select" @change="changeMode" placeholder="请选择主题">
           <a-select-option
             v-for="mode in modes"
             :key="mode.value"

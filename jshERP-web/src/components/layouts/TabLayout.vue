@@ -1,6 +1,6 @@
 <template>
   <global-layout @dynamicRouterShow="dynamicRouterShow">
-    <contextmenu :itemList="menuItemList" :visible="menuVisible" style="z-index: 9999;" @update:visible="menuVisible = $event" @select="onMenuSelect"/>
+    <contextmenu :itemList="menuItemList" :open="menuVisible" style="z-index: 9999;" @update:open="menuVisible = $event" @select="onMenuSelect"/>
     <a-tabs
       @contextmenu="e => onContextmenu(e)"
       v-if="multipage"
@@ -18,19 +18,27 @@
       </a-tab-pane>
     </a-tabs>
     <div style="margin: 4px 4px 0;">
-      <transition name="page-toggle">
-        <keep-alive v-if="multipage" :include="includedComponents">
-          <router-view />
-        </keep-alive>
-        <template v-else>
-          <router-view />
-        </template>
-      </transition>
+      <router-view v-slot="{ Component, route }">
+        <transition name="page-toggle" mode="out-in">
+          <keep-alive v-if="multipage" :include="includedComponents">
+            <component
+              v-if="Component"
+              :is="Component"
+              :key="route.fullPath"
+            />
+          </keep-alive>
+          <component
+            v-else-if="Component"
+            :is="Component"
+            :key="route.fullPath"
+          />
+        </transition>
+      </router-view>
       <!-- iframe页 -->
       <component
         v-for="item in hasOpenComponentsArr"
         :key="item.name"
-        :is="item.name"
+        :is="item.component"
         v-show="$route.path === item.path">
       </component>
     </div>
@@ -43,7 +51,6 @@
   import { mixin, mixinDevice } from '@/utils/mixin.js'
   import { triggerWindowResizeEvent } from '@/utils/util'
   const indexKey = '/dashboard/analysis'
-  import Vue from 'vue'
   import { CACHE_INCLUDED_ROUTES } from "@/store/mutation-types"
   import storage from '@/utils/storage'
 
@@ -99,9 +106,6 @@
     created() {
       // 设置iframe页的数组对象
       const componentsArr = this.getComponentsArr()
-      componentsArr.forEach((item) => {
-        Vue.component(item.name, item.component)
-      })
       this.componentsArr = componentsArr
       // 判断当前路由是否iframe页
       this.isOpenIframePage()
@@ -121,44 +125,54 @@
     mounted() {
     },
     watch: {
-      '$route': function(newRoute) {
-        // console.log("新的路由",newRoute)
+      $route (newRoute) {
         this.activePage = newRoute.fullPath
         if (!this.multipage) {
           this.linkList = [newRoute.fullPath]
-          this.pageList = [Object.assign({},newRoute)]
-        } else if(indexKey==newRoute.fullPath) {
-          //首页时 直接刷新
-        }else if (this.linkList.indexOf(newRoute.fullPath) < 0) {
+          this.pageList = [Object.assign({}, newRoute)]
+        } else if (indexKey === newRoute.fullPath) {
+          // 首页时直接刷新
+        } else if (this.linkList.indexOf(newRoute.fullPath) < 0) {
           this.linkList.push(newRoute.fullPath)
-          this.pageList.push(Object.assign({},newRoute))
+          this.pageList.push(Object.assign({}, newRoute))
         } else if (this.linkList.indexOf(newRoute.fullPath) >= 0) {
-          let oldIndex = this.linkList.indexOf(newRoute.fullPath)
-          let oldPositionRoute = this.pageList[oldIndex]
-          this.pageList.splice(oldIndex, 1, Object.assign({},newRoute,{meta:oldPositionRoute.meta}))
+          const oldIndex = this.linkList.indexOf(newRoute.fullPath)
+          const oldPositionRoute = this.pageList[oldIndex]
+          this.pageList.splice(oldIndex, 1, Object.assign({}, newRoute, { meta: oldPositionRoute.meta }))
         }
+        this.isOpenIframePage()
       },
-      'activePage': function(key) {
-        let index = this.linkList.lastIndexOf(key)
-        let waitRouter = this.pageList[index]
-        this.$router.push(Object.assign({},waitRouter));
-        this.changeTitle(waitRouter.meta.title)
+      activePage (key) {
+        if (!key) {
+          return
+        }
+        const index = this.linkList.lastIndexOf(key)
+        const waitRouter = index >= 0 ? this.pageList[index] : null
+        if (!waitRouter) {
+          return
+        }
+        const title = waitRouter.meta && waitRouter.meta.title
+        if (this.$route.fullPath === key || this.$route.path === waitRouter.path) {
+          this.changeTitle(title)
+          return
+        }
+        const location = waitRouter.path
+          ? { path: waitRouter.path, query: waitRouter.query, hash: waitRouter.hash }
+          : { path: key }
+        this.$router.push(location).catch(() => {})
+        this.changeTitle(title)
       },
-      'multipage': function(newVal) {
+      multipage (newVal) {
         if (!newVal) {
           this.linkList = [this.$route.fullPath]
           this.pageList = [this.$route]
         }
       },
-      //从单页模式切换回多页模式后首页要居第一位
-      device() {
+      // 从单页模式切换回多页模式后首页要居第一位
+      device () {
         if (this.multipage && this.linkList.indexOf(indexKey) === -1) {
           this.addIndexToFirst()
         }
-      },
-      $route() {
-        // 判断当前路由是否iframe页
-        this.isOpenIframePage()
       }
     },
     methods: {
@@ -341,7 +355,7 @@
         let index = this.linkList.indexOf(pageKey)
         this.linkList = this.linkList.slice(0, index + 1)
         this.pageList = this.pageList.slice(0, index + 1)
-        if (this.linkList.indexOf(this.activePage < 0)) {
+        if (this.linkList.indexOf(this.activePage) < 0) {
           this.activePage = this.linkList[this.linkList.length - 1]
         }
       },
@@ -364,7 +378,6 @@
             component = component.substring(index + 1, component.length);
           }
           this.pageList.push({
-            name: title,
             path: key,
             fullPath: key,
             meta: {

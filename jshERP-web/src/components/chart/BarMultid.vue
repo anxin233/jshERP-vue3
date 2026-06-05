@@ -1,22 +1,19 @@
 <template>
   <div :style="{ padding: '0 0 32px 32px' }">
     <h4 :style="{ marginBottom: '20px' }">{{ title }}</h4>
-    <v-chart :data="data" :height="height" :force-fit="true" :onClick="handleClick">
-      <v-tooltip/>
-      <v-axis/>
-      <v-legend/>
-      <v-bar position="x*y" color="type" :adjust="adjust"/>
-    </v-chart>
+    <div ref="chartContainer" :style="{ height: height + 'px', width: '100%' }"></div>
   </div>
 </template>
 
 <script>
+  import { Column } from '@antv/g2plot'
   import { DataSet } from '@antv/data-set'
   import { ChartEventMixins } from './mixins/ChartMixins'
+  import { G2PlotChartMixin } from './mixins/g2plotChartMixin'
 
   export default {
     name: 'BarMultid',
-    mixins: [ChartEventMixins],
+    mixins: [ChartEventMixins, G2PlotChartMixin],
     props: {
       title: {
         type: String,
@@ -33,7 +30,6 @@
         type: Array,
         default: () => ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.']
       },
-      // 别名，需要的格式：[{field:'name',alias:'姓名'}, {field:'sex',alias:'性别'}]
       aliases: {
         type: Array,
         default: () => []
@@ -43,16 +39,8 @@
         default: 254
       }
     },
-    data() {
-      return {
-        adjust: [{
-          type: 'dodge',
-          marginRatio: 1 / 32
-        }]
-      }
-    },
     computed: {
-      data() {
+      chartData () {
         const dv = new DataSet.View().source(this.dataSource)
         dv.transform({
           type: 'fold',
@@ -60,17 +48,15 @@
           key: 'x',
           value: 'y'
         })
-
-        // bar 使用不了 - 和 / 所以替换下
         let rows = dv.rows.map(row => {
-          if (typeof row.x === 'string') {
-            row.x = row.x.replace(/[-/]/g, '_')
+          const next = { ...row }
+          if (typeof next.x === 'string') {
+            next.x = next.x.replace(/[-/]/g, '_')
           }
-          return row
+          return next
         })
-        // 替换别名
         rows.forEach(row => {
-          for (let item of this.aliases) {
+          for (const item of this.aliases) {
             if (item.field === row.type) {
               row.type = item.alias
               break
@@ -78,6 +64,36 @@
           }
         })
         return rows
+      }
+    },
+    watch: {
+      chartData: {
+        deep: true,
+        handler () {
+          this.renderChart()
+        }
+      },
+      height () {
+        this.$nextTick(() => this._resizeG2PlotChart())
+      }
+    },
+    mounted () {
+      this.renderChart()
+    },
+    methods: {
+      renderChart () {
+        this._syncG2PlotChart(Column, () => ({
+          data: this.chartData,
+          xField: 'x',
+          yField: 'y',
+          seriesField: 'type',
+          isGroup: true,
+          height: this.height,
+          autoFit: true,
+          dodgePadding: 2,
+          intervalPadding: 4,
+          legend: { position: 'top' }
+        }), { bindClick: true })
       }
     }
   }

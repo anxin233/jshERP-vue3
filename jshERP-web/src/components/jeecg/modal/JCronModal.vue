@@ -2,7 +2,7 @@
   <a-modal
           title="corn表达式"
           :width="modalWidth"
-          :visible="visible"
+          :open="visible"
           :confirmLoading="confirmLoading"
           @ok="handleSubmit"
           @cancel="close"
@@ -10,61 +10,61 @@
     <div class="card-container">
       <a-tabs type="card">
         <a-tab-pane key="1" type="card">
-          <span slot="tab"><legacy-icon type="schedule" /> 秒</span>
-          <a-radio-group v-model="result.second.cronEvery">
+          <template #tab><span><legacy-icon type="schedule" /> 秒</span></template>
+          <a-radio-group v-model:value="result.second.cronEvery">
             <a-row>
               <a-radio value="1">每一秒钟</a-radio>
             </a-row>
             <a-row>
               <a-radio value="2">每隔
-                <a-input-number size="small" v-model="result.second.incrementIncrement" :min="1" :max="59"></a-input-number>
+                <a-input-number size="small" v-model:value="result.second.incrementIncrement" :min="1" :max="59"></a-input-number>
                 秒执行 从
-                <a-input-number size="small" v-model="result.second.incrementStart" :min="0" :max="59"></a-input-number>
+                <a-input-number size="small" v-model:value="result.second.incrementStart" :min="0" :max="59"></a-input-number>
                 秒开始
               </a-radio>
             </a-row>
             <a-row>
               <a-radio value="3">具体秒数(可多选)</a-radio>
-              <a-select style="width:354px;" size="small" mode="multiple" v-model="result.second.specificSpecific">
+              <a-select style="width:354px;" size="small" mode="multiple" v-model:value="result.second.specificSpecific">
                 <a-select-option v-for="(val,index) in 60" :key="index" :value="index">{{ index }}</a-select-option>
               </a-select>
             </a-row>
             <a-row>
               <a-radio value="4">周期从
-                <a-input-number size="small" v-model="result.second.rangeStart" :min="1" :max="59"></a-input-number>
+                <a-input-number size="small" v-model:value="result.second.rangeStart" :min="1" :max="59"></a-input-number>
                 到
-                <a-input-number size="small" v-model="result.second.rangeEnd" :min="0" :max="59"></a-input-number>
+                <a-input-number size="small" v-model:value="result.second.rangeEnd" :min="0" :max="59"></a-input-number>
                 秒
               </a-radio>
             </a-row>
           </a-radio-group>
         </a-tab-pane>
         <a-tab-pane key="2">
-          <span slot="tab"><legacy-icon type="schedule" />分</span>
+          <template #tab><span><legacy-icon type="schedule" />分</span></template>
           <div class="tabBody">
-            <a-radio-group v-model="result.minute.cronEvery">
+            <a-radio-group v-model:value="result.minute.cronEvery">
               <a-row>
                 <a-radio value="1">每一分钟</a-radio>
               </a-row>
               <a-row>
                 <a-radio value="2">每隔
-                  <a-input-number size="small" v-model="result.minute.incrementIncrement" :min="1" :max="60"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.minute.incrementIncrement" :min="1" :max="60"></a-input-number>
                   分执行 从
-                  <a-input-number size="small" v-model="result.minute.incrementStart" :min="0" :max="59"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.minute.incrementStart" :min="0" :max="59"></a-input-number>
                   分开始
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio value="3">具体分钟数(可多选)</a-radio>
-                <a-select style="width:340px;" size="small" mode="multiple" v-model="result.minute.specificSpecific">
+                <a-select style="width:340px;" size="small" mode="multiple" v-model:value="result.minute.specificSpecific">
                   <a-select-option v-for="(val,index) in Array(60)" :key="index" :value="index"> {{ index }}</a-select-option>
                 </a-select>
               </a-row>
               <a-row>
                 <a-radio value="4">周期从
-                  <a-input-number size="small" v-model="result.minute.rangeStart" :min="1" :max="60"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.minute.rangeStart" :min="1" :max="60"></a-input-number>
                   到
-                  <a-input-number size="small" v-model="result.minute.rangeEnd" :min="0" :max="59"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.minute.rangeEnd" :min="0" :max="59"></a-input-number>
                   分
                 </a-radio>
               </a-row>
@@ -72,31 +72,31 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="3">
-          <span slot="tab"><legacy-icon type="schedule" /> 时</span>
+          <template #tab><span><legacy-icon type="schedule" /> 时</span></template>
           <div class="tabBody">
-            <a-radio-group v-model="result.hour.cronEvery">
+            <a-radio-group v-model:value="result.hour.cronEvery">
               <a-row>
                 <a-radio value="1">每一小时</a-radio>
               </a-row>
               <a-row>
                 <a-radio value="2">每隔
-                  <a-input-number size="small" v-model="result.hour.incrementIncrement" :min="0" :max="23"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.hour.incrementIncrement" :min="0" :max="23"></a-input-number>
                   小时执行 从
-                  <a-input-number size="small" v-model="result.hour.incrementStart" :min="0" :max="23"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.hour.incrementStart" :min="0" :max="23"></a-input-number>
                   小时开始
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio class="long" value="3">具体小时数(可多选)</a-radio>
-                <a-select style="width:340px;" size="small" mode="multiple" v-model="result.hour.specificSpecific">
+                <a-select style="width:340px;" size="small" mode="multiple" v-model:value="result.hour.specificSpecific">
                   <a-select-option v-for="(val,index) in Array(24)" :key="index" >{{ index }}</a-select-option>
                 </a-select>
               </a-row>
               <a-row>
                 <a-radio value="4">周期从
-                  <a-input-number size="small" v-model="result.hour.rangeStart" :min="0" :max="23"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.hour.rangeStart" :min="0" :max="23"></a-input-number>
                   到
-                  <a-input-number size="small" v-model="result.hour.rangeEnd" :min="0" :max="23"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.hour.rangeEnd" :min="0" :max="23"></a-input-number>
                   小时
                 </a-radio>
               </a-row>
@@ -104,17 +104,17 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="4">
-          <span slot="tab"><legacy-icon type="schedule" />  天</span>
+          <template #tab><span><legacy-icon type="schedule" />  天</span></template>
           <div class="tabBody">
-            <a-radio-group v-model="result.day.cronEvery">
+            <a-radio-group v-model:value="result.day.cronEvery">
               <a-row>
                 <a-radio value="1">每一天</a-radio>
               </a-row>
               <a-row>
                 <a-radio value="2">每隔
-                  <a-input-number size="small" v-model="result.week.incrementIncrement" :min="1" :max="7"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.week.incrementIncrement" :min="1" :max="7"></a-input-number>
                   周执行 从
-                  <a-select size="small" v-model="result.week.incrementStart">
+                  <a-select size="small" v-model:value="result.week.incrementStart">
                     <a-select-option v-for="(val,index) in Array(7)" :key="index" :value="index+1">{{ weekDays[index] }}</a-select-option>
                   </a-select>
                   开始
@@ -122,21 +122,21 @@
               </a-row>
               <a-row>
                 <a-radio value="3">每隔
-                  <a-input-number size="small" v-model="result.day.incrementIncrement" :min="1" :max="31"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.day.incrementIncrement" :min="1" :max="31"></a-input-number>
                   天执行 从
-                  <a-input-number size="small" v-model="result.day.incrementStart" :min="1" :max="31"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.day.incrementStart" :min="1" :max="31"></a-input-number>
                   天开始
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio class="long" value="4">具体星期几(可多选)</a-radio>
-                <a-select style="width:340px;" size="small" mode="multiple" v-model="result.week.specificSpecific">
+                <a-select style="width:340px;" size="small" mode="multiple" v-model:value="result.week.specificSpecific">
                   <a-select-option v-for="(val,index) in Array(7)" :key="index" :value="index+1">{{ weekDays[index] }}</a-select-option>
                 </a-select>
               </a-row>
               <a-row>
                 <a-radio class="long" value="5">具体天数(可多选)</a-radio>
-                <a-select style="width:354px;" size="small" mode="multiple" v-model="result.day.specificSpecific">
+                <a-select style="width:354px;" size="small" mode="multiple" v-model:value="result.day.specificSpecific">
                   <a-select-option v-for="(val,index) in Array(31)" :key="index" :value="index+1">{{ index+1 }}</a-select-option>
                 </a-select>
               </a-row>
@@ -148,7 +148,7 @@
               </a-row>
               <a-row>
                 <a-radio value="8">在这个月的最后一个
-                  <a-select size="small" v-model="result.day.cronLastSpecificDomDay">
+                  <a-select size="small" v-model:value="result.day.cronLastSpecificDomDay">
                     <a-select-option v-for="(val,index) in Array(7)" :key="index" :value="index+1">{{ weekDays[index] }}</a-select-option>
                   </a-select>
                 </a-radio>
@@ -156,21 +156,21 @@
               <a-row>
                 <a-radio value="9">
                   在本月底前
-                  <a-input-number size="small" v-model="result.day.cronDaysBeforeEomMinus" :min="1" :max="31"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.day.cronDaysBeforeEomMinus" :min="1" :max="31"></a-input-number>
                   天
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio value="10">最近的工作日（周一至周五）至本月
-                  <a-input-number size="small" v-model="result.day.cronDaysNearestWeekday" :min="1" :max="31"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.day.cronDaysNearestWeekday" :min="1" :max="31"></a-input-number>
                   日
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio value="11">在这个月的第
-                  <a-input-number size="small" v-model="result.week.cronNthDayNth" :min="1" :max="5"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.week.cronNthDayNth" :min="1" :max="5"></a-input-number>
                   个
-                  <a-select size="small" v-model="result.week.cronNthDayDay">
+                  <a-select size="small" v-model:value="result.week.cronNthDayDay">
                     <a-select-option v-for="(val,index) in Array(7)" :key="index" :value="index+1">{{ weekDays[index] }}</a-select-option>
                   </a-select>
 
@@ -180,31 +180,31 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="5">
-          <span slot="tab"><legacy-icon type="schedule" /> 月</span>
+          <template #tab><span><legacy-icon type="schedule" /> 月</span></template>
           <div class="tabBody">
-            <a-radio-group v-model="result.month.cronEvery">
+            <a-radio-group v-model:value="result.month.cronEvery">
               <a-row>
                 <a-radio value="1">每一月</a-radio>
               </a-row>
               <a-row>
                 <a-radio value="2">每隔
-                  <a-input-number size="small" v-model="result.month.incrementIncrement" :min="0" :max="12"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.month.incrementIncrement" :min="0" :max="12"></a-input-number>
                   月执行 从
-                  <a-input-number size="small" v-model="result.month.incrementStart" :min="0" :max="12"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.month.incrementStart" :min="0" :max="12"></a-input-number>
                   月开始
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio class="long" value="3">具体月数(可多选)</a-radio>
-                <a-select style="width:354px;" size="small" filterable mode="multiple" v-model="result.month.specificSpecific">
+                <a-select style="width:354px;" size="small" filterable mode="multiple" v-model:value="result.month.specificSpecific">
                   <a-select-option v-for="(val,index) in Array(12)" :key="index" :value="index+1">{{ index+1 }}</a-select-option>
                 </a-select>
               </a-row>
               <a-row>
                 <a-radio value="4">从
-                  <a-input-number size="small" v-model="result.month.rangeStart" :min="1" :max="12"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.month.rangeStart" :min="1" :max="12"></a-input-number>
                   到
-                  <a-input-number size="small" v-model="result.month.rangeEnd" :min="1" :max="12"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.month.rangeEnd" :min="1" :max="12"></a-input-number>
                   月之间的每个月
                 </a-radio>
               </a-row>
@@ -212,31 +212,31 @@
           </div>
         </a-tab-pane>
         <a-tab-pane key="6">
-          <span slot="tab"><legacy-icon type="schedule" /> 年</span>
+          <template #tab><span><legacy-icon type="schedule" /> 年</span></template>
           <div class="tabBody">
-            <a-radio-group v-model="result.year.cronEvery">
+            <a-radio-group v-model:value="result.year.cronEvery">
               <a-row>
                 <a-radio value="1">每一年</a-radio>
               </a-row>
               <a-row>
                 <a-radio value="2">每隔
-                  <a-input-number size="small" v-model="result.year.incrementIncrement" :min="1" :max="99"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.year.incrementIncrement" :min="1" :max="99"></a-input-number>
                   年执行 从
-                  <a-input-number size="small" v-model="result.year.incrementStart" :min="2019" :max="2119"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.year.incrementStart" :min="2019" :max="2119"></a-input-number>
                   年开始
                 </a-radio>
               </a-row>
               <a-row>
                 <a-radio class="long" value="3">具体年份(可多选)</a-radio>
-                <a-select style="width:354px;" size="small" filterable mode="multiple" v-model="result.year.specificSpecific">
+                <a-select style="width:354px;" size="small" filterable mode="multiple" v-model:value="result.year.specificSpecific">
                   <a-select-option v-for="(val,index) in Array(100)" :key="index" :value="2019+index">{{ 2019+index }}</a-select-option>
                 </a-select>
               </a-row>
               <a-row>
                 <a-radio value="4">从
-                  <a-input-number size="small" v-model="result.year.rangeStart" :min="2019" :max="2119"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.year.rangeStart" :min="2019" :max="2119"></a-input-number>
                   到
-                  <a-input-number size="small" v-model="result.year.rangeEnd" :min="2019" :max="2119"></a-input-number>
+                  <a-input-number size="small" v-model:value="result.year.rangeEnd" :min="2019" :max="2119"></a-input-number>
                   年之间的每一年
                 </a-radio>
               </a-row>

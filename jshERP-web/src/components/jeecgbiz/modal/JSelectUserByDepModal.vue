@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :width="modalWidth"
-    :visible="visible"
+    :open="visible"
     :title="title"
     @ok="handleSubmit"
     @cancel="close"
@@ -35,7 +35,7 @@
             @change="handleUsernameChange"
             @search="onSearch"
           ></a-input-search>
-          <a-button @click="searchReset(1)" style="margin-left: 20px" icon="redo">重置</a-button>
+          <a-button @click="searchReset(1)" style="margin-left: 20px"><template #icon><legacy-icon type="redo" /></template>重置</a-button>
           <!--用户列表-->
           <a-table
             ref="table"
@@ -58,6 +58,7 @@
 <script>
   import {filterObj} from '@/utils/util'
   import {getUserList, queryUserByDepId} from '@/api/api'
+  import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 
   export default {
     name: 'JSelectUserByDepModal',
@@ -128,7 +129,8 @@
         selectedDepIds: [],
         departTree: [],
         visible: false,
-        form: this.$form.createForm(this),
+        form: createLegacyFormBridge(this),
+        formModel: {},
         loading: false,
         expandedKeys: [],
       }

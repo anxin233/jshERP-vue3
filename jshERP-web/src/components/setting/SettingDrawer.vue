@@ -5,7 +5,7 @@
       placement="right"
       :closable="false"
       @close="onClose"
-      :visible="visible"
+      :open="visible"
       :style="{}"
     >
       <div class="setting-drawer-index-content">
@@ -15,7 +15,7 @@
 
           <div class="setting-drawer-index-blockChecbox">
             <a-tooltip>
-              <template slot="title">
+              <template #title>
                 暗色菜单风格
               </template>
               <div class="setting-drawer-index-item" @click="handleMenuTheme('dark')">
@@ -27,7 +27,7 @@
             </a-tooltip>
 
             <a-tooltip>
-              <template slot="title">
+              <template #title>
                 亮色菜单风格
               </template>
               <div class="setting-drawer-index-item" @click="handleMenuTheme('light')">
@@ -45,7 +45,7 @@
 
           <div style="height: 20px">
             <a-tooltip class="setting-drawer-theme-color-colorBlock" v-for="(item, index) in colorList" :key="index">
-              <template slot="title">
+              <template #title>
                 {{ item.key }}
               </template>
               <a-tag :color="item.color" @click="changeColor(item.color)">
@@ -61,21 +61,21 @@
           <div :style="{ marginTop: '24px' }">
             <a-list :split="false">
               <a-list-item>
-                <a-switch slot="actions" size="small" :defaultChecked="fixedHeader" @change="handleFixedHeader" />
+                <template #actions><a-switch size="small" :checked="fixedHeader" @change="handleFixedHeader" /></template>
                 <a-list-item-meta>
-                  <div slot="title">固定 Header</div>
+                  <template #title><div>固定 Header</div></template>
                 </a-list-item-meta>
               </a-list-item>
               <a-list-item>
-                <a-switch slot="actions" size="small" :disabled="!fixedHeader" :defaultChecked="autoHideHeader" @change="handleFixedHeaderHidden" />
+                <template #actions><a-switch size="small" :disabled="!fixedHeader" :checked="autoHideHeader" @change="handleFixedHeaderHidden" /></template>
                 <a-list-item-meta>
-                  <div slot="title" :style="{ textDecoration: !fixedHeader ? 'line-through' : 'unset' }">下滑时隐藏 Header</div>
+                  <template #title><div :style="{ textDecoration: !fixedHeader ? 'line-through' : 'unset' }">下滑时隐藏 Header</div></template>
                 </a-list-item-meta>
               </a-list-item>
               <a-list-item >
-                <a-switch slot="actions" size="small" :disabled="(layoutMode === 'topmenu')" :checked="fixSiderbar" @change="handleFixSiderbar" />
+                <template #actions><a-switch size="small" :disabled="(layoutMode === 'topmenu')" :checked="fixSiderbar" @change="handleFixSiderbar" /></template>
                 <a-list-item-meta>
-                  <div slot="title" :style="{ textDecoration: layoutMode === 'topmenu' ? 'line-through' : 'unset' }">固定侧边菜单</div>
+                  <template #title><div :style="{ textDecoration: layoutMode === 'topmenu' ? 'line-through' : 'unset' }">固定侧边菜单</div></template>
                 </a-list-item-meta>
               </a-list-item>
             </a-list>
@@ -173,9 +173,9 @@
           <div>
             <a-list :split="false">
               <a-list-item>
-                <a-switch slot="actions" size="small" :defaultChecked="colorWeak" @change="onColorWeak" />
+                <template #actions><a-switch size="small" :checked="colorWeak" @change="onColorWeak" /></template>
                 <a-list-item-meta>
-                  <div slot="title">色弱模式</div>
+                  <template #title><div>色弱模式</div></template>
                 </a-list-item-meta>
               </a-list-item>
             </a-list>

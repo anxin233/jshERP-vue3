@@ -8,17 +8,17 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="车牌号" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入车牌号查询" v-model="queryParam.licensePlateNo"></a-input>
+                  <a-input placeholder="请输入车牌号查询" v-model:value="queryParam.licensePlateNo"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="客户姓名" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入客户姓名查询" v-model="queryParam.customerName"></a-input>
+                  <a-input placeholder="请输入客户姓名查询" v-model:value="queryParam.customerName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="手机号码" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入手机号码查询" v-model="queryParam.customerPhone"></a-input>
+                  <a-input placeholder="请输入手机号码查询" v-model:value="queryParam.customerPhone"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
@@ -54,41 +54,45 @@
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
             <!-- 操作列 -->
-            <span slot="action" slot-scope="text, record">
+                      <template #bodyCell="{ column, text, record }">
+            <template v-if="column.dataIndex === 'action'">
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a style="color: #f5222d;">删除</a>
               </a-popconfirm>
-            </span>
-            <!-- 车牌列：省份+号码拼接展示 -->
-            <template slot="licensePlate" slot-scope="text, record">
+            
+            </template>
+            <template v-else-if="column.dataIndex === 'licensePlateNo'">
               <span v-if="record.noPlate">
                 <a-tag color="orange">无牌</a-tag>
               </span>
               <span v-else>
                 {{ record.licensePlateProvince }}{{ record.licensePlateNo }}
               </span>
+            
             </template>
-            <!-- 启用状态 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
-              <a-tag v-if="enabled" color="green">启用</a-tag>
-              <a-tag v-if="!enabled" color="orange">禁用</a-tag>
+            <template v-else-if="column.dataIndex === 'enabled'">
+              <a-tag v-if="text" color="green">启用</a-tag>
+              <a-tag v-if="!text" color="orange">禁用</a-tag>
+            
             </template>
-            <!-- 年检/保险到期预警 -->
-            <template slot="insuranceExpire" slot-scope="text, record">
+            <template v-else-if="column.dataIndex === 'trafficInsuranceExpire'">
               <span v-if="record.trafficInsuranceExpire">
                 <a-tag :color="isExpireSoon(record.trafficInsuranceExpire) ? 'red' : 'green'">
-                  交强：{{ formatDate(record.trafficInsuranceExpire) }}
+                  交强险：{{ formatDate(record.trafficInsuranceExpire) }}
                 </a-tag>
               </span>
               <span v-if="record.commercialInsuranceExpire">
                 <a-tag :color="isExpireSoon(record.commercialInsuranceExpire) ? 'red' : 'green'">
-                  商业：{{ formatDate(record.commercialInsuranceExpire) }}
+                  商业险：{{ formatDate(record.commercialInsuranceExpire) }}
                 </a-tag>
               </span>
               <span v-if="record.noInsurance"><a-tag color="orange">未投保</a-tag></span>
+            
             </template>
+            <template v-else>{{ text }}</template>
+          </template>
           </a-table>
         </div>
         <!-- 弹窗 -->
@@ -118,26 +122,22 @@
             customRender: (t, r, index) => parseInt(index) + 1
           },
           {
-            title: '操作', dataIndex: 'action', width: 120, align: 'center',
-            scopedSlots: { customRender: 'action' }
+            title: '操作', dataIndex: 'action', width: 120, align: 'center'
           },
           {
-            title: '车牌号', dataIndex: 'licensePlateNo', width: 120, align: 'center',
-            scopedSlots: { customRender: 'licensePlate' }
+            title: '车牌号', dataIndex: 'licensePlateNo', width: 120, align: 'center'
           },
           { title: '车辆用途', dataIndex: 'vehiclePurpose', width: 90, align: 'center' },
           { title: '车型', dataIndex: 'vehicleType', width: 120 },
-          { title: 'VIN码', dataIndex: 'vin', width: 160, ellipsis: true },
+          { title: 'VIN鐮', dataIndex: 'vin', width: 160, ellipsis: true },
           { title: '客户姓名', dataIndex: 'customerName', width: 100 },
           { title: '手机号码', dataIndex: 'customerPhone', width: 120 },
           { title: '客户等级', dataIndex: 'customerLevel', width: 90, align: 'center' },
           {
-            title: '保险到期', dataIndex: 'trafficInsuranceExpire', width: 200,
-            scopedSlots: { customRender: 'insuranceExpire' }
+            title: '保险到期', dataIndex: 'trafficInsuranceExpire', width: 200
           },
           {
-            title: '状态', dataIndex: 'enabled', width: 70, align: 'center',
-            scopedSlots: { customRender: 'customRenderFlag' }
+            title: '状态', dataIndex: 'enabled', width: 70, align: 'center'
           }
         ],
         urlPath: '/vehicle/vehicleList',
@@ -180,5 +180,6 @@
 </script>
 
 <style scoped>
-  @import '~@assets/less/common.less';
+  @import '@assets/less/common.less';
 </style>
+

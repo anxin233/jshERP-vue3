@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="500"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
@@ -14,15 +14,15 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:30%;height: 35%;">
-      <template slot="footer">
+      <template #footer>
         <a-button key="back" v-if="isReadOnly" @click="handleCancel">
           关闭
         </a-button>
       </template>
       <a-spin :spinning="confirmLoading">
-        <a-form :form="form" id="batchSetDepot">
-          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="仓库名称">
-            <a-select placeholder="请选择仓库" v-decorator="[ 'depotId', validatorRules.depotId ]" showSearch optionFilterProp="children">
+        <a-form ref="formRef" :model="formModel" :rules="formRules" id="batchSetDepot">
+          <a-form-item name="depotId" :labelCol="labelCol" :wrapperCol="wrapperCol" label="仓库名称">
+            <a-select placeholder="请选择仓库" v-model:value="formModel.depotId" showSearch optionFilterProp="children">
               <a-select-option v-for="(depot,index) in depotList" :value="depot.id" :key="index">
                 {{ depot.depotName }}
               </a-select-option>
@@ -56,13 +56,9 @@
           sm: { span: 16 },
         },
         confirmLoading: false,
-        form: this.$form.createForm(this),
-        validatorRules:{
-          depotId:{
-            rules: [
-              { required: true, message: '请选择仓库!' }
-            ]
-          }
+        formModel: {},
+        formRules: {
+          depotId: [{ required: true, message: '请选择仓库!', trigger: 'change' }]
         },
       }
     },
@@ -83,11 +79,11 @@
         this.getDepotData()
       },
       edit (record) {
-        this.form.resetFields();
         this.model = Object.assign({}, record);
+        this.formModel = pick(this.model, 'depotId');
         this.visible = true;
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model, 'depotId'))
+          if (this.$refs.formRef) this.$refs.formRef.clearValidate()
         });
       },
       close () {
@@ -97,16 +93,16 @@
       handleOk () {
         const that = this;
         // 触发表单验证
-        this.form.validateFields((err, values) => {
-          if (!err) {
-            that.confirmLoading = true;
-            let formData = Object.assign(this.model, values);
-            let depotId = formData.depotId
-            that.$emit('ok', depotId);
-            that.confirmLoading = false;
-            that.close();
-          }
-        })
+        const formRef = this.$refs.formRef
+        if (!formRef) return
+        formRef.validate().then(() => {
+          that.confirmLoading = true;
+          let formData = Object.assign(this.model, this.formModel);
+          let depotId = formData.depotId
+          that.$emit('ok', depotId);
+          that.confirmLoading = false;
+          that.close();
+        }).catch(() => {})
       },
       handleCancel () {
         this.close()

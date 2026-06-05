@@ -32,7 +32,7 @@ const colorList = [
 
 const updateTheme = primaryColor => {
   // Don't compile less in production!
-  /* if (process.env.NODE_ENV === 'production') {
+  /* if (import.meta.env.PROD) {
     return;
   } */
   // Determine if the component is remounted

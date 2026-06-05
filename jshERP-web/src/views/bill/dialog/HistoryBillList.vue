@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1300"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,7 +12,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:50px;height: 90%;">
-      <template slot="footer">
+      <template #footer>
         <a-button @click="handleCancel">关闭</a-button>
       </template>
       <!-- 查询区域 -->
@@ -22,12 +22,12 @@
           <a-row :gutter="24">
             <a-col :md="4" :sm="24" v-if="organLabel">
               <a-form-item :label="organLabel" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-select placeholder="请选择" v-model="queryParam.organId" :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children" @search="handleSearchSupplier">
-                  <div slot="dropdownRender" slot-scope="menu">
+                <a-select placeholder="请选择" v-model:value="queryParam.organId" :dropdownMatchSelectWidth="false" showSearch optionFilterProp="children" @search="handleSearchSupplier">
+                  <template #dropdownRender="{ menuNode: menu }"><div>
                     <v-nodes :vnodes="menu" />
                     <a-divider style="margin: 4px 0;" />
                     <div class="dropdown-btn" @mousedown="e => e.preventDefault()" @click="loadSupplier(organLabel)"><legacy-icon type="reload" /> 刷新列表</div>
-                  </div>
+                  </div></template>
                   <a-select-option v-for="(item,index) in supplierList" :key="index" :value="item.id">
                     {{ item.supplier }}
                   </a-select-option>
@@ -36,19 +36,19 @@
             </a-col>
             <a-col :md="5" :sm="24">
               <a-form-item label="单号" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="请输入单据编号" v-model="queryParam.number"></a-input>
+                <a-input placeholder="请输入单据编号" v-model:value="queryParam.number"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="5" :sm="24">
               <a-form-item label="商品" :labelCol="{span: 5}" :wrapperCol="{span: 18, offset: 1}">
-                <a-input placeholder="条码|名称|规格|型号" v-model="queryParam.materialParam"></a-input>
+                <a-input placeholder="条码|名称|规格|型号" v-model:value="queryParam.materialParam"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="单据日期" :labelCol="labelCol" :wrapperCol="wrapperCol">
                 <a-range-picker
                   style="width: 100%"
-                  v-model="queryParam.createTimeRange"
+                  v-model:value="queryParam.createTimeRange"
                   format="YYYY-MM-DD"
                   :placeholder="['开始时间', '结束时间']"
                   @change="onDateChange"
@@ -77,10 +77,10 @@
         :pagination="ipagination"
         :loading="loading"
         @change="handleTableChange">
-        <span slot="numberCustomRender" slot-scope="text, record">
+        <template #numberCustomRender="{ text, record }"><span>
           <a @click="myHandleDetail(record)">{{record.number}}</a>
-        </span>
-        <template slot="customRenderStatus" slot-scope="text, record">
+        </span></template>
+        <template #customRenderStatus="{ text, record }">
           <a-tag v-if="record.status === '0'" color="red">未审核</a-tag>
           <a-tag v-if="record.status === '1'" color="green">已审核</a-tag>
           <a-tag v-if="record.status === '2' && queryParam.subType === '采购订单'" color="cyan">完成采购</a-tag>
@@ -102,16 +102,14 @@
   import BillDetail from './BillDetail'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import {mixinDevice} from '@/utils/mixin'
-  import { findBySelectSup, findBySelectCus, findBillDetailByNumber} from '@/api/api'
-  import Vue from 'vue'
-  export default {
+  import { findBySelectSup, findBySelectCus, findBillDetailByNumber} from '@/api/api'  export default {
     name: 'HistoryBillList',
     mixins:[JeecgListMixin, mixinDevice],
     components: {
       BillDetail,
       VNodes: {
-        functional: true,
-        render: (h, ctx) => ctx.props.vnodes,
+        props: { vnodes: { type: null, default: null } },
+        render() { return this.vnodes }
       }
     },
     data () {
@@ -146,10 +144,10 @@
           },
           { title: '', dataIndex: 'organName',width:120, ellipsis:true},
           { title: '单据编号', dataIndex: 'number',width:150,
-            scopedSlots: { customRender: 'numberCustomRender' },
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '商品信息', dataIndex: 'materialsList',width:280, ellipsis:true,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(text) {
                 return text.replace(",","，");
               }
@@ -160,7 +158,7 @@
           { title: '数量', dataIndex: 'materialCount',width:50},
           { title: '金额合计', dataIndex: 'totalPrice',width:70},
           { title: '含税合计', dataIndex: 'totalTaxLastMoney',width:70,
-            customRender:function (text,record,index) {
+            customRender: ({ text, record, index }) => {
               if(record.discountLastMoney) {
                 return (record.discountMoney + record.discountLastMoney).toFixed(2);
               } else {
@@ -169,7 +167,7 @@
             }
           },
           { title: '状态', dataIndex: 'status', width: 70, align: "center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           }
         ],
         dataSource:[],

@@ -9,15 +9,15 @@
             <a-row :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item label="姓名" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入姓名查询" v-model="queryParam.name"></a-input>
+                  <a-input placeholder="请输入姓名查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item label="类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select v-model="queryParam.type" placeholder="请选择类型">
+                  <a-select v-model:value="queryParam.type" placeholder="请选择类型">
                     <a-select-option value="">请选择</a-select-option>
                     <a-select-option value="销售员">销售员</a-select-option>
-                    <a-select-option value="财务员">财务员</a-select-option>
+                    <a-select-option value="财务人员">财务人员</a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -51,15 +51,15 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <span slot="action" slot-scope="text, record">
+            <template #action="{ text, record }"><span>
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
-            </span>
+            </span></template>
             <!-- 状态渲染模板 -->
-            <template slot="customRenderFlag" slot-scope="enabled">
+            <template #customRenderFlag="{ text: enabled }">
               <a-tag v-if="enabled" color="green">启用</a-tag>
               <a-tag v-if="!enabled" color="orange">禁用</a-tag>
             </template>
@@ -113,13 +113,13 @@
             dataIndex: 'action',
             align:"center",
             width: 100,
-            scopedSlots: { customRender: 'action' },
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           { title: '姓名', align:"left", dataIndex: 'name', width: 200, },
           { title: '类型', align:"left", dataIndex: 'type', width: 150, },
           { title: '排序', dataIndex: 'sort', width: 60},
-          { title: '状态',dataIndex: 'enabled',width:60,align:"center",
-            scopedSlots: { customRender: 'customRenderFlag' }
+          { title: '状态', dataIndex: 'enabled',width:60,align:"center",
+            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
           }
         ],
         url: {
@@ -146,5 +146,5 @@
   }
 </script>
 <style scoped>
-  @import '~@assets/less/common.less'
+  @import '@assets/less/common.less'
 </style>

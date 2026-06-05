@@ -1,5 +1,6 @@
 import JEditableTable from '@/components/jeecg/JEditableTable'
 import { VALIDATE_NO_PASSED, getRefPromise, validateFormAndTables } from '@/utils/JEditableTableUtil'
+import { createLegacyFormBridge } from '@/utils/legacyFormBridge'
 import { httpAction, getAction } from '@/api/manage'
 
 export const JEditableTableMixin = {
@@ -10,7 +11,8 @@ export const JEditableTableMixin = {
     return {
       title: '操作',
       visible: false,
-      form: this.$form.createForm(this),
+      formModel: {},
+      form: null,
       confirmLoading: false,
       model: {},
       labelCol: {
@@ -23,7 +25,16 @@ export const JEditableTableMixin = {
       }
     }
   },
+  created() {
+    this.initLegacyFormBridge()
+  },
   methods: {
+    /** 初始化旧版 form API 桥接（AntD4 formRef + formModel） */
+    initLegacyFormBridge() {
+      if (!this.form || typeof this.form.validateFields !== 'function') {
+        this.form = createLegacyFormBridge(this)
+      }
+    },
 
     /** 获取所有的editableTable实例 */
     getAllTable() {
@@ -36,7 +47,6 @@ export const JEditableTableMixin = {
 
     /** 遍历所有的JEditableTable实例 */
     eachAllTable(callback) {
-      // 开始遍历
       this.getAllTable().then(tables => {
         tables.forEach((item, index) => {
           if (typeof callback === 'function') {
@@ -46,10 +56,22 @@ export const JEditableTableMixin = {
       })
     },
 
+    /** 弹窗打开后 DOM 才渲染时，重新绑定可编辑表格滚动事件 */
+    initEditableTableScroll() {
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.eachAllTable((table) => {
+            if (table && typeof table.initScrollListeners === 'function') {
+              table.initScrollListeners()
+            }
+          })
+        }, 80)
+      })
+    },
+
     /** 当点击新增按钮时调用此方法 */
     add() {
       if (typeof this.addBefore === 'function') this.addBefore()
-      // 默认新增空数据
       let rowNum = this.addDefaultRowNum
       if (typeof rowNum !== 'number') {
         rowNum = 1
@@ -66,9 +88,11 @@ export const JEditableTableMixin = {
       if (typeof this.editBefore === 'function') this.editBefore(record)
       this.visible = true
       this.activeKey = this.refKeys[0]
+      this.initLegacyFormBridge()
       this.form.resetFields()
       this.model = Object.assign({}, record)
       if (typeof this.editAfter === 'function') this.editAfter(this.model)
+      this.initEditableTableScroll()
     },
     /** 关闭弹窗，并将所有JEditableTable实例回归到初始状态 */
     close() {
@@ -112,35 +136,26 @@ export const JEditableTableMixin = {
       })
     },
 
-    /* --- handle 事件 --- */
-
-    /** ATab 选项卡切换事件 */
     handleChangeTabs(key) {
-      // 自动重置scrollTop状态，防止出现白屏
       getRefPromise(this, key).then(editableTable => {
         editableTable.resetScrollTop()
       })
     },
-    /** 关闭按钮点击事件 */
     handleCancel() {
       this.close()
     },
-    /** 确定按钮点击事件 */
     handleOk() {
-      /** 触发表单验证 */
+      this.initLegacyFormBridge()
       this.getAllTable().then(tables => {
-        /** 一次性验证主表和所有的次表 */
         return validateFormAndTables(this.form, tables)
       }).then(allValues => {
         if (typeof this.classifyIntoFormData !== 'function') {
           throw this.throwNotFunction('classifyIntoFormData')
         }
         let formData = this.classifyIntoFormData(allValues)
-        // 发起请求
         return this.request(formData)
       }).catch(e => {
         if (e.error === VALIDATE_NO_PASSED) {
-          // 如果有未通过表单验证的子表，就自动跳转到它所在的tab
           this.activeKey = e.index == null ? this.activeKey : this.refKeys[e.index]
         } else {
           console.error(e)
@@ -148,14 +163,10 @@ export const JEditableTableMixin = {
       })
     },
 
-    /* --- throw --- */
-
-    /** not a function */
     throwNotFunction(name) {
       return `${name} 未定义或不是一个函数`
     },
 
-    /** not a array */
     throwNotArray(name) {
       return `${name} 未定义或不是一个数组`
     }

@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="800"
-      :visible="visible"
+      :open="visible"
       :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
       :maskStyle="{ top: '93px', left: '154px' }"
@@ -16,21 +16,21 @@
       @ok="handleOk"
       @cancel="handleCancel">
       <a-spin :spinning="confirmLoading">
-        <a-form-model ref="formRef" id="platformConfigModal" :model="formModel">
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="配置名称" prop="platformKeyInfo" name="platformKeyInfo">
+        <a-form ref="formRef" id="platformConfigModal" :model="formModel">
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="配置名称" name="platformKeyInfo">
             <a-input
               placeholder="请输入配置名称"
               :value="formModel.platformKeyInfo"
               :readOnly="true"
               @change="handleFieldChange('platformKeyInfo', $event)" />
-          </a-form-model-item>
-          <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="配置值" prop="platformValue" name="platformValue">
+          </a-form-item>
+          <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="配置值" name="platformValue">
             <a-input
               placeholder="请输入配置值"
               :value="formModel.platformValue"
               @change="handleFieldChange('platformValue', $event)" />
-          </a-form-model-item>
-        </a-form-model>
+          </a-form-item>
+        </a-form>
       </a-spin>
     </a-modal>
   </div>

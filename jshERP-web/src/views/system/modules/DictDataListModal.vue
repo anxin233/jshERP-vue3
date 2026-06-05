@@ -3,7 +3,7 @@
     <a-modal
       :title="title"
       :width="1300"
-      :visible="visible"
+      :open="visible"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"
@@ -12,7 +12,7 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:40px;height: 90%;">
-      <template slot="footer">
+      <template #footer>
         <a-button @click="handleCancel">关闭</a-button>
       </template>
       <!-- 查询区域 -->
@@ -22,7 +22,7 @@
           <a-row :gutter="24">
             <a-col :md="6" :sm="24">
               <a-form-item label="字典名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-select placeholder="请选择字典名称" showSearch allow-clear optionFilterProp="children" v-model="queryParam.dictType">
+                <a-select placeholder="请选择字典名称" showSearch allow-clear optionFilterProp="children" v-model:value="queryParam.dictType">
                   <a-select-option v-for="(item,index) in typeOptions" :key="index" :value="item.dictType">
                     {{ item.dictName }}
                   </a-select-option>
@@ -31,12 +31,12 @@
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="字典标签" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-input placeholder="请输入字典标签" v-model="queryParam.dictLabel"></a-input>
+                <a-input placeholder="请输入字典标签" v-model:value="queryParam.dictLabel"></a-input>
               </a-form-item>
             </a-col>
             <a-col :md="6" :sm="24">
               <a-form-item label="状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                <a-select v-model="queryParam.status" placeholder="请选择状态">
+                <a-select v-model:value="queryParam.status" placeholder="请选择状态">
                   <a-select-option v-for="dict in dict.type.sys_normal_disable" :key="dict.value" :value="dict.value">
                     {{ dict.label }}
                   </a-select-option>
@@ -54,8 +54,8 @@
       </div>
       <!-- 操作按钮区域 -->
       <div class="table-operator" style="border-top: 5px">
-        <a-button @click="handleAddWithData" type="primary" icon="plus">新增</a-button>
-        <a-button @click="batchDel" icon="delete">删除</a-button>
+        <a-button @click="handleAddWithData" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+        <a-button @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
       </div>
       <!-- table区域-begin -->
       <a-table
@@ -70,19 +70,19 @@
         :loading="loading"
         :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
         @change="handleTableChange">
-        <span slot="action" slot-scope="text, record">
+        <template #action="{ text, record }"><span>
           <a @click="handleEdit(record)">编辑</a>
           <a-divider type="vertical" />
-          <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.dictCode)">
+          <a-popconfirm title="确定删除吗" @confirm="() => handleDelete(record.dictCode)">
             <a>删除</a>
           </a-popconfirm>
-        </span>
-        <template slot="customRenderDictLabel" slot-scope="text, record">
+        </span></template>
+        <template #customRenderDictLabel="{ text, record }">
           <span v-if="record.listClass == '' || record.listClass == 'default'">{{record.dictLabel}}</span>
           <a-tag v-else :color="record.listClass == 'grey' ? '' : record.listClass">{{record.dictLabel}}</a-tag>
         </template>
         <!-- 状态渲染模板 -->
-        <template slot="customRenderStatus" slot-scope="status">
+        <template #customRenderStatus="{ text: status }">
           <dict-tag :options="dict.type.sys_normal_disable" :value="status"/>
         </template>
       </a-table>
@@ -127,18 +127,18 @@
           {
             title: '操作',
             dataIndex: 'action',
-            scopedSlots: {customRender: 'action'},
+            customRender: (cell) => this.$renderColumnSlot('action', cell),
             align: "center",
             width: 80
           },
           { title: '字典编码', dataIndex: 'dictCode',width:100, align:"center"},
           { title: '字典标签',dataIndex: 'dictLabel',width: 100,align:"center",
-            scopedSlots: { customRender: 'customRenderDictLabel' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderDictLabel', cell)
           },
           { title: '字典键值', dataIndex: 'dictValue',width:100, align:"center"},
           { title: '字典排序', dataIndex: 'dictSort',width:100, align:"center"},
           { title: '状态', dataIndex: 'status',width:100, align:"center",
-            scopedSlots: { customRender: 'customRenderStatus' }
+            customRender: (cell) => this.$renderColumnSlot('customRenderStatus', cell)
           },
           { title: '备注', dataIndex: 'remark',width:100},
           { title: '创建时间', dataIndex: 'createTime',width:100}
