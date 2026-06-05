@@ -4,7 +4,7 @@
     <a-tabs
       @contextmenu="e => onContextmenu(e)"
       v-if="multipage"
-      :active-key="activePage"
+      v-model:activeKey="activePage"
       class="tab-layout-tabs"
       :hide-add="true"
       type="editable-card"
@@ -417,60 +417,85 @@
   }
 
   /*美化弹出Tab样式*/
-  .ant-tabs-nav-container {
-    margin-top: 0px;
-  }
-
-  /* 修改 ant-tabs 样式 */
+  /* 修改 Ant Design Vue 4 tabs 样式 */
   .tab-layout-tabs.ant-tabs {
     border-bottom: 1px solid #ccc;
     border-left: 1px solid #ccc;
-    background-color: white;
+    background-color: #fff;
     padding: 0 20px;
 
-    .ant-tabs-bar {
-      margin: 0px;
+    .ant-tabs-nav {
+      margin: 0;
       border: none;
+
+      &::before {
+        border-bottom: none;
+      }
     }
 
-  }
+    .ant-tabs-nav-wrap {
+      min-height: 35px;
+    }
 
-  .ant-tabs {
+    .ant-tabs-nav-list {
+      align-items: flex-end;
+    }
 
-    &.ant-tabs-card .ant-tabs-tab {
-
+    .ant-tabs-tab {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 108px;
+      height: 30px;
+      margin: 0 10px 0 0 !important;
       padding: 0 24px !important;
-      background-color: white !important;
-      margin-right: 10px !important;
+      background-color: #fff !important;
+      border: none !important;
+      border-bottom: 1px solid transparent !important;
+      border-radius: 4px 4px 0 0 !important;
+      line-height: 1;
 
-      .ant-tabs-close-x {
+      .ant-tabs-tab-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+        text-align: center;
+      }
+
+      .ant-tabs-tab-remove {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 12px;
         width: 12px !important;
         height: 12px !important;
         opacity: 0 !important;
         cursor: pointer !important;
         font-size: 12px !important;
-        margin: 0 !important;
-        position: absolute;
-        top: 36%;
-        right: 6px;
+        line-height: 1 !important;
+        margin: 0 0 0 8px !important;
+        padding: 0 !important;
+        color: rgba(0, 0, 0, 0.45);
+
+        .anticon {
+          display: block;
+          font-size: 12px;
+          line-height: 1;
+        }
       }
 
-      &:hover .ant-tabs-close-x {
+      &:hover .ant-tabs-tab-remove {
         opacity: 1 !important;
       }
-
     }
 
-  }
-
-  .ant-tabs.ant-tabs-card > .ant-tabs-bar {
-    .ant-tabs-tab {
-      border: none !important;
-      border-bottom: 1px solid transparent !important;
-    }
     .ant-tabs-tab-active {
       height: 35px !important;
       border-color: @primary-color!important;
+    }
+
+    .ant-tabs-content-holder {
+      display: none;
     }
   }
 
