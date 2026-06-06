@@ -22,7 +22,7 @@
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
-                <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                 </span>
@@ -54,8 +54,11 @@
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
             <!-- 操作列 -->
-                      <template #bodyCell="{ column, text, record }">
-            <template v-if="column.dataIndex === 'action'">
+                      <template #bodyCell="{ column, text, record, index }">
+            <template v-if="column.key === 'rowIndex' || column.dataIndex === 'rowIndex'">
+              {{ index + 1 }}
+            </template>
+            <template v-else-if="column.dataIndex === 'action'">
               <a @click="handleEdit(record)">编辑</a>
               <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
               <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
@@ -118,8 +121,8 @@
         queryParam: { licensePlateNo: '', customerName: '', customerPhone: '', enabled: '' },
         columns: [
           {
-            title: '#', dataIndex: '', key: 'rowIndex', width: 50, align: 'center',
-            customRender: (t, r, index) => parseInt(index) + 1
+            title: '#', dataIndex: 'rowIndex', key: 'rowIndex', width: 50, align: 'center',
+            customRender: ({ text: t, record: r, index, renderIndex }) => (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '')
           },
           {
             title: '操作', dataIndex: 'action', width: 120, align: 'center'
@@ -182,4 +185,3 @@
 <style scoped>
   @import '@assets/less/common.less';
 </style>
-

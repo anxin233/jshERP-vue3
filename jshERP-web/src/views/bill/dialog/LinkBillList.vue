@@ -45,12 +45,12 @@
                 />
               </a-form-item>
             </a-col>
-            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-              <a-col :md="6" :sm="24">
+            <a-col :md="6" :sm="24">
+              <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="searchQuery">查询</a-button>
                 <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
-              </a-col>
-            </span>
+              </span>
+            </a-col>
           </a-row>
         </a-form>
       </div>
@@ -165,7 +165,7 @@
             customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell),
           },
           { title: '商品信息', dataIndex: 'materialsList',width:280, ellipsis:true,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               if(text) {
                 return text.replace(",","，");
               }
@@ -176,7 +176,7 @@
           { title: '数量', dataIndex: 'materialCount',width:60},
           { title: '金额合计', dataIndex: 'totalPrice',width:70},
           { title: '含税合计', dataIndex: 'totalTaxLastMoney',width:70,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               if(record.discountLastMoney) {
                 return (record.discountMoney + record.discountLastMoney).toFixed(2);
               } else {

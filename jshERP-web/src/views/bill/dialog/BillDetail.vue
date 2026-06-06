@@ -1697,12 +1697,12 @@
           }
         }
         let currentCol = [{title:'#',dataIndex:'',align:'center',
-          customRender:function(t,r,index){
+          customRender:function ({ text: t, record: r, index, renderIndex }){
             if(r.mType) {
               //组装和拆卸所有行都展示序号
-              return index === ds.length?'':parseInt(index)+1
+              return (index ?? renderIndex) === ds.length?'':(Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '')
             } else {
-              return index === ds.length-1?'':parseInt(index)+1
+              return (index ?? renderIndex) === ds.length-1?'':(Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '')
             }
           }
         }]

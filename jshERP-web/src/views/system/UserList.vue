@@ -17,7 +17,7 @@
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24">
-                <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                 </span>
@@ -115,8 +115,8 @@
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {

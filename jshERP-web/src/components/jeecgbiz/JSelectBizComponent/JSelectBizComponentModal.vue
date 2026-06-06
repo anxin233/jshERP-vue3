@@ -21,7 +21,7 @@
                 </a-form-item>
               </a-col>
               <a-col :span="8">
-                  <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+                  <span class="table-page-search-submitButtons">
                     <a-button type="primary" @click="searchQuery"><template #icon><legacy-icon type="search" /></template>查询</a-button>
                     <a-button type="primary" @click="searchReset" style="margin-left: 8px"><template #icon><legacy-icon type="reload" /></template>重置</a-button>
                   </span>

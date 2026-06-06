@@ -59,8 +59,8 @@
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {

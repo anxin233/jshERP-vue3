@@ -30,16 +30,16 @@
                   />
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="6" :sm="24">
+              <a-col :md="6" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
             <template v-if="toggleSearchStatus">
               <a-row :gutter="24">
@@ -283,7 +283,7 @@
           { title: '数量', dataIndex: 'materialCount',width:60},
           { title: '金额合计', dataIndex: 'totalPrice',width:80},
           { title: '含税合计', dataIndex: 'totalTaxLastMoney',width:80,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               if(record.discountLastMoney) {
                 return (record.discountMoney + record.discountLastMoney).toFixed(2);
               } else {
@@ -292,7 +292,7 @@
             }
           },
           { title: '优惠率', dataIndex: 'discount',width:60,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               return text? text + '%':''
             }
           },

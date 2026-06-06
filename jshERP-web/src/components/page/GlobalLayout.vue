@@ -648,33 +648,149 @@
 
   .table-page-search-wrapper {
 
+    .ant-form,
     .ant-form-inline {
+      width: 100%;
+
+      > .ant-row {
+        display: flex !important;
+        flex-flow: row wrap !important;
+        width: 100%;
+        min-width: 0;
+
+        > [class*='ant-col'] {
+          min-width: 0;
+        }
+      }
 
       .ant-form-item {
-        display: flex;
+        display: block !important;
+        width: 100% !important;
         margin-bottom: 12px;
         margin-right: 0;
+      }
 
-        .ant-form-item-control-wrapper {
-          flex: 1 1;
-          display: inline-block;
-          vertical-align: middle;
-        }
+      .ant-form-item-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        width: 100% !important;
+      }
 
-        > .ant-form-item-label {
-          line-height: 32px;
-          padding-right: 8px;
-          width: auto;
-        }
-        .ant-form-item-control {
-          height: 32px;
-          line-height: 32px;
-        }
+      .ant-form-item-label {
+        flex: 0 0 82px !important;
+        width: 82px !important;
+        max-width: 82px !important;
+        padding-right: 8px;
+        line-height: 32px;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .ant-form-item-label > label {
+        height: 32px;
+        line-height: 32px;
+      }
+
+      .ant-form-item-control {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0;
+        line-height: 32px;
+      }
+
+      .ant-form-item-control.ant-col-offset-1 {
+        margin-left: 0 !important;
+      }
+
+      .ant-form-item-control-input,
+      .ant-form-item-control-input-content {
+        width: 100%;
+        min-height: 32px;
+      }
+
+      .ant-input,
+      .ant-input-number,
+      .ant-select,
+      .ant-picker {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .ant-form-inline > .ant-row > .ant-col-md-4 {
+        flex: 0 0 16.66666667% !important;
+        max-width: 16.66666667% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-5 {
+        flex: 0 0 20.83333333% !important;
+        max-width: 20.83333333% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-6 {
+        flex: 0 0 25% !important;
+        max-width: 25% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-7 {
+        flex: 0 0 29.16666667% !important;
+        max-width: 29.16666667% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-8 {
+        flex: 0 0 33.33333333% !important;
+        max-width: 33.33333333% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-9 {
+        flex: 0 0 37.5% !important;
+        max-width: 37.5% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-10 {
+        flex: 0 0 41.66666667% !important;
+        max-width: 41.66666667% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-12 {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-15 {
+        flex: 0 0 62.5% !important;
+        max-width: 62.5% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-16 {
+        flex: 0 0 66.66666667% !important;
+        max-width: 66.66666667% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-18 {
+        flex: 0 0 75% !important;
+        max-width: 75% !important;
+      }
+
+      .ant-form-inline > .ant-row > .ant-col-md-24 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .ant-form-inline > .ant-row > [class*='ant-col'] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
       }
     }
 
     .table-page-search-submitButtons {
-      display: block;
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
       margin-bottom: 12px;
       white-space: nowrap;
     }

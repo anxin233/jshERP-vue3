@@ -43,16 +43,16 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-              <a-col :md="6" :sm="24">
+            <a-col :md="6" :sm="24">
+              <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="searchQuery">查询</a-button>
                 <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                 <a @click="handleToggleSearch" style="margin-left: 8px">
                   {{ toggleSearchStatus ? '收起' : '展开' }}
                   <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                 </a>
-              </a-col>
-            </span>
+              </span>
+            </a-col>
             <template v-if="toggleSearchStatus">
               <a-col :md="6" :sm="24">
                 <a-form-item label="财务人员" :labelCol="labelCol" :wrapperCol="wrapperCol">
@@ -160,8 +160,8 @@
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {

@@ -30,14 +30,14 @@
                 <a-input placeholder="请输入名称、规格、型号" v-model:value="queryParam.materialParam"></a-input>
               </a-form-item>
             </a-col>
-            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-              <a-col :md="12" :sm="24">
+            <a-col :md="12" :sm="24">
+              <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="searchQuery">查询</a-button>
                 <a-button style="margin-left: 8px" v-print="'#debtAccountPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
                 <a-button style="margin-left: 8px" @click="handleExportXls('欠款详情')"><template #icon><legacy-icon type="download" /></template>导出</a-button>
                 <a-button style="margin-left: 8px" @click="handleHistoryFinancial"><template #icon><legacy-icon type="history" /></template>{{historyText}}</a-button>
-              </a-col>
-            </span>
+              </span>
+            </a-col>
           </a-row>
         </a-form>
       </div>
@@ -111,8 +111,8 @@
         columns: [
           {
             title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
-            customRender:function (t,r,index) {
-              return (t !== '合计') ? (parseInt(index) + 1) : t
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (t !== '合计') ? ((Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '')) : t
             }
           },
           {
@@ -121,7 +121,7 @@
           },
           { title: '', dataIndex: 'organName',width:120},
           { title: '商品信息', dataIndex: 'materialsList',width:200, ellipsis:true,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               if(text) {
                 return text.replace(",","，");
               }

@@ -36,8 +36,8 @@
                   </a-select>
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="6" :sm="8">
+              <a-col :md="6" :sm="8">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="loadMaterialData(1)">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset(1)">重置</a-button>
                   <a-tooltip title="没查询到，决定新增商品！">
@@ -47,8 +47,8 @@
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
             <template v-if="toggleSearchStatus">
               <a-row :gutter="24">

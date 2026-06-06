@@ -27,7 +27,7 @@
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24" >
-                <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" v-print="'#reportPrint'"><template #icon><legacy-icon type="printer" /></template>打印</a-button>
                   <a-button style="margin-left: 8px" @click="exportExcel"><template #icon><legacy-icon type="download" /></template>导出</a-button>
@@ -205,8 +205,8 @@
         defColumns: [
           {
             title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:40, align:"center",
-            customRender:function (t,r,index) {
-              return (t !== '合计') ? (parseInt(index) + 1) : t
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (t !== '合计') ? ((Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '')) : t
             }
           },
           {title: '库存详情', dataIndex: 'action', align:"center", width: 80,

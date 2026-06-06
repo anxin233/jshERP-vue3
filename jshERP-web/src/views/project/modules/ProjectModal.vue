@@ -158,7 +158,7 @@
             title: '销售价格',
             dataIndex: 'commodityDecimal',
             width: '12%',
-            customRender: (text) => text ? `¥${parseFloat(text).toFixed(2)}` : '-'
+            customRender: ({ text }) => text ? `¥${parseFloat(text).toFixed(2)}` : '-'
           },
           {
             title: '数量',
@@ -169,7 +169,7 @@
             title: '小计',
             dataIndex: 'subtotal',
             width: '12%',
-            customRender: (text, record) => {
+            customRender: ({ text, record }) => {
               const price = parseFloat(record.commodityDecimal || 0);
               const quantity = parseInt(record.quantity || 1);
               return `¥${(price * quantity).toFixed(2)}`;

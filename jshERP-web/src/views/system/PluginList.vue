@@ -12,14 +12,14 @@
                   <a-input placeholder="请输入名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="6" :sm="24">
+              <a-col :md="6" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                   <a-button type="primary" style="margin-left: 8px" @click="writeCode">填写插件激活码</a-button>
                   <a-button type="primary" style="margin-left: 8px" @click="writeAppCode">填写手机端激活码</a-button>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
           </a-form>
         </div>
@@ -114,8 +114,8 @@
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {
@@ -126,7 +126,7 @@
             customRender: (cell) => this.$renderColumnSlot('action', cell),
           },
           {title: '名称', dataIndex: '', width: 120,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 var desc = r.pluginDescriptor.pluginDescription;
                 if(desc.indexOf("|")){
@@ -137,21 +137,21 @@
             }
           },
           {title: '标识', dataIndex: '', width: 180,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 return r.pluginDescriptor.pluginId;
               }
             }
           },
           {title: '版本', dataIndex: '', width: 120,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 return r.pluginDescriptor.version;
               }
             }
           },
           {title: '作者', dataIndex: '', width: 100,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 return r.pluginDescriptor.provider;
               }

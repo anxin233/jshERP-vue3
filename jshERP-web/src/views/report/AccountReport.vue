@@ -139,8 +139,8 @@
         defColumns: [
           {
             title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true, width:60, align:"center",
-            customRender:function (t,r,index) {
-              return (t !== '合计') ? (parseInt(index) + 1) : t
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (t !== '合计') ? ((Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '')) : t
             }
           },
           { title: '账户流水', dataIndex: 'action', align:"center", width: 120,

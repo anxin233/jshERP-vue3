@@ -20,13 +20,13 @@
                   <a-input ref="name" placeholder="请输入批号" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="12" :sm="24">
+              <a-col :md="12" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="loadData(1)">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset(1)">重置</a-button>
                   <span style="margin-left: 20px">提示：双击行可以直接选中</span>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
           </a-form>
           <a-table

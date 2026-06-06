@@ -29,7 +29,7 @@
                 </a-form-item>
               </a-col>
               <a-col :md="6" :sm="24" >
-                <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
@@ -82,8 +82,11 @@
           :loading="loading"
           @change="handleTableChange">
           <!-- 字段超长截取省略号显示-->
-          <template #bodyCell="{ column, text }">
-            <template v-if="column.dataIndex === 'content'">
+          <template #bodyCell="{ column, text, index }">
+            <template v-if="column.key === 'rowIndex' || column.dataIndex === 'rowIndex'">
+              {{ index + 1 }}
+            </template>
+            <template v-else-if="column.dataIndex === 'content'">
               <j-ellipsis :value="text" :length="40"/>
             </template>
           </template>
@@ -127,12 +130,12 @@
         columns: [
           {
             title: '#',
-            dataIndex: '',
+            dataIndex: 'rowIndex',
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {title: '操作模块', dataIndex: 'operation', width: 120, align: "left"},

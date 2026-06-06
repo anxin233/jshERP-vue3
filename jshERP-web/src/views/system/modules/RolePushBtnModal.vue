@@ -20,8 +20,8 @@
           <!-- 按钮区域 -->
           <a-form layout="inline">
             <a-row :gutter="24">
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="12" :sm="24">
+              <a-col :md="12" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button @click="toggleChecked">
                     {{ !checked ? '全选' : '全取消' }}
                   </a-button>
@@ -37,8 +37,8 @@
                   <a-button @click="exportToggleChecked" style="margin-left: 8px">
                     {{ !exportChecked ? '全选-导出' : '全取消-导出' }}
                   </a-button>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
           </a-form>
         </div>
@@ -104,8 +104,8 @@
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {

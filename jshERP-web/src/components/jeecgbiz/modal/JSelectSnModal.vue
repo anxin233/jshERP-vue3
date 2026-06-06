@@ -20,13 +20,13 @@
                   <a-input ref="name" placeholder="多个序列号用逗号隔开" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="12" :sm="24">
+              <a-col :md="12" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="onSearch">查询</a-button>
                   <a-button style="margin-left: 8px" type="primary" @click="checkAll">全选</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset(1)">重置</a-button>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
           </a-form>
         </div>

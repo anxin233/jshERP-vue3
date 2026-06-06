@@ -29,16 +29,16 @@
                   />
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="6" :sm="24">
+              <a-col :md="6" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
                   <a @click="handleToggleSearch" style="margin-left: 8px">
                     {{ toggleSearchStatus ? '收起' : '展开' }}
                     <legacy-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
                   </a>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
             <template v-if="toggleSearchStatus">
               <a-row :gutter="24">
@@ -295,7 +295,7 @@
           },
           { title: '供应商', dataIndex: 'organName',width:120, ellipsis:true},
           { title: '单据编号', dataIndex: 'number',width:160,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               text = record.linkNumber?text+"[订]":text
               text = record.hasBackFlag?text+"[退]":text
               return text
@@ -308,19 +308,19 @@
           { title: '数量', dataIndex: 'materialCount',width:60},
           { title: '金额合计', dataIndex: 'totalPrice',width:80},
           { title: '含税合计', dataIndex: 'totalTaxLastMoney',width:80,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               return (record.discountMoney + record.discountLastMoney).toFixed(2);
             }
           },
           { title: '优惠率', dataIndex: 'discount',width:60,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               return text? text + '%':''
             }
           },
           { title: '付款优惠', dataIndex: 'discountMoney',width:80},
           { title: '其它费用', dataIndex: 'otherMoney',width:80},
           { title: '待付金额', dataIndex: 'needInMoney',width:80,
-            customRender: ({ text, record, index }) => {
+            customRender: ({ text, record, index, renderIndex }) => {
               let needInMoney = record.discountLastMoney + record.otherMoney - record.deposit
               return needInMoney? needInMoney.toFixed(2):0
             }

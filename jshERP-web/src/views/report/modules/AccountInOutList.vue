@@ -134,8 +134,8 @@
             title: '#', dataIndex: 'rowIndex', hideInColumnSetting: true,
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {
@@ -145,7 +145,7 @@
           { title: '类型', dataIndex: 'type', width: 100},
           { title: '单位信息', dataIndex: 'supplierName', width: 180, ellipsis:true},
           { title: '金额', dataIndex: 'changeAmount', width: 100, ellipsis:true,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r.aList && r.amList) {
                 let aListArr = r.aList.toString().split(",");
                 let amListArr = r.amList.toString().split(",");

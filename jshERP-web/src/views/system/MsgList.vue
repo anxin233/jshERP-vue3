@@ -22,7 +22,7 @@
             </a-form-item>
           </a-col>
           <a-col :span="12" >
-            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+            <span class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchQuery">查询</a-button>
               <a-button @click="searchReset" style="margin-left: 8px">重置</a-button>
               <a-button type="primary" @click="readAll" style="margin-left: 8px"><template #icon><legacy-icon type="book" /></template>全部标注已读</a-button>

@@ -12,12 +12,12 @@
                   <a-input placeholder="请输入单位名称查询" v-model:value="queryParam.name"></a-input>
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="6" :sm="24">
+              <a-col :md="6" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
           </a-form>
         </div>
@@ -95,8 +95,8 @@
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {
@@ -109,14 +109,14 @@
           { title: '单位名称', align:"left", dataIndex: 'name', width:200 },
           { title: '基本单位', align:"left", dataIndex: 'basicUnit', width:80 },
           { title: '副单位', align:"left", dataIndex: 'otherUnit', width:100,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 return r.otherUnit + '=' + r.ratio + r.basicUnit;
               }
             }
           },
           { title: '副单位?', align:"left", dataIndex: 'otherUnitTwo', width:100,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 if(r.otherUnitTwo) {
                   return r.otherUnitTwo + '=' + r.ratioTwo + r.basicUnit;
@@ -125,7 +125,7 @@
             }
           },
           { title: '副单位?', align:"left", dataIndex: 'otherUnitThree', width:100,
-            customRender:function (t,r,index) {
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
               if (r) {
                 if(r.otherUnitThree) {
                   return r.otherUnitThree + '=' + r.ratioThree + r.basicUnit;

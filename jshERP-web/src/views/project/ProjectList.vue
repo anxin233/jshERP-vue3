@@ -30,12 +30,12 @@
                   </a-select>
                 </a-form-item>
               </a-col>
-              <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-                <a-col :md="6" :sm="24">
+              <a-col :md="6" :sm="24">
+                <span class="table-page-search-submitButtons">
                   <a-button type="primary" @click="searchQuery">查询</a-button>
                   <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
-                </a-col>
-              </span>
+                </span>
+              </a-col>
             </a-row>
           </a-form>
         </div>
@@ -58,8 +58,11 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-                      <template #bodyCell="{ column, text, record }">
-            <template v-if="column.dataIndex === 'action'">
+                      <template #bodyCell="{ column, text, record, index }">
+            <template v-if="column.key === 'rowIndex' || column.dataIndex === 'rowIndex'">
+              {{ index + 1 }}
+            </template>
+            <template v-else-if="column.dataIndex === 'action'">
               <a @click="handleEdit(record)">编辑</a>
               <a-divider type="vertical" />
               <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
@@ -108,12 +111,12 @@
         columns: [
           {
             title: '#',
-            dataIndex: '',
+            dataIndex: 'rowIndex',
             key:'rowIndex',
             width:40,
             align:"center",
-            customRender:function (t,r,index) {
-              return parseInt(index)+1;
+            customRender:function ({ text: t, record: r, index, renderIndex }) {
+              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
             }
           },
           {
@@ -124,9 +127,9 @@
           },
           {title: '默认工时(小时)', dataIndex: 'defaultHours', width: 150, align: 'right'},
           {title: '项目类别', dataIndex: 'categoryName', width: 150},
-          {title: '工时单价(元/小时)', dataIndex: 'hourlyRate', width: 150, align: 'right', customRender: (text) => text ? `￥${parseFloat(text).toFixed(2)}` : '-'},
+          {title: '工时单价(元/小时)', dataIndex: 'hourlyRate', width: 150, align: 'right', customRender: ({ text }) => text ? `￥${parseFloat(text).toFixed(2)}` : '-'},
           {title: '项目总价(元)', dataIndex: 'defaultHours', width: 150, align: 'right'},
-          {title: '项目总价(元)', dataIndex: 'totalPrice', width: 150, align: 'right', customRender: (text) => text ? `￥${parseFloat(text).toFixed(2)}` : '-'},
+          {title: '项目总价(元)', dataIndex: 'totalPrice', width: 150, align: 'right', customRender: ({ text }) => text ? `￥${parseFloat(text).toFixed(2)}` : '-'},
           {
             title: '是否启用', dataIndex: 'enabled', width: 100, align: "center"
           },
