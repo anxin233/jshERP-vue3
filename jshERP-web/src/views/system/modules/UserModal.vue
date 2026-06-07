@@ -15,8 +15,8 @@
       cancelText="取消"
       okText="保存"
       style="top:2%;height:95%;">
-      <template #footer>
-        <a-button key="back" v-if="isReadOnly" @click="handleCancel">
+      <template v-if="isReadOnly" #footer>
+        <a-button key="back" @click="handleCancel">
           取消
         </a-button>
       </template>

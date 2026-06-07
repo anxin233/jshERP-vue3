@@ -76,7 +76,7 @@
       }
     },
     methods: {
-      add () { this.edit({}); },
+      add (defaultModel = {}) { this.edit(defaultModel); },
       edit (record) {
         this.model = Object.assign({}, record);
         this.formModel = pick(this.model,'name', 'serialNo', 'sort', 'remark', 'parentId')

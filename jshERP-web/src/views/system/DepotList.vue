@@ -29,10 +29,18 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator"  style="margin-top: 5px">
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel" icon="delete">删除</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(true)" icon="check-square">启用</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(false)" icon="close-square">禁用</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary">
+            <template #icon><legacy-icon type="plus" /></template>新增
+          </a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel">
+            <template #icon><legacy-icon type="delete" /></template>删除
+          </a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(true)">
+            <template #icon><legacy-icon type="check-square" /></template>启用
+          </a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(false)">
+            <template #icon><legacy-icon type="close-square" /></template>禁用
+          </a-button>
         </div>
         <!-- table区域-begin -->
         <div>
@@ -48,27 +56,34 @@
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
             @change="handleTableChange">
-            <template #action="{ text, record }"><span>
-              <a v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' && quickBtn.user.indexOf(1)>-1 " @click="btnSetUser(record)">分配用户</a>
-              <a-divider v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' && quickBtn.user.indexOf(1)>-1 " type="vertical" />
-              <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定设为默认吗?" @confirm="() => handleSetDefault(record.id)">
-                <a>设为默认</a>
-              </a-popconfirm>
-              <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
-              <a @click="handleEdit(record)">编辑</a>
-              <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
-              <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                <a>删除</a>
-              </a-popconfirm>
-            </span></template>
-            <!-- 状态渲染模板 -->
-            <template #customRenderEnabledFlag="{ text: enabled }">
-              <a-tag v-if="enabled" color="green">启用</a-tag>
-              <a-tag v-if="!enabled" color="orange">禁用</a-tag>
-            </template>
-            <template #customRenderFlag="{ text: isDefault }">
-              <a-tag v-if="isDefault" color="green">是</a-tag>
-              <a-tag v-if="!isDefault" color="orange">否</a-tag>
+            <template #bodyCell="{ column, text, record, index }">
+              <template v-if="column.dataIndex === 'rowIndex'">
+                {{ index + 1 }}
+              </template>
+              <template v-else-if="column.dataIndex === 'action'">
+                <span>
+                  <a v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' && quickBtn.user.indexOf(1)>-1 " @click="btnSetUser(record)">分配用户</a>
+                  <a-divider v-if="btnEnableList.indexOf(1)>-1 && depotFlag === '1' && quickBtn.user.indexOf(1)>-1 " type="vertical" />
+                  <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定设为默认吗?" @confirm="() => handleSetDefault(record.id)">
+                    <a>设为默认</a>
+                  </a-popconfirm>
+                  <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
+                  <a @click="handleEdit(record)">编辑</a>
+                  <a-divider v-if="btnEnableList.indexOf(1)>-1" type="vertical" />
+                  <a-popconfirm v-if="btnEnableList.indexOf(1)>-1" title="确定删除吗?" @confirm="() => handleDelete(record.id)">
+                    <a>删除</a>
+                  </a-popconfirm>
+                </span>
+              </template>
+              <template v-else-if="column.dataIndex === 'enabled'">
+                <a-tag v-if="text" color="green">启用</a-tag>
+                <a-tag v-else color="orange">禁用</a-tag>
+              </template>
+              <template v-else-if="column.dataIndex === 'isDefault'">
+                <a-tag v-if="text" color="green">是</a-tag>
+                <a-tag v-else color="orange">否</a-tag>
+              </template>
+              <template v-else>{{ text }}</template>
             </template>
           </a-table>
         </div>
@@ -117,20 +132,16 @@
         columns: [
           {
             title: '#',
-            dataIndex: '',
+            dataIndex: 'rowIndex',
             key:'rowIndex',
             width:40,
-            align:"center",
-            customRender:function ({ text: t, record: r, index, renderIndex }) {
-              return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');
-            }
+            align:"center"
           },
           {
             title: '操作',
             dataIndex: 'action',
             align:"center",
-            width: 200,
-            customRender: (cell) => this.$renderColumnSlot('action', cell),
+            width: 200
           },
           {title: '仓库名称', dataIndex: 'name', width: 200},
           {title: '仓库地址', dataIndex: 'address', width: 200},
@@ -139,12 +150,8 @@
           {title: '负责人', dataIndex: 'principalName', width: 80},
           {title: '备注', dataIndex: 'remark', width: 120},
           {title: '排序', dataIndex: 'sort', width: 60},
-          { title: '状态', dataIndex: 'enabled',width:60,align:"center",
-            customRender: (cell) => this.$renderColumnSlot('customRenderEnabledFlag', cell)
-          },
-          {title: '是否默认',dataIndex: 'isDefault',width:80,align:"center",
-            customRender: (cell) => this.$renderColumnSlot('customRenderFlag', cell)
-          }
+          { title: '状态', dataIndex: 'enabled',width:60,align:"center" },
+          {title: '是否默认',dataIndex: 'isDefault',width:80,align:"center" }
         ],
         url: {
           list: "/depot/list",

@@ -19,7 +19,7 @@ public interface ProjectCategoryMapperEx {
 
     int addProjectCategory(ProjectCategory pc);
 
-    int batchDeleteProjectCategoryByIds(@Param("updateTime") Date updateTime, @Param("updater") Long updater, @Param("ids") String ids[]);
+    int batchDeleteProjectCategoryByIds(@Param("updateTime") Date updateTime, @Param("updater") Long updater, @Param("ids") String ids[], @Param("tenantId") Long tenantId);
 
     int editProjectCategory(ProjectCategory pc);
 

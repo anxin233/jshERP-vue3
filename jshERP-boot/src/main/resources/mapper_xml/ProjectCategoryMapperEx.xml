@@ -78,6 +78,7 @@
        set update_time=#{updateTime}, delete_flag='1'
        where 1=1
        and ifnull(delete_flag,'0') !='1'
+       and tenant_id = #{tenantId}
        and id in (
         <foreach collection="ids" item="id" separator=",">
             #{id}
@@ -95,6 +96,7 @@
             remark = #{remark},
             update_time = #{updateTime}
         where id = #{id}
+        and tenant_id = #{tenantId}
         and ifnull(delete_flag,'0') !='1'
     </update>
 

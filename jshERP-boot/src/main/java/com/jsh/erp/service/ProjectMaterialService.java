@@ -37,16 +37,15 @@ public class ProjectMaterialService {
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
-    public void saveProjectMaterialsWithQuantity(Long projectId, JSONArray materials) throws Exception {
+    public void saveProjectMaterialsWithQuantity(Long projectId, JSONArray materials, Long tenantId) throws Exception {
         try {
             // 先删除旧的关联关系
-            projectMaterialMapperEx.deleteByProjectId(projectId, new Date());
+            projectMaterialMapperEx.deleteByProjectId(projectId, new Date(), tenantId);
 
             // 批量插入新的关联关系
             if (materials != null && !materials.isEmpty()) {
                 List<ProjectMaterial> list = new ArrayList<>();
                 Date now = new Date();
-                // tenant_id 由 MyBatis Plus 租户插件自动注入，无需手动设置
                 for (int i = 0; i < materials.size(); i++) {
                     JSONObject material = materials.getJSONObject(i);
                     ProjectMaterial pm = new ProjectMaterial();
@@ -64,19 +63,19 @@ public class ProjectMaterialService {
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
-    public void deleteByProjectId(Long projectId) throws Exception {
+    public void deleteByProjectId(Long projectId, Long tenantId) throws Exception {
         try {
-            projectMaterialMapperEx.deleteByProjectId(projectId, new Date());
+            projectMaterialMapperEx.deleteByProjectId(projectId, new Date(), tenantId);
         } catch (Exception e) {
             JshException.writeFail(logger, e);
         }
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
-    public void deleteByProjectIds(String[] projectIds) throws Exception {
+    public void deleteByProjectIds(String[] projectIds, Long tenantId) throws Exception {
         try {
             if (projectIds != null && projectIds.length > 0) {
-                projectMaterialMapperEx.deleteByProjectIds(projectIds, new Date());
+                projectMaterialMapperEx.deleteByProjectIds(projectIds, new Date(), tenantId);
             }
         } catch (Exception e) {
             JshException.writeFail(logger, e);

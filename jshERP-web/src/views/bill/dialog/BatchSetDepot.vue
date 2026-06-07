@@ -14,8 +14,8 @@
       @cancel="handleCancel"
       cancelText="关闭"
       style="top:30%;height: 35%;">
-      <template #footer>
-        <a-button key="back" v-if="isReadOnly" @click="handleCancel">
+      <template v-if="isReadOnly" #footer>
+        <a-button key="back" @click="handleCancel">
           关闭
         </a-button>
       </template>

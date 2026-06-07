@@ -4,23 +4,19 @@
       :title="title"
       :width="500"
       :open="visible"
-      :confirm-loading="confirmLoading"
+      :confirmLoading="confirmLoading"
       :getContainer="() => $refs.container"
-      :maskStyle="{'top':'93px','left':'154px'}"
-      :wrapClassName="wrapClassNameInfo()"
-      :mask="isDesktop()"
       :maskClosable="false"
       @ok="handleOk"
       @cancel="handleCancel"
       cancelText="取消"
-      okText="保存"
-      style="top:30%;height: 30%;">
-      <template #footer>
-        <a-button key="back" v-if="isReadOnly" @click="handleCancel">取消</a-button>
+      okText="保存">
+      <template v-if="isReadOnly" #footer>
+        <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <a-spin :spinning="confirmLoading">
         <a-form ref="formRef" :model="formModel" :rules="formRules">
-          <a-form-item name="number" :labelCol="labelCol" :wrapperCol="wrapperCol" label="请输入数量">
+          <a-form-item name="number" :labelCol="labelCol" :wrapperCol="wrapperCol" label="数量">
             <a-input placeholder="请输入数量" v-model:value="formModel.number" />
           </a-form-item>
         </a-form>
@@ -30,10 +26,8 @@
 </template>
 
 <script>
-  import {mixinDevice} from '@/utils/mixin'
   export default {
     name: 'BatchSetStockModal',
-    mixins: [mixinDevice],
     data () {
       return {
         title:"批量设置",

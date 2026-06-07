@@ -13,11 +13,11 @@ public interface ProjectMaterialMapperEx {
 
     int batchInsert(@Param("list") List<ProjectMaterial> list);
 
-    int deleteByProjectId(@Param("projectId") Long projectId, @Param("updateTime") Date updateTime);
+    int deleteByProjectId(@Param("projectId") Long projectId, @Param("updateTime") Date updateTime, @Param("tenantId") Long tenantId);
 
     List<Long> getMaterialIdsByProjectId(@Param("projectId") Long projectId);
 
     List<ProjectMaterialVo> getProjectMaterialsWithDetail(@Param("projectId") Long projectId);
 
-    int deleteByProjectIds(@Param("projectIds") String[] projectIds, @Param("updateTime") Date updateTime);
+    int deleteByProjectIds(@Param("projectIds") String[] projectIds, @Param("updateTime") Date updateTime, @Param("tenantId") Long tenantId);
 }

@@ -27,10 +27,10 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="border-top: 5px">
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel" icon="delete">删除</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(0)" icon="check-square">启用</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(2)" icon="close-square">禁用</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(0)"><template #icon><legacy-icon type="check-square" /></template>启用</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetStatus(2)"><template #icon><legacy-icon type="close-square" /></template>禁用</a-button>
         </div>
         <!-- table区域-begin -->
         <div>

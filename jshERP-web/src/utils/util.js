@@ -1005,23 +1005,37 @@ export function handleIntroJs(module, cur_version) {
  * 回车后自动跳到下一个input
  */
 export function autoJumpNextInput(domInfo) {
-  let domIndex = 0
-  let inputs = document.getElementById(domInfo).getElementsByTagName('input')
-  inputs[domIndex].focus()
-  document.getElementById(domInfo).addEventListener('keydown',function(e){
-    if(e.keyCode === 13){
-      domIndex++
-      if(domIndex === inputs.length) {
-        domIndex = 0
+  const dom = document.getElementById(domInfo)
+  if (!dom) {
+    return
+  }
+  const inputs = dom.getElementsByTagName('input')
+  if (!inputs.length) {
+    return
+  }
+  dom.__autoJumpNextInputIndex = 0
+  inputs[0].focus()
+  if (!dom.__autoJumpNextInputHandler) {
+    dom.__autoJumpNextInputHandler = function(e) {
+      if (e.keyCode === 13) {
+        const inputList = dom.getElementsByTagName('input')
+        if (!inputList.length) {
+          return
+        }
+        dom.__autoJumpNextInputIndex++
+        if (dom.__autoJumpNextInputIndex >= inputList.length) {
+          dom.__autoJumpNextInputIndex = 0
+        }
+        inputList[dom.__autoJumpNextInputIndex].focus()
       }
-      inputs[domIndex].focus()
     }
-  })
-  for(let i=0; i<inputs.length; i++){
+    dom.addEventListener('keydown', dom.__autoJumpNextInputHandler)
+  }
+  for (let i = 0; i < inputs.length; i++) {
     //这个index就是做个介质，来获取当前的i是第几个
-    inputs[i].index = i;
+    inputs[i].index = i
     inputs[i].onclick = function () {
-      domIndex = this.index
+      dom.__autoJumpNextInputIndex = this.index
     }
   }
 }

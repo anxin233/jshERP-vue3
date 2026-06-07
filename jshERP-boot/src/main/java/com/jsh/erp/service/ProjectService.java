@@ -6,8 +6,10 @@ import com.jsh.erp.constants.BusinessConstants;
 import com.jsh.erp.datasource.entities.Project;
 import com.jsh.erp.datasource.entities.ProjectEx;
 import com.jsh.erp.datasource.entities.ProjectMaterial;
+import com.jsh.erp.datasource.entities.User;
 import com.jsh.erp.datasource.mappers.ProjectMapper;
 import com.jsh.erp.datasource.mappers.ProjectMapperEx;
+import com.jsh.erp.exception.BusinessRunTimeException;
 import com.jsh.erp.exception.JshException;
 import com.jsh.erp.utils.PageUtils;
 import org.slf4j.Logger;
@@ -35,6 +37,18 @@ public class ProjectService {
     private LogService logService;
     @Resource
     private ProjectMaterialService projectMaterialService;
+
+    private Long getWritableTenantId() throws Exception {
+        User userInfo = userService.getCurrentUser();
+        if (userInfo == null
+                || BusinessConstants.DEFAULT_MANAGER.equals(userInfo.getLoginName())
+                || userInfo.getTenantId() == null
+                || userInfo.getTenantId() == 0L) {
+            throw new BusinessRunTimeException(301,
+                    "\u8d85\u7ea7\u7ba1\u7406\u5458\u7981\u6b62\u64cd\u4f5c\u79df\u6237\u4e1a\u52a1\u6570\u636e");
+        }
+        return userInfo.getTenantId();
+    }
 
     public Project getProject(long id) throws Exception {
         Project result = null;
@@ -103,6 +117,7 @@ public class ProjectService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int insertProject(JSONObject obj, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         // 移除前端传来的 totalPrice，由后端计算
         obj.remove("totalPrice");
 
@@ -120,7 +135,7 @@ public class ProjectService {
             result = projectMapperEx.addProject(project);
             // 保存项目商品关联
             if (materials != null && !materials.isEmpty()) {
-                projectMaterialService.saveProjectMaterialsWithQuantity(project.getId(), materials);
+                projectMaterialService.saveProjectMaterialsWithQuantity(project.getId(), materials, tenantId);
             }
             logService.insertLog("项目信息",
                     new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_ADD).append(project.getName()).toString(), request);
@@ -132,10 +147,12 @@ public class ProjectService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int updateProject(JSONObject obj, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         // 移除前端传来的 totalPrice，由后端计算
         obj.remove("totalPrice");
 
         Project project = JSONObject.parseObject(obj.toJSONString(), Project.class);
+        project.setTenantId(tenantId);
         project.setUpdateTime(new Date());
 
         // 计算项目总价
@@ -148,7 +165,7 @@ public class ProjectService {
             result = projectMapperEx.editProject(project);
             // 更新项目商品关联
             if (materials != null) {
-                projectMaterialService.saveProjectMaterialsWithQuantity(project.getId(), materials);
+                projectMaterialService.saveProjectMaterialsWithQuantity(project.getId(), materials, tenantId);
             }
             logService.insertLog("项目信息",
                     new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_EDIT).append(project.getName()).toString(), request);
@@ -160,13 +177,20 @@ public class ProjectService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int deleteProject(Long id, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         int result = 0;
         try {
             Project project = getProject(id);
+            if (project == null) {
+                return 0;
+            }
+            project.setTenantId(tenantId);
             project.setDeleteFlag("1");
             project.setUpdateTime(new Date());
             result = projectMapper.updateByPrimaryKeySelective(project);
-            projectMaterialService.deleteByProjectId(id);
+            if (result > 0) {
+                projectMaterialService.deleteByProjectId(id, tenantId);
+            }
             logService.insertLog("项目信息",
                     new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_DELETE).append(project.getName()).toString(), request);
         } catch (Exception e) {
@@ -177,11 +201,14 @@ public class ProjectService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int batchDeleteProject(String ids, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         int result = 0;
         try {
             String[] idArray = ids.split(",");
-            result = projectMapperEx.batchDeleteProjectByIds(new Date(), userService.getCurrentUser().getId(), idArray);
-            projectMaterialService.deleteByProjectIds(idArray);
+            result = projectMapperEx.batchDeleteProjectByIds(new Date(), userService.getCurrentUser().getId(), idArray, tenantId);
+            if (result > 0) {
+                projectMaterialService.deleteByProjectIds(idArray, tenantId);
+            }
             logService.insertLog("项目信息",
                     "批量删除,id集:" + ids, request);
         } catch (Exception e) {

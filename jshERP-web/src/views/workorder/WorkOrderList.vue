@@ -52,9 +52,9 @@
 
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="margin-top:5px">
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary" icon="plus">新增工单</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel" icon="delete">删除</a-button>
-          <a-button v-if="btnEnableList.indexOf(3)>-1" @click="handleExportXls('工单列表')" icon="download">导出</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增工单</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button v-if="btnEnableList.indexOf(3)>-1" @click="handleExportXls('工单列表')"><template #icon><legacy-icon type="download" /></template>导出</a-button>
           <!-- 快速状态流转按钮 -->
           <a-divider type="vertical" v-if="selectedRowKeys.length > 0" />
           <template v-if="selectedRowKeys.length === 1">

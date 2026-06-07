@@ -4,8 +4,8 @@
       <a-card :bordered="false">
         <!-- 按钮操作区域 -->
         <a-row style="margin-left: 14px">
-          <a-button @click="handleAddCategory" type="primary">添加类别</a-button>
-          <a-button title="删除多条数据" @click="batchDel" type="default">批量删除</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAddCategory" type="primary">添加类别</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" title="删除多条数据" @click="batchDel" type="default">批量删除</a-button>
           <a-button @click="refresh" type="default"><template #icon><legacy-icon type="reload" /></template>刷新</a-button>
         </a-row>
         <div style="background: #fff;padding-left:16px;height: 100%; margin-top: 5px">
@@ -32,7 +32,7 @@
             <ul v-show="contextMenuVisible"
                 :style="{position: 'fixed', left: contextMenuX + 'px', top: contextMenuY + 'px', zIndex: 1000}"
                 class="context-menu">
-              <li @click="handleAddChild">
+              <li v-if="btnEnableList.indexOf(1)>-1" @click="handleAddChild">
                 <legacy-icon type="plus" /> 新增子类别
               </li>
             </ul>
@@ -64,7 +64,7 @@
         </a-form>
         <div class="anty-form-btn">
           <a-button @click="emptyCurrForm" type="default" htmlType="button"><template #icon><legacy-icon type="sync" /></template>重置</a-button>
-          <a-button @click="submitCurrForm" type="primary" htmlType="button"><template #icon><legacy-icon type="form" /></template>保存</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="submitCurrForm" type="primary" htmlType="button"><template #icon><legacy-icon type="form" /></template>保存</a-button>
         </div>
       </a-card>
       <a-card v-else >
@@ -120,6 +120,7 @@ export default {
         xs: {span: 24},
         sm: {span: 16}
       },
+      urlPath: '/project/category',
       url: {
         delete: '/projectCategory/delete',
         edit: '/projectCategory/update',
@@ -299,13 +300,12 @@ export default {
     handleAddChild() {
       this.contextMenuVisible = false
       if (this.rightClickSelectedNode) {
-        this.$refs.projectCategoryModal.add()
+        const node = this.rightClickSelectedNode
+        const parentId = node.id !== undefined && node.id !== null
+          ? node.id
+          : (node.key !== undefined && node.key !== null ? node.key : node.value)
+        this.$refs.projectCategoryModal.add({ parentId })
         this.$refs.projectCategoryModal.title = '新增子类别'
-        this.$nextTick(() => {
-          this.$refs.projectCategoryModal.form.setFieldsValue({
-            parentId: this.rightClickSelectedNode.id
-          })
-        })
       }
     }
   },

@@ -90,11 +90,11 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator"  style="margin-top: 5px">
-          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="myHandleAdd" type="primary" icon="plus">新增</a-button>
-          <a-button v-if="btnEnableList.indexOf(1)>-1" icon="delete" @click="batchDel">删除</a-button>
-          <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" icon="check" @click="batchSetStatus(1)">审核</a-button>
-          <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" icon="stop" @click="batchSetStatus(0)">反审核</a-button>
-          <a-button v-if="isShowExcel && btnEnableList.indexOf(3)>-1" icon="download" @click="handleExport">导出</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="myHandleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" @click="batchSetStatus(1)"><template #icon><legacy-icon type="check" /></template>审核</a-button>
+          <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" @click="batchSetStatus(0)"><template #icon><legacy-icon type="stop" /></template>反审核</a-button>
+          <a-button v-if="isShowExcel && btnEnableList.indexOf(3)>-1" @click="handleExport"><template #icon><legacy-icon type="download" /></template>导出</a-button>
           <a-tooltip placement="left" title="针对会员模块，对会员收取预付款。">
             <legacy-icon v-if="btnEnableList.indexOf(1)>-1" type="question-circle" style="font-size:20px;float:right;" />
           </a-tooltip>

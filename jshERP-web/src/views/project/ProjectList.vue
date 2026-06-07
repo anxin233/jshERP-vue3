@@ -41,8 +41,8 @@
         </div>
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="margin-top: 5px">
-          <a-button @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
-          <a-button @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
+          <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
         </div>
         <!-- table区域 -->
         <div>
@@ -63,11 +63,13 @@
               {{ index + 1 }}
             </template>
             <template v-else-if="column.dataIndex === 'action'">
-              <a @click="handleEdit(record)">编辑</a>
-              <a-divider type="vertical" />
-              <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                <a style="color: #f5222d;">删除</a>
-              </a-popconfirm>
+              <template v-if="btnEnableList.indexOf(1)>-1">
+                <a @click="handleEdit(record)">编辑</a>
+                <a-divider type="vertical" />
+                <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
+                  <a style="color: #f5222d;">删除</a>
+                </a-popconfirm>
+              </template>
             
             </template>
             <template v-else-if="column.dataIndex === 'enabled'">
@@ -135,6 +137,7 @@
           },
           {title: '备注', dataIndex: 'remark', width: 200, ellipsis:true}
         ],
+        urlPath: '/project/info',
         url: {
           list: "/project/list",
           delete: "/project/delete",

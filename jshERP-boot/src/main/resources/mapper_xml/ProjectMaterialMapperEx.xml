@@ -53,6 +53,7 @@
             #{id}
         </foreach>
         )
+        and tenant_id = #{tenantId}
         and ifnull(delete_flag,'0') != '1'
     </update>
 
@@ -68,6 +69,7 @@
         update jsh_project_material
         set delete_flag = '1'
         where project_id = #{projectId}
+        and tenant_id = #{tenantId}
         and ifnull(delete_flag,'0') !='1'
     </update>
 

@@ -18,7 +18,8 @@
     <a-spin :spinning="confirmLoading">
       <a-form ref="formRef" :model="formModel" :rules="formRules">
         <a-tabs v-model:activeKey="activeKey" size="small">
-          <a-tab-pane key="1" tab="基本信息" id="materialHeadModal" forceRender>
+          <a-tab-pane key="1" tab="基本信息" forceRender>
+            <div id="materialHeadModal">
             <a-row class="form-row" :gutter="24">
               <a-col :md="6" :sm="24">
                 <a-form-item name="name" :labelCol="labelCol" :wrapperCol="wrapperCol" label="名称" data-step="1" data-title="名称" data-intro="名称必填，可以重复">
@@ -57,7 +58,9 @@
                       </a-select>
                     </a-col>
                     <a-col :lg="9" :md="9" :sm="24" style="padding:0px; text-align:center">
-                      <a-checkbox :checked="unitChecked" @change="unitOnChange">多单位</a-checkbox>
+                      <a-form-item-rest>
+                        <a-checkbox :checked="unitChecked" @change="unitOnChange">多单位</a-checkbox>
+                      </a-form-item-rest>
                     </a-col>
                   </a-row>
                 </a-form-item>
@@ -209,6 +212,7 @@
                 </a-form-item>
               </a-col>
             </a-row>
+            </div>
             <div style="margin-top:8px;" id="materialDetailModal">
               <j-editable-table
                 ref="editableMeTable"
@@ -320,7 +324,7 @@
         title:"操作",
         width: '1300px',
         visible: false,
-        modalStyle: '',
+        modalStyle: {},
         action: '',
         activeKey: '1',
         categoryTree: [],
@@ -504,7 +508,7 @@
         this.maxBarCodeInfo = ''
         this.visible = true
         this.meDeleteIdList = []
-        this.modalStyle = 'top:20px;height: 95%;'
+        this.modalStyle = { top: '20px', height: '95%' }
         if(JSON.stringify(record) === '{}') {
           this.fileList = []
         } else {
@@ -518,9 +522,11 @@
             'categoryId','enableSerialNumber','enableBatchNumber','position','expiryNum','weight','remark','mfrs',
             'otherField1','otherField2','otherField3','manySku','skuOne','skuTwo','skuThree')
         this.$nextTick(() => {
-          autoJumpNextInput('materialHeadModal')
-          autoJumpNextInput('materialDetailModal')
-        });
+          this.$nextTick(() => {
+            autoJumpNextInput('materialHeadModal')
+            autoJumpNextInput('materialDetailModal')
+          })
+        })
         this.initMaterialAttribute()
         this.loadTreeData()
         this.loadUnitListData()
@@ -605,7 +611,7 @@
       close () {
         this.$emit('close')
         this.visible = false
-        this.modalStyle = ''
+        this.modalStyle = {}
         this.unitStatus = false
         this.manyUnitStatus = true
         this.unitChecked = false

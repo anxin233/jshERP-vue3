@@ -18,7 +18,7 @@ public interface ProjectMapperEx {
 
     int editProject(Project project);
 
-    int batchDeleteProjectByIds(@Param("updateTime") Date updateTime, @Param("updater") Long updater, @Param("ids") String ids[]);
+    int batchDeleteProjectByIds(@Param("updateTime") Date updateTime, @Param("updater") Long updater, @Param("ids") String ids[], @Param("tenantId") Long tenantId);
 
     ProjectEx getProjectById(@Param("id") Long id);
 

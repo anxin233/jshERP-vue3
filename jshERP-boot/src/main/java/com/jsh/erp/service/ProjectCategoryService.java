@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.jsh.erp.constants.BusinessConstants;
 import com.jsh.erp.datasource.entities.ProjectCategory;
 import com.jsh.erp.datasource.entities.ProjectCategoryExample;
+import com.jsh.erp.datasource.entities.User;
 import com.jsh.erp.datasource.mappers.ProjectCategoryMapper;
 import com.jsh.erp.datasource.mappers.ProjectCategoryMapperEx;
 import com.jsh.erp.datasource.vo.TreeNode;
+import com.jsh.erp.exception.BusinessRunTimeException;
 import com.jsh.erp.exception.JshException;
 import com.jsh.erp.utils.PageUtils;
 import com.jsh.erp.utils.StringUtil;
@@ -33,6 +35,18 @@ public class ProjectCategoryService {
     private UserService userService;
     @Resource
     private LogService logService;
+
+    private Long getWritableTenantId() throws Exception {
+        User userInfo = userService.getCurrentUser();
+        if (userInfo == null
+                || BusinessConstants.DEFAULT_MANAGER.equals(userInfo.getLoginName())
+                || userInfo.getTenantId() == null
+                || userInfo.getTenantId() == 0L) {
+            throw new BusinessRunTimeException(301,
+                    "\u8d85\u7ea7\u7ba1\u7406\u5458\u7981\u6b62\u64cd\u4f5c\u79df\u6237\u4e1a\u52a1\u6570\u636e");
+        }
+        return userInfo.getTenantId();
+    }
 
     public ProjectCategory getProjectCategory(long id) throws Exception {
         ProjectCategory result = null;
@@ -130,7 +144,9 @@ public class ProjectCategoryService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int insertProjectCategory(JSONObject obj, HttpServletRequest request) throws Exception {
+        getWritableTenantId();
         ProjectCategory projectCategory = JSONObject.parseObject(obj.toJSONString(), ProjectCategory.class);
+        projectCategory.setTenantId(null);
         projectCategory.setCreateTime(new Date());
         projectCategory.setUpdateTime(new Date());
         int result = 0;
@@ -146,7 +162,9 @@ public class ProjectCategoryService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int updateProjectCategory(JSONObject obj, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         ProjectCategory projectCategory = JSONObject.parseObject(obj.toJSONString(), ProjectCategory.class);
+        projectCategory.setTenantId(tenantId);
         projectCategory.setUpdateTime(new Date());
         int result = 0;
         try {
@@ -161,9 +179,14 @@ public class ProjectCategoryService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int deleteProjectCategory(Long id, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         int result = 0;
         try {
             ProjectCategory projectCategory = getProjectCategory(id);
+            if (projectCategory == null) {
+                return 0;
+            }
+            projectCategory.setTenantId(tenantId);
             projectCategory.setDeleteFlag("1");
             projectCategory.setUpdateTime(new Date());
             result = projectCategoryMapper.updateByPrimaryKeySelective(projectCategory);
@@ -177,10 +200,11 @@ public class ProjectCategoryService {
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
     public int batchDeleteProjectCategory(String ids, HttpServletRequest request) throws Exception {
+        Long tenantId = getWritableTenantId();
         int result = 0;
         try {
             String[] idArray = ids.split(",");
-            result = projectCategoryMapperEx.batchDeleteProjectCategoryByIds(new Date(), userService.getCurrentUser().getId(), idArray);
+            result = projectCategoryMapperEx.batchDeleteProjectCategoryByIds(new Date(), userService.getCurrentUser().getId(), idArray, tenantId);
             logService.insertLog("项目类别",
                     "批量删除,id集:" + ids, request);
         } catch (Exception e) {
