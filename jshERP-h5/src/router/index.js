@@ -9,6 +9,12 @@ const routes = [
     meta: { title: '登录' }
   },
   {
+    path: '/dev/components',
+    name: 'dev-components',
+    component: () => import('@/views/dev/ComponentsDemo.vue'),
+    meta: { title: '组件演示' }
+  },
+  {
     path: '/',
     component: () => import('@/layout/TabBarLayout.vue'),
     redirect: '/home',
