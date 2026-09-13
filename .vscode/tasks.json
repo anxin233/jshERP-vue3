@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "启动后端 (spring-boot:run)",
+      "type": "shell",
+      "command": "/opt/homebrew/bin/mvn",
+      "args": ["spring-boot:run"],
+      "options": {
+        "cwd": "${workspaceFolder}/jshERP-boot",
+        "env": {
+          "JAVA_HOME": "/Users/wangxin/.jenv/versions/11"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "打包后端 (skip tests)",
+      "type": "shell",
+      "command": "/opt/homebrew/bin/mvn",
+      "args": ["clean", "package", "-DskipTests"],
+      "options": {
+        "cwd": "${workspaceFolder}/jshERP-boot",
+        "env": {
+          "JAVA_HOME": "/Users/wangxin/.jenv/versions/11"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -7,9 +7,22 @@
       "request": "launch",
       "mainClass": "com.jsh.erp.ErpApplication",
       "projectName": "jshERP-boot",
+      "cwd": "${workspaceFolder}/jshERP-boot",
       "vmArgs": "-Dfile.encoding=UTF-8",
       "env": {
-        "JAVA_HOME": "D:\\Program Files\\Java\\jdk1.8.0_221"
+        "JAVA_HOME": "/Users/wangxin/.jenv/versions/11"
+      }
+    },
+    {
+      "type": "java",
+      "name": "启动后端 (Flyway Baseline)",
+      "request": "launch",
+      "mainClass": "com.jsh.erp.ErpApplication",
+      "projectName": "jshERP-boot",
+      "cwd": "${workspaceFolder}/jshERP-boot",
+      "vmArgs": "-Dfile.encoding=UTF-8 -Dspring.profiles.active=flyway-baseline",
+      "env": {
+        "JAVA_HOME": "/Users/wangxin/.jenv/versions/11"
       }
     }
   ]

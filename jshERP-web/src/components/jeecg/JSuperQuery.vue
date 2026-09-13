@@ -149,7 +149,7 @@
                 <j-area-linkage :value="item.val" @change="item.val = $event" v-else-if="item.type==='area-linkage' || item.type==='pca'" style="width: 100%"/>
                 <j-date v-else-if=" item.type=='date' " v-model:value="item.val" placeholder="请选择日期" style="width: 100%"></j-date>
                 <j-date v-else-if=" item.type=='datetime' " v-model:value="item.val" placeholder="请选择时间" :show-time="true" date-format="YYYY-MM-DD HH:mm:ss" style="width: 100%"></j-date>
-                <a-time-picker v-else-if="item.type==='time'" :value="item.val ? moment(item.val,'HH:mm:ss') : null" format="HH:mm:ss" style="width: 100%" @change="(time,value)=>item.val=value"/>
+                <a-time-picker v-else-if="item.type==='time'" :value="item.val ? dayjs(item.val,'HH:mm:ss') : null" format="HH:mm:ss" style="width: 100%" @change="(time,value)=>item.val=value"/>
                 <a-input-number v-else-if=" item.type=='int'||item.type=='number' " style="width: 100%" placeholder="请输入数值" v-model:value="item.val"/>
                 <a-input v-else v-model:value="item.val" placeholder="请输入值"/>
               </a-col>
@@ -205,7 +205,8 @@
 
 <script>
   import { h } from 'vue'
-  import moment from 'moment'
+  import dayjs from 'dayjs'
+  import customParseFormat from 'dayjs/plugin/customParseFormat'
   import * as utils from '@/utils/util'
   import { mixinDevice } from '@/utils/mixin'
   import JDate from '@/components/jeecg/JDate.vue'
@@ -215,6 +216,8 @@
   import JAreaLinkage from '@comp/jeecg/JAreaLinkage'
   import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
   import storage from '@/utils/storage'
+
+  dayjs.extend(customParseFormat)
 
   export default {
     name: 'JSuperQuery',
@@ -259,7 +262,7 @@
     },
     data() {
       return {
-        moment,
+        dayjs,
         fieldTreeData: [],
 
         prompt: {

@@ -28,18 +28,22 @@
 .table-operator .ant-btn-group .ant-btn:last-child {
   margin: 0 8px 8px 0;
 }
-/*列表td的padding设置 可以控制列表大小*/
-.ant-table-tbody .ant-table-row td {
-  padding-top: 15px;
-  padding-bottom: 15px;
+
+/* 文档 24 阶段 4：表格密度交给 size=middle + 统一 8px 上下内边距 */
+/* 注意：AntD v4 运行时注入 .ant-table.ant-table-middle（4 class + 2 element），需 5 个 class 才能盖过 */
+.ant-table-wrapper .ant-table .ant-table-tbody .ant-table-row > td.ant-table-cell {
+  padding-top: var(--jsh-table-cell-padding-y, 8px);
+  padding-bottom: var(--jsh-table-cell-padding-y, 8px);
 }
+
 .depot-mask {
-  margin-top: 93px;
-  margin-left: 154px;
+  margin-top: var(--jsh-modal-offset-top, 93px);
+  margin-left: calc(var(--jsh-sider-width, 180px) + 4px);
 }
 /*列表页面弹出modal*/
+/* 注意：不要给 .ant-modal-cust-warp 设 height:100%，否则 fixed + margin 偏移时底部会超出视口 */
 .ant-modal-cust-warp {
-  height: 100%
+  height: auto;
 }
 /*弹出modal Y轴滚动条*/
 .ant-modal-cust-warp .ant-modal-body {
@@ -56,15 +60,28 @@
 .ant-modal-cust-warp .ant-form-item {
   margin-bottom: 12px;
 }
-/*全屏模式*/
-.ant-modal-cust-warp .fullscreen >.ant-modal-content {
-  height: 100vh;
-  border-radius: 0;
+/*全屏模式（AntD v4 在 .ant-modal 与 .ant-modal-content 之间插入了 focus sentinel 包裹层）*/
+.ant-modal-cust-warp .fullscreen > div:first-child {
+  height: 100%;
 }
 /*全屏模式*/
-.ant-modal-cust-warp .fullscreen >.ant-modal-content >.ant-modal-body {
+.ant-modal-cust-warp .fullscreen .ant-modal-content {
+  height: 100%;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+/*全屏模式：标题/页脚固定，内容区撑满剩余高度 */
+.ant-modal-cust-warp .fullscreen .ant-modal-content > .ant-modal-header,
+.ant-modal-cust-warp .fullscreen .ant-modal-content > .ant-modal-footer {
+  flex: none;
+}
+/*全屏模式*/
+.ant-modal-cust-warp .fullscreen .ant-modal-content > .ant-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
   padding: 24px 24px 12px 24px;
-  height: calc(100% - 200px) !important;
   overflow-y: auto
 }
 /*列表中有图片的加这个样式 参考用户管理*/
@@ -85,12 +102,18 @@
   background-color: #FFFFFF;
 }
 
+/* 文档 24 阶段 4：遮罩约 0.45 */
 .ant-modal-mask {
-  background-color: rgba(0, 0, 0, 0.1) !important;
+  background-color: var(--jsh-modal-mask, rgba(0, 0, 0, 0.45)) !important;
 }
+/* 遮罩对齐内容区（覆盖各弹窗内联 maskStyle，兼容直接用 a-modal 的弹窗） */
+.ant-modal-root:has(> .ant-modal-wrap.depot-mask) > .ant-modal-mask {
+  top: var(--jsh-modal-offset-top, 93px) !important;
+  left: calc(var(--jsh-sider-width, 180px) + 4px) !important;
+}
+
 /* 拖拽 */
 .table-draggable-handle {
-  /* width: 10px !important; */
   height: 100% !important;
   left: auto !important;
   right: -5px;
@@ -104,9 +127,41 @@
 .resize-table-th {
   position: relative;
 }
-/* 单据下拉框-按钮 */
+
+/* 文档 24 阶段 6：工具条 flex，替代 float */
+.bill-toolbar,
+.dropdown-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .dropdown-btn {
-  float:left;
+  float: none;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 8px;
   cursor: pointer;
+}
+
+/* 工单状态快捷按钮（WorkOrderList） */
+.wo-btn-repair {
+  color: var(--jsh-color-primary, #1890ff) !important;
+  border-color: var(--jsh-color-primary, #1890ff) !important;
+}
+.wo-btn-finish {
+  color: #13c2c2 !important;
+  border-color: #13c2c2 !important;
+}
+.wo-btn-settle {
+  color: #722ed1 !important;
+  border-color: #722ed1 !important;
+}
+.wo-btn-paid {
+  color: #52c41a !important;
+  border-color: #52c41a !important;
+}
+.wo-btn-cancel {
+  color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
 }

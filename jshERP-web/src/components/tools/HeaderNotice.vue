@@ -82,7 +82,7 @@
       //this.initWebSocket(); //注释by jishenghua  2021年1月13日
      // this.heartCheckFun();
     },
-    destroyed: function () { // 离开页面生命周期函数
+    beforeUnmount: function () { // 离开页面生命周期函数
       //this.websocketclose();
     },
     methods: {

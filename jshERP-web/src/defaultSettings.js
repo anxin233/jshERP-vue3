@@ -1,7 +1,7 @@
 /**
  * 项目默认配置项
- * primaryColor - 默认主题色
- * navTheme - sidebar theme ['dark', 'light'] 两种主题
+ * primaryColor - 默认主题色（与 config/layout.js、layout-tokens.less 一致）
+ * navTheme - 侧栏主题：light = 白底侧栏（默认，与参考布局一致），dark = 深色侧栏
  * colorWeak - 色盲模式
  * layout - 整体布局方式 ['sidemenu', 'topmenu'] 两种布局
  * fixedHeader - 固定 Header : boolean
@@ -12,21 +12,21 @@
  * storageOptions: {} - 本地存储配置项 (localStorage/sessionStorage)
  *
  */
+import { PRIMARY_COLOR } from '@/config/layout'
 
 export default {
-  primaryColor: '#1890FF', // primary color of ant design
-  navTheme: 'light', // theme for nav menu
-  layout: 'sidemenu', // nav menu position: sidemenu or topmenu
-  contentWidth: 'Fixed', // layout of content: Fluid or Fixed, only works when layout is topmenu
-  fixedHeader: true, // sticky header
-  fixSiderbar: true, // sticky siderbar
-  autoHideHeader: false, //  auto hide header
+  primaryColor: PRIMARY_COLOR,
+  navTheme: 'light',
+  layout: 'sidemenu',
+  contentWidth: 'Fixed',
+  fixedHeader: true,
+  fixSiderbar: true,
+  autoHideHeader: false,
   colorWeak: false,
-  multipage: true, //默认多页签模式
-  // storage options
+  multipage: true,
   storageOptions: {
-    namespace: 'pro__', // key prefix
-    name: 'ls', // global property name, e.g. this.$ls
-    storage: 'local', // storage name session, local, memory
+    namespace: 'pro__',
+    name: 'ls',
+    storage: 'local',
   }
 }

@@ -1,14 +1,25 @@
 {
   "java.compile.nullAnalysis.mode": "automatic",
-  "java.jdt.ls.java.home": "D:\\Program Files\\Java\\jdk1.8.0_221",
-  "java.configuration.java.home": "D:\\Program Files\\Java\\jdk1.8.0_221",
-  "maven.executable.path": "D:\\Program Files\\apache-maven-3.9.11\\bin\\mvn.cmd",
+  "java.jdt.ls.java.home": "/Users/wangxin/.jenv/versions/11",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-11",
+      "path": "/Users/wangxin/.jenv/versions/11",
+      "default": true
+    }
+  ],
+  "java.import.maven.enabled": true,
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.debug.settings.hotCodeReplace": "auto",
+  "spring-boot.ls.java.home": "/Users/wangxin/.jenv/versions/11",
+  "maven.executable.path": "/opt/homebrew/bin/mvn",
   "maven.terminal.customEnv": [
     {
       "environmentVariable": "JAVA_HOME",
-      "value": "D:\\Program Files\\Java\\jdk1.8.0_221"
+      "value": "/Users/wangxin/.jenv/versions/11"
     }
   ],
-  "java.configuration.maven.globalSettings": "D:\\Program Files\\apache-maven-3.9.11\\conf\\settings.xml",
-  "java.configuration.maven.userSettings": "D:\\Program Files\\apache-maven-3.9.11\\conf\\settings.xml"
+  "terminal.integrated.env.osx": {
+    "JAVA_HOME": "/Users/wangxin/.jenv/versions/11"
+  }
 }

@@ -93,7 +93,7 @@
             <span>暂无数据</span>
           </div>
           <!-- rows binding -->
-          <template v-for="(row,rowIndex) in rows">
+          <template v-for="(row,rowIndex) in rows" :key="row.id">
               <!-- tr 如果超出200条，则只加载可见的和预加载的总共十条数据 -->
               <div
                 v-if="rows.length<=200 ||
@@ -105,7 +105,6 @@
                 class="tr"
                 :class="selectedRowIds.indexOf(row.id) !== -1 ? 'tr-checked' : ''"
                 :style="buildTrStyle(rowIndex)"
-                :key="row.id"
                 :draggable="isRowDragEnabled"
                 @dragstart="event => handleNativeDragStart(event, rowIndex)"
                 @dragover.prevent="event => handleNativeDragOver(event, rowIndex)"
@@ -1989,17 +1988,19 @@
 
             let element = document.getElementById(inputId)
             if (element != null) {
-              // select 在 .ant-select-selection 上设置 border-color
+              // select 在 .ant-select-selector（v4）/ .ant-select-selection（v3）上设置 border-color
               if (column.type === FormTypes.select) {
-                element = element.getElementsByClassName('ant-select-selection')[0]
+                element = element.querySelector('.ant-select-selector')
+                  || element.querySelector('.ant-select-selection')
+                  || element
               }
               // jdate 在 input 上设置 border-color
               if (column.type === FormTypes.date || column.type === FormTypes.datetime) {
-                element = element.getElementsByTagName('input')[0]
+                element = element.getElementsByTagName('input')[0] || element
               }
               // upload 在 .ant-upload .ant-btn 上设置 border-color
               if (column.type === FormTypes.upload || column.type === FormTypes.file || column.type === FormTypes.image) {
-                element = element.getElementsByClassName('ant-upload')[0].getElementsByClassName('ant-btn')[0]
+                element = element.querySelector('.ant-upload .ant-btn') || element
               }
               element.style.borderColor = borderColor
               element.style.boxShadow = boxShadow

@@ -96,6 +96,7 @@
           number: '',
           beginTime: '',
           endTime: '',
+          stockPriceFlag: false
         },
         ipagination:{
           pageSizeOptions: ['10', '20', '30', '100', '200']
@@ -191,6 +192,17 @@
         }).catch(() => {
           that.billDetailVisible = false
         })
+      },
+      searchReset() {
+        this.queryParam = {
+          depotIds: '',
+          materialId:'',
+          number: '',
+          beginTime: '',
+          endTime: '',
+          stockPriceFlag: false
+        }
+        this.loadData(1);
       },
       exportExcel() {
         let list = []

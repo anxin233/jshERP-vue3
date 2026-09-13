@@ -1,5 +1,6 @@
 package com.jsh.erp;
 
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.jsh.erp.utils.ComputerInfo;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -19,6 +20,8 @@ import java.io.IOException;
 @EnableAsync
 public class ErpApplication{
     public static void main(String[] args) throws IOException {
+        // fastjson 1.x 存在 autoType 反序列化 RCE 风险，本项目未使用 autoType，全局开启 SafeMode 彻底关闭该攻击面
+        ParserConfig.getGlobalInstance().setSafeMode(true);
         // 须在任何 java.awt / Font 类加载之前设置，否则 Docker/Alpine 无 X11 时会初始化 X11FontManager 失败
         System.setProperty("java.awt.headless", "true");
         ConfigurableApplicationContext context = SpringApplication.run(ErpApplication.class, args);

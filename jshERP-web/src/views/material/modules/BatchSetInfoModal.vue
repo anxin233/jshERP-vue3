@@ -24,6 +24,11 @@
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
+              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="品牌">
+                <a-input placeholder="请输入品牌" v-model:value="formModel.brand" />
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="基础重量">
                 <a-input-number style="width: 100%" placeholder="请输入基础重量(kg)" v-model:value="formModel.weight" />
               </a-form-item>
@@ -38,6 +43,16 @@
                 <a-tree-select style="width:100%" :dropdownStyle="{maxHeight:'200px',overflow:'auto'}" allow-clear
                                :treeData="categoryTree" v-model:value="formModel.categoryId" placeholder="请选择类别">
                 </a-tree-select>
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="仓位货架">
+                <a-input placeholder="请输入仓位货架" v-model:value="formModel.position" />
+              </a-form-item>
+            </a-col>
+            <a-col :md="8" :sm="24">
+              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="制造商">
+                <a-input placeholder="请输入制造商" v-model:value="formModel.mfrs" />
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">

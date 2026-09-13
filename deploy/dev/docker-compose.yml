@@ -1,0 +1,61 @@
+# jshERP 本机开发依赖：MySQL 8 + Redis 6
+# 前置：colima start（或 Docker Desktop）
+# 启动：cd deploy/dev && docker compose up -d
+# 配置：复制 .env.example 为 .env（可选，有默认值）
+
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: jsherp-dev-mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-jsherp_dev_root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-jsh_erp}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=100
+      - --innodb_buffer_pool_size=256M
+      - --skip-log-bin
+    volumes:
+      - jsherp_dev_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-jsherp_dev_root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    mem_limit: 768m
+
+  redis:
+    image: redis:6.2.14-alpine
+    container_name: jsherp-dev-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --requirepass
+      - ${REDIS_PASSWORD:-jsherp_dev_redis}
+    volumes:
+      - jsherp_dev_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-jsherp_dev_redis}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 192m
+
+volumes:
+  jsherp_dev_mysql_data:
+  jsherp_dev_redis_data:

@@ -3,7 +3,7 @@ import { FormTypes } from '@/utils/JEditableTableUtil'
 import { findBillDetailByNumber, findBySelectSup, findBySelectCus, findBySelectRetail, getUserList, getAccount,
   waitBillCount, getCurrentSystemConfig, getPlatformConfigByKey, getPersonByNumType } from '@/api/api'
 import { getCheckFlag, getFormatDate, getMpListShort, getPrevMonthFormatDate } from '@/utils/util'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import pick from 'lodash.pick'
 import storage from '@/utils/storage'
 import {
@@ -419,7 +419,7 @@ export const BillListMixin = {
       queryParam: {
         beginTime: getPrevMonthFormatDate(3),
         endTime: getFormatDate(),
-        createTimeRange: [moment(getPrevMonthFormatDate(3)), moment(getFormatDate())]
+        createTimeRange: [dayjs(getPrevMonthFormatDate(3)), dayjs(getFormatDate())]
       }
     }
   },
@@ -611,6 +611,35 @@ export const BillListMixin = {
         });
       }
     },
+    //批量修正剩余订金
+    batchSetLastDeposit() {
+      if (this.selectedRowKeys.length <= 0) {
+        this.$message.warning('请选择一条记录！')
+      } else {
+        let ids = "";
+        for (let a = 0; a < this.selectedRowKeys.length; a++) {
+          ids += this.selectedRowKeys[a] + ","
+        }
+        let that = this
+        this.$confirm({
+          title: "确认修正剩余订金",
+          content: "是否对选的数据修正剩余订金?",
+          onOk: function () {
+            that.loading = true
+            postAction(that.url.batchSetLastDepositUrl, {ids: ids}).then((res) => {
+              if(res.code === 200){
+                that.loadData()
+                that.$message.success('修正剩余订金完成')
+              } else {
+                that.$message.warning(res.data.message)
+              }
+            }).finally(() => {
+              that.loading = false
+            });
+          }
+        });
+      }
+    },
     handleApprove(record) {
       this.$refs.modalForm.action = "approve";
       this.$refs.modalForm.edit(record);
@@ -622,7 +651,7 @@ export const BillListMixin = {
         subType: this.queryParam.subType,
         beginTime: getPrevMonthFormatDate(3),
         endTime: getFormatDate(),
-        createTimeRange: [moment(getPrevMonthFormatDate(3)), moment(getFormatDate())]
+        createTimeRange: [dayjs(getPrevMonthFormatDate(3)), dayjs(getFormatDate())]
       }
       this.loadData(1)
     },
@@ -630,7 +659,7 @@ export const BillListMixin = {
       this.queryParam.beginTime=dateString[0]
       this.queryParam.endTime=dateString[1]
       if(dateString[0] && dateString[1]) {
-        this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+        this.queryParam.createTimeRange = [dayjs(dateString[0]), dayjs(dateString[1])]
       }
     },
     onDateOk(value) {

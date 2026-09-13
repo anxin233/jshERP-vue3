@@ -89,9 +89,6 @@
     },
     beforeUnmount() {
       this.clearTimer()
-    },
-    beforeUnmount() {
-      this.clearTimer()
     }
   }
 </script>

@@ -38,7 +38,7 @@
 | 模板风格 | Jeecg-Boot 系 | 侧栏 + 动态菜单 |
 | 构建工具 | Maven | 3.3.9+ |
 
-> 说明：上游 README 曾写 Vue 2.7 + Ant Design Vue 1.x；本仓库 **`jshERP-web` 已迁移为 Vue 3 + Ant Design Vue 4 + Vite**，不再使用 `vue.config.js`。AI 协作与开发细节见根目录 [`CLAUDE.md`](CLAUDE.md)。
+> 说明：上游 README 曾写 Vue 2.7 + Ant Design Vue 1.x；本仓库 **`jshERP-web` 已迁移为 Vue 3 + Ant Design Vue 4 + Vite**，不再使用 `vue.config.js`。AI 协作与开发细节见根目录 [`AGENTS.md`](AGENTS.md)。
 
 # 仓库结构
 
@@ -108,7 +108,7 @@ npm run serve
 * 不会打包的小伙伴，请下载此打包后的文件 https://share.weiyun.com/NDJNLhry 密码：vd3aig
 * 不会部署的小伙伴，请参考部署教程 https://www.gyjerp.com/doc/archive/deploy.html；本仓库 Docker 示例见 [`deploy/docker/README.md`](deploy/docker/README.md)
 * 部署后登录系统的默认租户账号：jsh，默认超管账户：admin，默认密码均为：123456
-* 开发者文档：[`CLAUDE.md`](CLAUDE.md)（AI 协作 / 架构速查）、[`jshERP-web/docs/ANTDV4_MIGRATION_STATUS.md`](jshERP-web/docs/ANTDV4_MIGRATION_STATUS.md)（前端迁移状态）
+* 开发者文档：[`AGENTS.md`](AGENTS.md)（AI 协作 / 架构速查）、[`jshERP-web/docs/ANTDV4_MIGRATION_STATUS.md`](jshERP-web/docs/ANTDV4_MIGRATION_STATUS.md)（前端迁移状态）
 
 # 开源说明
 * 本系统100%开源，遵守Apache-2.0协议，企业可以商用

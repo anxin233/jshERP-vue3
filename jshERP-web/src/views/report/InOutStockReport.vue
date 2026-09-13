@@ -36,7 +36,8 @@
               </a-col>
               <a-col :md="6" :sm="24">
                 <a-form-item>
-                  <span>本期总结存：{{totalStockStr}}（总结存金额：{{totalCountMoneyStr}}）</span>
+                  <span v-if="showStockPrice">本期总结存：{{totalStockStr}}（总结存金额：{{totalCountMoneyStr}}）</span>
+                  <span v-if="!showStockPrice">本期总结存：{{totalStockStr}}</span>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -156,7 +157,7 @@
   import {queryMaterialCategoryTreeList} from '@/api/api'
   import { getFormatDate, getMpListShort, getPrevMonthFormatDate, buildInOutStockQueryParams, buildInOutStockCountMoneyParams } from '@/utils/util'
   import JEllipsis from '@/components/jeecg/JEllipsis'
-  import moment from 'moment'
+  import dayjs from 'dayjs'
   import storage from '@/utils/storage'
   export default {
     name: "InOutStockReport",
@@ -168,7 +169,7 @@
     data () {
       return {
         // 查询条件
-        currentMonth: moment().format('YYYY-MM'),
+        currentMonth: dayjs().format('YYYY-MM'),
         monthFormat: 'YYYY-MM',
         labelCol: {
           span: 5
@@ -181,7 +182,7 @@
           depotId: undefined,
           beginTime: getPrevMonthFormatDate(1),
           endTime: getFormatDate(),
-          createTimeRange: [moment(getPrevMonthFormatDate(1)), moment(getFormatDate())],
+          createTimeRange: [dayjs(getPrevMonthFormatDate(1)), dayjs(getFormatDate())],
           materialParam:'',
           categoryId: undefined,
           mpList: getMpListShort(storage.get('materialPropertyList'))  //扩展属性
@@ -195,6 +196,7 @@
         categoryTree:[],
         totalStockStr: '0',
         totalCountMoneyStr: '0',
+        showStockPrice: false,
         pageName: 'inOutStockReport',
         // 默认索引
         defDataIndex:['rowIndex','action','barCode','materialName','materialStandard','materialModel','unitName','unitPrice',
@@ -245,7 +247,7 @@
       this.handleChangeOtherField(0)
     },
     methods: {
-      moment,
+      dayjs,
       getQueryParams() {
         return buildInOutStockQueryParams(this.queryParam, this.ipagination, this.depotSelected)
       },
@@ -281,7 +283,7 @@
         this.queryParam.beginTime = dateString[0]
         this.queryParam.endTime = dateString[1]
         if (dateString[0] && dateString[1]) {
-          this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+          this.queryParam.createTimeRange = [dayjs(dateString[0]), dayjs(dateString[1])]
         } else {
           this.queryParam.createTimeRange = []
         }
@@ -304,6 +306,7 @@
           if(res && res.code === 200) {
             this.totalStockStr = res.data.totalStock.toFixed(2)
             this.totalCountMoneyStr = res.data.totalCount.toFixed(2)
+            this.showStockPrice = res.data.showStockPrice
           }
         })
       },

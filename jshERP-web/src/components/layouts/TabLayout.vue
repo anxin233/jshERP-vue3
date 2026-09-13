@@ -1,22 +1,52 @@
 <template>
   <global-layout @dynamicRouterShow="dynamicRouterShow">
     <contextmenu :itemList="menuItemList" :open="menuVisible" style="z-index: 9999;" @update:open="menuVisible = $event" @select="onMenuSelect"/>
-    <a-tabs
-      @contextmenu="e => onContextmenu(e)"
-      v-if="multipage"
-      v-model:activeKey="activePage"
-      class="tab-layout-tabs"
-      :hide-add="true"
-      type="editable-card"
-      @change="changePage"
-      @tabClick="tabCallBack"
-      @edit="editPage">
-      <a-tab-pane :id="page.fullPath" :key="page.fullPath" v-for="page in pageList">
-        <template #tab>
-          <span :pagekey="page.fullPath">{{ page.meta.title }}</span>
-        </template>
-      </a-tab-pane>
-    </a-tabs>
+    <div class="tabs-wrapper">
+      <a-tabs
+        @contextmenu="e => onContextmenu(e)"
+        v-if="multipage"
+        v-model:activeKey="activePage"
+        class="tab-layout-tabs"
+        :hide-add="true"
+        type="editable-card"
+        @change="changePage"
+        @tabClick="tabCallBack"
+        @edit="editPage">
+        <a-tab-pane :id="page.fullPath" :key="page.fullPath" v-for="page in pageList">
+          <template #tab>
+            <span :pagekey="page.fullPath">{{ page.meta.title }}</span>
+          </template>
+        </a-tab-pane>
+      </a-tabs>
+      <div class="close-dropdown-wrapper">
+        <a-dropdown :trigger="['click']" placement="bottomRight">
+          <a-button size="small" class="close-all-btn">
+            <legacy-icon type="close" />
+            <legacy-icon type="down" />
+          </a-button>
+          <template #overlay>
+            <a-menu @click="onCloseAllMenuClick">
+              <a-menu-item key="closeLeft">
+                <legacy-icon type="arrow-left" />
+                关闭左侧
+              </a-menu-item>
+              <a-menu-item key="closeRight">
+                <legacy-icon type="arrow-right" />
+                关闭右侧
+              </a-menu-item>
+              <a-menu-item key="closeOthers">
+                <legacy-icon type="close-circle" />
+                关闭其它
+              </a-menu-item>
+              <a-menu-item key="closeAll">
+                <legacy-icon type="close" />
+                关闭全部
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
+    </div>
     <div style="margin: 4px 4px 0;">
       <router-view v-slot="{ Component, route }">
         <transition name="page-toggle" mode="out-in">
@@ -359,6 +389,40 @@
           this.activePage = this.linkList[this.linkList.length - 1]
         }
       },
+      onCloseAllMenuClick({ key }) {
+        switch (key) {
+          case 'closeLeft':
+            this.closeLeft(this.activePage)
+            break
+          case 'closeRight':
+            this.closeRight(this.activePage)
+            break
+          case 'closeOthers':
+            this.closeOthers(this.activePage)
+            break
+          case 'closeAll':
+            this.closeAll()
+            break
+          default:
+            break
+        }
+      },
+      closeAll() {
+        if (this.pageList.length === 1) {
+          this.$message.warning('这是最后一页，不能再关闭了啦')
+          return
+        }
+        const indexContent = this.pageList.find(item => item.fullPath === indexKey)
+        if (indexContent) {
+          this.linkList = [indexKey]
+          this.pageList = [indexContent]
+          this.activePage = indexKey
+        } else {
+          this.linkList = [this.linkList[0]]
+          this.pageList = [this.pageList[0]]
+          this.activePage = this.linkList[0]
+        }
+      },
       //动态路由title显示配置的菜单title而不是其对应路由的title
       dynamicRouterShow(key, id, title, component){
         let keyIndex = this.linkList.indexOf(key)
@@ -402,24 +466,56 @@
  * by ji-shenghua qq 75-27-18-920
  */
 
-  .page-transition-enter {
+  /* 文档 24 阶段 5：与 transition name="page-toggle" 对齐 */
+  .page-toggle-enter-active,
+  .page-toggle-leave-active {
+    transition: opacity 0.15s ease;
+  }
+  .page-toggle-enter-from,
+  .page-toggle-leave-to {
     opacity: 0;
   }
 
-  .page-transition-leave-active {
-    opacity: 0;
+  /* 右上角关闭页签下拉 */
+  .tabs-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    background-color: #fff;
+
+    .close-dropdown-wrapper {
+      flex-shrink: 0;
+      margin-left: 8px;
+
+      .close-all-btn {
+        margin-right: 5px;
+        padding: 0 6px;
+        height: 24px;
+        border-radius: 4px;
+        border: 1px solid #d9d9d9;
+        background-color: #fff;
+        transition: all 0.3s;
+
+        &:hover {
+          border-color: @primary-color;
+          color: @primary-color;
+        }
+
+        .anticon-close {
+          font-size: 12px;
+          margin-right: 2px;
+        }
+
+        .anticon-down {
+          font-size: 14px;
+        }
+      }
+    }
   }
 
-  .page-transition-enter .page-transition-container,
-  .page-transition-leave-active .page-transition-container {
-    -webkit-transform: scale(1.1);
-    transform: scale(1.1);
-  }
-
-  /*美化弹出Tab样式*/
-  /* 修改 Ant Design Vue 4 tabs 样式 */
-  .tab-layout-tabs.ant-tabs {
-    border-bottom: 1px solid #ccc;
+  /* 页签：保留可关闭卡片观感，减少不必要的 !important */
+  .tab-layout-tabs.ant-tabs {    border-bottom: 1px solid #ccc;
     border-left: 1px solid #ccc;
     background-color: #fff;
     padding: 0 20px;
@@ -448,12 +544,12 @@
       justify-content: center;
       min-width: 108px;
       height: 30px;
-      margin: 0 10px 0 0 !important;
-      padding: 0 24px !important;
-      background-color: #fff !important;
-      border: none !important;
-      border-bottom: 1px solid transparent !important;
-      border-radius: 4px 4px 0 0 !important;
+      margin: 0 10px 0 0;
+      padding: 0 24px;
+      background-color: #fff;
+      border: none;
+      border-bottom: 1px solid transparent;
+      border-radius: 4px 4px 0 0;
       line-height: 1;
 
       .ant-tabs-tab-btn {
@@ -463,18 +559,18 @@
       }
 
       .ant-tabs-tab-remove {
-        display: inline-flex !important;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         flex: 0 0 12px;
-        width: 12px !important;
-        height: 12px !important;
-        opacity: 0 !important;
-        cursor: pointer !important;
-        font-size: 12px !important;
-        line-height: 1 !important;
-        margin: 0 0 0 8px !important;
-        padding: 0 !important;
+        width: 12px;
+        height: 12px;
+        opacity: 0;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+        margin: 0 0 0 8px;
+        padding: 0;
         color: rgba(0, 0, 0, 0.45);
 
         .anticon {
@@ -485,13 +581,14 @@
       }
 
       &:hover .ant-tabs-tab-remove {
-        opacity: 1 !important;
+        opacity: 1;
       }
     }
 
     .ant-tabs-tab-active {
-      height: 35px !important;
-      border-color: @primary-color!important;
+      height: 35px;
+      /* Antd 运行时注入的样式晚于构建样式，需 !important 才能保证选中下划线为主色 */
+      border-bottom-color: var(--jsh-color-primary, @primary-color) !important;
     }
 
     .ant-tabs-content-holder {

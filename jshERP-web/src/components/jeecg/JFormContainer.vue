@@ -55,6 +55,7 @@
   }
 
   .jeecg-form-container-disabled .ant-upload-list-item-actions .anticon-delete,
+  .jeecg-form-container-disabled .ant-upload-list-item-action .anticon-delete,
   .jeecg-form-container-disabled .ant-upload-list-item .anticon-close{
     display: none;
   }

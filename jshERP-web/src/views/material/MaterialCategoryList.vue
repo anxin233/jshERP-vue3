@@ -8,6 +8,21 @@
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd()" type="primary">添加类别</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" title="删除多条数据" @click="batchDel" type="default">批量删除</a-button>
           <a-button @click="refresh" type="default"><template #icon><legacy-icon type="reload" /></template>刷新</a-button>
+          <a-dropdown :trigger="['click']" placement="topCenter">
+            <template #overlay>
+              <a-menu>
+                <a-menu-item key="1" @click="switchCheckStrictly(1)">父子关联</a-menu-item>
+                <a-menu-item key="2" @click="switchCheckStrictly(2)">取消关联</a-menu-item>
+                <a-menu-item key="3" @click="checkALL">全部勾选</a-menu-item>
+                <a-menu-item key="4" @click="cancelCheckALL">取消全选</a-menu-item>
+                <a-menu-item key="5" @click="expandAll">展开所有</a-menu-item>
+                <a-menu-item key="6" @click="closeAll">合并所有</a-menu-item>
+              </a-menu>
+            </template>
+            <a-button>
+              树操作 <legacy-icon type="down" />
+            </a-button>
+          </a-dropdown>
         </a-row>
         <div style="background: #fff;padding-left:16px;height: 100%; margin-top: 5px">
           <a-alert type="info" :showIcon="true">
@@ -32,7 +47,6 @@
                   :treeData="categoryTree"
                   :checkStrictly="checkStrictly"
                   :expandedKeys="iExpandedKeys"
-                  :autoExpandParent="true"
                   @expand="onExpand"/>
                 </span>
               </a-dropdown>
@@ -40,25 +54,6 @@
           </a-col>
         </div>
       </a-card>
-      <!---- author:os_chengtgen -- date:20190827 --  for:切换父子勾选模式 =======------>
-      <div class="drawer-bootom-button">
-        <a-dropdown :trigger="['click']" placement="top">
-          <template #overlay>
-            <a-menu>
-            <a-menu-item key="1" @click="switchCheckStrictly(1)">父子关联</a-menu-item>
-            <a-menu-item key="2" @click="switchCheckStrictly(2)">取消关联</a-menu-item>
-            <a-menu-item key="3" @click="checkALL">全部勾选</a-menu-item>
-            <a-menu-item key="4" @click="cancelCheckALL">取消全选</a-menu-item>
-            <a-menu-item key="5" @click="expandAll">展开所有</a-menu-item>
-            <a-menu-item key="6" @click="closeAll">合并所有</a-menu-item>
-          </a-menu>
-          </template>
-          <a-button>
-            树操作 <legacy-icon type="up" />
-          </a-button>
-        </a-dropdown>
-      </div>
-      <!---- author:os_chengtgen -- date:20190827 --  for:切换父子勾选模式 =======------>
     </a-col>
     <a-col :md="12" :sm="24">
       <a-card :bordered="false" v-if="selectedKeys.length>0">
@@ -148,10 +143,6 @@ export default {
         xs: {span: 24},
         sm: {span: 16}
       },
-      graphDatasource: {
-        nodes: [],
-        edges: []
-      },
       url: {
         delete: '/materialCategory/delete',
         edit: '/materialCategory/update',
@@ -173,10 +164,10 @@ export default {
       let that = this
       that.treeData = []
       that.categoryTree = []
+      that.iExpandedKeys = []
+      that.allTreeKeys = []
       queryMaterialCategoryTreeList({}).then((res) => {
         if (res) {
-          //类别全选后，再添加类别，选中数量增多
-          this.allTreeKeys = [];
           for (let i = 0; i < res.length; i++) {
             let temp = res[i]
             that.categoryTree.push(temp)
@@ -361,16 +352,6 @@ export default {
       this.formModel = {}
       this.$refs.formRef && this.$refs.formRef.resetFields()
     },
-    nodeSettingFormSubmit() {
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log('Received values of form: ', values)
-        }
-      })
-    },
-    openSelect() {
-      this.$refs.sysDirectiveModal.show()
-    },
     validateName(rule, value){
       if (!value) return Promise.resolve()
       return checkMaterialCategory({
@@ -387,27 +368,6 @@ export default {
     handleAdd() {
       this.$refs.materialCategoryModal.add()
       this.$refs.materialCategoryModal.title = '新增'
-    },
-    selectDirectiveOk(record) {
-      console.log('选中指令数据', record)
-      this.nodeSettingForm.setFieldsValue({directiveCode: record.directiveCode})
-      this.currSelected.sysCode = record.sysCode
-    },
-    getFlowGraphData(node) {
-      this.graphDatasource.nodes.push({
-        id: node.id,
-        text: node.flowNodeName
-      })
-      if (node.children.length > 0) {
-        for (let a = 0; a < node.children.length; a++) {
-          let temp = node.children[a]
-          this.graphDatasource.edges.push({
-            source: node.id,
-            target: temp.id
-          })
-          this.getFlowGraphData(temp)
-        }
-      }
     },
     // <!---- author:os_chengtgen -- date:20190827 --  for:切换父子勾选模式 =======------>
     expandAll () {

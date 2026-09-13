@@ -3,42 +3,40 @@
   <a-row :gutter="24">
     <a-col :md="24">
       <a-card :style="cardStyle" :bordered="false">
-        <!-- 查询区域 -->
-        <div class="table-page-search-wrapper">
-          <a-form layout="inline" @keyup.enter="searchQuery">
-            <a-row :gutter="24">
-              <a-col :md="6" :sm="24">
-                <a-form-item label="项目名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-input placeholder="请输入项目名称查询" v-model:value="queryParam.name"></a-input>
-                </a-form-item>
-              </a-col>
-              <a-col :md="6" :sm="24">
-                <a-form-item label="项目类别" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="全部类别" v-model:value="queryParam.categoryId" allowClear>
-                    <a-select-option v-for="item in categoryList" :key="item.id" :value="item.id">
-                      {{ item.name }}
-                    </a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :md="6" :sm="24">
-                <a-form-item label="是否启用" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                  <a-select placeholder="请选择" v-model:value="queryParam.enabled">
-                    <a-select-option value="">全部</a-select-option>
-                    <a-select-option value="1">启用</a-select-option>
-                    <a-select-option value="0">禁用</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :md="6" :sm="24">
-                <span class="table-page-search-submitButtons">
-                  <a-button type="primary" @click="searchQuery">查询</a-button>
-                  <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
-                </span>
-              </a-col>
-            </a-row>
-          </a-form>
-        </div>
+        <!-- 查询区域：ListSearchBar（文档 24 阶段 3 样例） -->
+        <list-search-bar @search="searchQuery">
+          <a-row :gutter="24">
+            <a-col :md="6" :sm="24">
+              <a-form-item label="项目名称">
+                <a-input placeholder="请输入项目名称查询" v-model:value="queryParam.name"></a-input>
+              </a-form-item>
+            </a-col>
+            <a-col :md="6" :sm="24">
+              <a-form-item label="项目类别">
+                <a-select placeholder="全部类别" v-model:value="queryParam.categoryId" allowClear>
+                  <a-select-option v-for="item in categoryList" :key="item.id" :value="item.id">
+                    {{ item.name }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :md="6" :sm="24">
+              <a-form-item label="是否启用">
+                <a-select placeholder="请选择" v-model:value="queryParam.enabled">
+                  <a-select-option value="">全部</a-select-option>
+                  <a-select-option value="1">启用</a-select-option>
+                  <a-select-option value="0">禁用</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :md="6" :sm="24">
+              <div class="table-page-search-submitButtons">
+                <a-button type="primary" @click="searchQuery">查询</a-button>
+                <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
+              </div>
+            </a-col>
+          </a-row>
+        </list-search-bar>
         <!-- 操作按钮区域 -->
         <div class="table-operator" style="margin-top: 5px">
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
@@ -90,6 +88,7 @@
 
 <script>
   import ProjectModal from './modules/ProjectModal'
+  import ListSearchBar from '@/components/list/ListSearchBar.vue'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { getAction } from '@/api/manage'
 
@@ -97,7 +96,8 @@
     name: "ProjectList",
     mixins:[JeecgListMixin],
     components: {
-      ProjectModal
+      ProjectModal,
+      ListSearchBar
     },
     data () {
       return {

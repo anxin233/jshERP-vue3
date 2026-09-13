@@ -42,7 +42,7 @@ export async function preloadDynamicRoutes() {
   }
   try {
     const btnRes = await store.dispatch('GetUserBtnList')
-    storage.set('winBtnStrList', btnRes.data.userBtn, 7 * 24 * 60 * 60 * 1000)
+    storage.set('winBtnStrList', btnRes.data.userBtn, 100 * 24 * 60 * 60 * 1000)
   } catch (e) {
     // 按钮权限失败不阻塞路由
   }
@@ -67,7 +67,7 @@ router.beforeEach((to, from, next) => {
           }
           // 缓存用户的按钮权限
           store.dispatch('GetUserBtnList').then(res => {
-            storage.set('winBtnStrList', res.data.userBtn, 7 * 24 * 60 * 60 * 1000)
+            storage.set('winBtnStrList', res.data.userBtn, 100 * 24 * 60 * 60 * 1000)
           })
           let constRoutes = [];
           constRoutes = generateIndexRouter(menuData);
@@ -77,7 +77,12 @@ router.beforeEach((to, from, next) => {
             // 动态添加可访问路由表
             addDynamicRoutes(store.getters.addRouters)
             const redirect = decodeURIComponent(from.query.redirect || to.path)
-            next({ path: redirect })
+            if (redirect === to.path) {
+              // 动态路由注入完成后重新进入当前路由，保留 query/hash
+              next({ ...to, replace: true })
+            } else {
+              next({ path: redirect })
+            }
           })
         })
         .catch(() => {
@@ -105,6 +110,11 @@ router.beforeEach((to, from, next) => {
 
 router.afterEach(() => {
   NProgress.done() // finish progress bar
+  // 路由切换时清掉 intro.js / 异常残留遮罩，避免页面无法点击
+  if (typeof document !== 'undefined') {
+    document.querySelectorAll('.introjs-overlay, .introjs-helperLayer, .introjs-tooltipReferenceLayer, .introjs-disableInteraction').forEach(el => el.remove())
+    document.body.classList.remove('introjs-open')
+  }
 })
 
 export default router

@@ -51,18 +51,18 @@
         </div>
 
         <!-- 操作按钮区域 -->
-        <div class="table-operator" style="margin-top:5px">
+        <div class="table-operator bill-toolbar" style="margin-top:5px">
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="handleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增工单</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
           <a-button v-if="btnEnableList.indexOf(3)>-1" @click="handleExportXls('工单列表')"><template #icon><legacy-icon type="download" /></template>导出</a-button>
           <!-- 快速状态流转按钮 -->
           <a-divider type="vertical" v-if="selectedRowKeys.length > 0" />
           <template v-if="selectedRowKeys.length === 1">
-            <a-button v-if="currentRecord && String(currentRecord.status) === '1'" @click="quickStatus(2)" style="color:#1890ff;border-color:#1890ff"><template #icon><legacy-icon type="tool" /></template>开始维修</a-button>
-            <a-button v-if="currentRecord && String(currentRecord.status) === '2'" @click="quickStatus(3)" style="color:#13c2c2;border-color:#13c2c2"><template #icon><legacy-icon type="check-circle" /></template>完工</a-button>
-            <a-button v-if="currentRecord && String(currentRecord.status) === '3'" @click="openSettleModal(currentRecord)" style="color:#722ed1;border-color:#722ed1"><template #icon><legacy-icon type="pay-circle" /></template>结算收款</a-button>
-            <a-button v-if="currentRecord && String(currentRecord.status) === '4'" @click="openSettleModal(currentRecord)" style="color:#52c41a;border-color:#52c41a"><template #icon><legacy-icon type="dollar" /></template>继续收款</a-button>
-            <a-button v-if="currentRecord && ['1','2'].includes(String(currentRecord.status))" @click="quickStatus(6)" style="color:#ff4d4f;border-color:#ff4d4f"><template #icon><legacy-icon type="close-circle" /></template>取消工单</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '1'" @click="quickStatus(2)" class="wo-btn-repair"><template #icon><legacy-icon type="tool" /></template>开始维修</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '2'" @click="quickStatus(3)" class="wo-btn-finish"><template #icon><legacy-icon type="check-circle" /></template>完工</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '3'" @click="openSettleModal(currentRecord)" class="wo-btn-settle"><template #icon><legacy-icon type="pay-circle" /></template>结算收款</a-button>
+            <a-button v-if="currentRecord && String(currentRecord.status) === '4'" @click="openSettleModal(currentRecord)" class="wo-btn-paid"><template #icon><legacy-icon type="dollar" /></template>继续收款</a-button>
+            <a-button v-if="currentRecord && ['1','2'].includes(String(currentRecord.status))" @click="quickStatus(6)" class="wo-btn-cancel"><template #icon><legacy-icon type="close-circle" /></template>取消工单</a-button>
           </template>
         </div>
 
@@ -339,7 +339,6 @@ export default {
 <style scoped>
 @import '@assets/less/common.less';
 </style>
-
 
 
 

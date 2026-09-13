@@ -277,16 +277,19 @@
               </a-form-item>
             </a-col>
           </a-row>
-          <a-table
-            ref="table"
-            size="middle"
-            bordered
-            rowKey="id"
-            :pagination="false"
-            :loading="loading"
-            :columns="moneyInColumns"
-            :dataSource="dataSource">
-          </a-table>
+           <a-table
+             ref="table"
+             size="middle"
+             bordered
+             rowKey="id"
+             :pagination="false"
+             :loading="loading"
+             :columns="moneyInColumns"
+             :dataSource="dataSource">
+             <template #numberCustomRender="{ record }">
+               <a @click="myHandleDetail(record.billNumber)">{{record.billNumber}}</a>
+             </template>
+           </a-table>
           <a-row class="form-row" :gutter="24">
             <a-col :lg="24" :md="24" :sm="24">
               <a-form-item :labelCol="labelCol" :wrapperCol="{xs: { span: 24 },sm: { span: 24 }}" label="" style="padding:20px 10px;">
@@ -352,6 +355,9 @@
             :loading="loading"
             :columns="moneyOutColumns"
             :dataSource="dataSource">
+            <template #numberCustomRender="{ record }">
+              <a @click="myHandleDetail(record.billNumber)">{{record.billNumber}}</a>
+            </template>
           </a-table>
           <a-row class="form-row" :gutter="24">
             <a-col :lg="24" :md="24" :sm="24">
@@ -395,18 +401,20 @@
         </a-row>
       </template>
     </a-form>
+    <bill-detail v-if="billDetailVisible" ref="billDetailModal"></bill-detail>
   </j-modal>
 </template>
 <script>
   import pick from 'lodash.pick'
   import { getAction, postAction } from '@/api/manage'
-  import { findFinancialDetailByNumber, getCurrentSystemConfig } from '@/api/api'
+  import { findBillDetailByNumber, findFinancialDetailByNumber, getCurrentSystemConfig } from '@/api/api'
   import { getCheckFlag } from '@/utils/util'
   import JUpload from '@/components/jeecg/JUpload'
 
   export default {
     name: 'FinancialDetail',
     components: {
+      BillDetail: () => import('@views/bill/dialog/BillDetail'),
       JUpload
     },
     data () {
@@ -414,6 +422,7 @@
         title: "详情",
         width: '1600px',
         visible: false,
+        billDetailVisible: false,
         modalStyle: '',
         model: {},
         isCanBackCheck: true,
@@ -461,7 +470,9 @@
         ],
         moneyInColumns: [
           { title: '#',dataIndex:'',width:'5%',align:'center',customRender:function ({ text: t, record: r, index, renderIndex }){return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');}},
-          { title: '销售单据编号', dataIndex: 'billNumber', width: '20%' },
+          { title: '销售单据编号', dataIndex: 'billNumber', width: '20%',
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell)
+          },
           { title: '应收欠款',dataIndex: 'needDebt', width: '10%'},
           { title: '已收欠款',dataIndex: 'finishDebt', width: '10%'},
           { title: '本次收款',dataIndex: 'eachAmount', width: '10%'},
@@ -469,7 +480,9 @@
         ],
         moneyOutColumns: [
           { title: '#',dataIndex:'',width:'5%',align:'center',customRender:function ({ text: t, record: r, index, renderIndex }){return (Number.isFinite(Number(index ?? renderIndex)) ? Number(index ?? renderIndex) + 1 : '');}},
-          { title: '采购单据编号', dataIndex: 'billNumber', width: '20%' },
+          { title: '采购单据编号', dataIndex: 'billNumber', width: '20%',
+            customRender: (cell) => this.$renderColumnSlot('numberCustomRender', cell)
+          },
           { title: '应付欠款',dataIndex: 'needDebt', width: '10%'},
           { title: '已付欠款',dataIndex: 'finishDebt', width: '10%'},
           { title: '本次付款',dataIndex: 'eachAmount', width: '10%'},
@@ -548,9 +561,23 @@
       handleCancel() {
         this.close()
       },
+      myHandleDetail(billNumber) {
+        findBillDetailByNumber({ number: billNumber }).then((res) => {
+          if (res && res.code === 200) {
+            this.billDetailVisible = true
+            this.$nextTick(() => {
+              if (!this.$refs.billDetailModal) return
+              let type = res.data.type === "其它"? "":res.data.type
+              this.$refs.billDetailModal.show(res.data, res.data.subType + type)
+              this.$refs.billDetailModal.title = res.data.subType + type + "-详情"
+            })
+          }
+        })
+      },
       close() {
         this.$emit('close')
         this.visible = false
+        this.billDetailVisible = false
         this.modalStyle = ''
       },
     }

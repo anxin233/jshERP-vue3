@@ -6,7 +6,7 @@
       :style="getStyle(modalStyle)"
       :open="modalOpen"
       :getContainer="() => $refs.container"
-      :maskStyle="{'top':'93px','left':'154px'}"
+      :maskStyle="maskStyleInfo"
       :wrapClassName="wrapClassNameInfo()"
       :mask="isDesktop()"
       :maskClosable="false"
@@ -51,6 +51,7 @@
   import { triggerWindowResizeEvent, handleIntroJs } from "@/utils/util"
   import {mixinDevice} from '@/utils/mixin'
   import storage from '@/utils/storage'
+  import { SIDER_WIDTH, MODAL_OFFSET_TOP } from '@/config/layout'
 
   const RESERVED_MODAL_LISTENER_EVENTS = new Set(['ok', 'cancel', 'update:open', 'update:visible'])
 
@@ -100,6 +101,10 @@
       // 一些未处理的参数或特殊处理的参数绑定到 a-modal 上
       _attrs() {
         let attrs = { ...this.$attrs }
+        // Vue 3 的 $attrs 包含 class/style，组件已用 getClass/getStyle 处理，
+        // 若继续透传会让父组件的内联 top/height 覆盖全屏样式
+        delete attrs.class
+        delete attrs.style
         Object.keys(attrs).forEach(key => {
           if (/^on[A-Z]/.test(key)) {
             delete attrs[key]
@@ -138,11 +143,19 @@
       },
       modalStyle() {
         let style = {}
-        // 如果全屏就将top设为 0
+        // 如果全屏就将top设为 0，高度铺满内容区
         if (this.innerFullscreen) {
           style['top'] = '0'
+          style['height'] = '100%'
         }
         return style
+      },
+      // 遮罩对齐内容区（页签下方、侧栏右侧），与 .depot-mask / layout tokens 保持一致
+      maskStyleInfo() {
+        return {
+          top: `${MODAL_OFFSET_TOP}px`,
+          left: `${SIDER_WIDTH + 4}px`
+        }
       },
       isNoTitle() {
         return !this.title && !this.allSlotsKeys.includes('title')
@@ -238,6 +251,29 @@
 </script>
 
 <style lang="less">
+  /* 恢复页脚分割线：antdv 4.x 默认已移除 Modal footer 的 border-top；
+     用 .ant-modal.j-modal-box 三个 class 提高权重，避免被运行时注入的组件库样式覆盖 */
+  .ant-modal.j-modal-box .ant-modal-footer {
+    border-top: 1px solid #e8e8e8;
+    /* antdv 4.x 的 footer 默认上下 padding 为 0，分割线紧贴按钮，这里补出间距 */
+    padding: 16px 24px;
+  }
+
+  /* 全屏弹窗：antdv 4.x 给 content 加了 20px/24px 内边距，
+     导致页脚分割线左右留白、按钮离底部过高；老版设计 padding 在各子元素上，这里恢复 */
+  .ant-modal.j-modal-box.fullscreen .ant-modal-content {
+    padding: 0;
+  }
+  .ant-modal.j-modal-box.fullscreen .ant-modal-header {
+    padding: 16px 24px;
+    margin-bottom: 0;
+  }
+
+  /* 恢复标题下分割线：antdv 4.x 默认未给 Modal header 加 border-bottom（老版本有） */
+  .ant-modal.j-modal-box .ant-modal-header {
+    border-bottom: 1px solid #e8e8e8;
+  }
+
   .j-modal-box {
 
     &.fullscreen {
@@ -245,15 +281,30 @@
       left: 0;
       padding: 0;
 
-      height: 100vh;
+      /* 高度铺满 wrap（即页签以下的内容区），避免 100vh 溢出 */
+      height: 100%;
 
-       >.ant-modal-content {
-        height: 100vh;
+       /* AntD v4 在 .ant-modal 与 .ant-modal-content 之间插入了 focus sentinel 包裹层 */
+       > div:first-child {
+        height: 100%;
+      }
+
+       .ant-modal-content {
+        height: 100%;
         border-radius: 0;
+        display: flex;
+        flex-direction: column;
+
+         > .ant-modal-header,
+         > .ant-modal-footer {
+          flex: none;
+        }
 
          >.ant-modal-body {
-          /* title 和 footer 各占 55px */
-          height: calc(100% - 55px - 55px);
+          /* 高度由 flex 撑满，footer 固定在底部 */
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto;
           overflow: auto;
         }
       }

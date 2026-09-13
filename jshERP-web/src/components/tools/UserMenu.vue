@@ -35,7 +35,7 @@
     <span class="action">
       <a-tooltip>
         <template #title>官方网站</template>
-        <a target="_blank" :href="systemUrl">
+        <a target="_blank" :href="systemUrl" style="color: inherit;">
           <legacy-icon type="bank" style="font-size: 16px;" />
         </a>
       </a-tooltip>
@@ -231,13 +231,13 @@
     width: 180px;
     color: inherit;
 
-    :deep(.ant-select-selection) {
+    :deep(.ant-select-selector) {
       background-color: inherit;
       border: 0;
       border-bottom: 1px solid white;
-      &__placeholder, &__field__placeholder {
-        color: inherit;
-      }
+    }
+    :deep(.ant-select-selection-placeholder) {
+      color: inherit;
     }
   }
   /* update-end author:sunjianlei date:20191220 for: 解决全局样式冲突问题 */
@@ -252,5 +252,9 @@
   .logout_title {
     color: inherit;
     text-decoration: none;
+  }
+  /* 通知铃铛：Antd Badge 自带文字色，覆盖为继承顶栏颜色 */
+  .user-wrapper :deep(.ant-badge) {
+    color: inherit;
   }
 </style>

@@ -1,9 +1,10 @@
 <template>
   <a-layout-sider
     :class="['sider', isDesktop() ? null : 'shadow', theme, fixSiderbar && isDesktop() ? 'ant-fixed-sidemenu' : null ]"
-    width="150px"
+    :width="siderWidth + 'px'"
     :collapsible="collapsible"
     :collapsed="collapsed"
+    :collapsedWidth="siderCollapsedWidth"
     :trigger="null">
     <logo />
     <s-menu
@@ -22,6 +23,7 @@
   import Logo from '../tools/Logo'
   import SMenu from './index'
   import { mixin, mixinDevice } from '@/utils/mixin.js'
+  import { SIDER_WIDTH, SIDER_COLLAPSED_WIDTH, LOGO_HEIGHT } from '@/config/layout'
 
   export default {
     name: "SideMenu",
@@ -53,11 +55,17 @@
         required: true
       }
     },
+    data () {
+      return {
+        siderWidth: SIDER_WIDTH,
+        siderCollapsedWidth: SIDER_COLLAPSED_WIDTH
+      }
+    },
     computed:{
       smenuStyle() {
         let style = { 'padding': '0' }
         if (this.fixSiderbar) {
-          style['height'] = 'calc(100% - 59px)'
+          style['height'] = `calc(100% - ${LOGO_HEIGHT}px)`
           style['overflow'] = 'auto'
           style['overflow-x'] = 'hidden'
         }
@@ -72,79 +80,58 @@
   }
 </script>
 <style lang="less" scoped>
-
-  /* update_begin author:sunjianlei date:20190509 for: 修改侧边导航栏滚动条的样式 */
+  /* 文档 24 阶段 5：细条半透明滚动条，可感知滚动 */
   .sider {
-    @scrollBarSize: 10px;
+    @scrollBarSize: 6px;
 
-    ul.ant-menu {
-
-      /* 定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+    :deep(ul.ant-menu) {
       &::-webkit-scrollbar {
         width: @scrollBarSize;
         height: @scrollBarSize;
-        background-color: transparent;
-        display: none;
+        display: block;
       }
 
-      & .-o-scrollbar {
-        display: none;
-      }
-
-      /* 兼容IE */
-      -ms-overflow-style: none;
-      -ms-scroll-chaining: chained;
-      -ms-content-zooming: zoom;
-      -ms-scroll-rails: none;
-      -ms-content-zoom-limit-min: 100%;
-      -ms-content-zoom-limit-max: 500%;
-      -ms-scroll-snap-type: proximity;
-      -ms-scroll-snap-points-x: snapList(100%, 200%, 300%, 400%, 500%);
-
-      /* 定义滚动条轨道 */
       &::-webkit-scrollbar-track {
         background-color: transparent;
       }
 
-      /* 定义滑块 */
       &::-webkit-scrollbar-thumb {
         border-radius: @scrollBarSize;
-        background-color: #eee;
-        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+        background-color: rgba(0, 0, 0, 0.2);
 
         &:hover {
-          background-color: #dddddd;
-        }
-
-        &:active {
-          background-color: #bbbbbb;
+          background-color: rgba(0, 0, 0, 0.35);
         }
       }
     }
 
-    /** 暗色系滚动条样式 */
-    &.dark ul.ant-menu {
+    &.dark :deep(ul.ant-menu) {
       &::-webkit-scrollbar-thumb {
-        background-color: #666666;
+        background-color: rgba(255, 255, 255, 0.25);
 
         &:hover {
-          background-color: #808080;
-        }
-
-        &:active {
-          background-color: #999999;
+          background-color: rgba(255, 255, 255, 0.4);
         }
       }
     }
-
   }
-
-  /* update_end author:sunjianlei date:20190509 for: 修改侧边导航栏滚动条的样式 */
-
 </style>
 
 <!-- update_begin author:sunjianlei date:20190530 for: 选中首页的时候不显示背景颜色 -->
 <style lang="less">
+  /* 侧栏选中项右侧竖线：antdv 4.x 默认 colorActiveBarWidth=0，这里兜底强制绘制 */
+  .sider .ant-menu-inline .ant-menu-item-selected::after,
+  .sider .ant-menu-vertical .ant-menu-item-selected::after {
+    border-right: 3px solid var(--jsh-color-primary, @primary-color) !important;
+    transform: scaleY(1) !important;
+    opacity: 1 !important;
+  }
+
+  .sider.dark .ant-menu-inline .ant-menu-item-selected::after,
+  .sider.dark .ant-menu-vertical .ant-menu-item-selected::after {
+    border-right-color: rgba(255, 255, 255, 0.9) !important;
+  }
+
   .ant-menu.ant-menu-root {
     & > .ant-menu-item:first-child {
       background-color: transparent;

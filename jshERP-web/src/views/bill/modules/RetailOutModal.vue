@@ -283,8 +283,8 @@
     },
     created () {
       this.initPayTypeList()
-      let realScreenWidth = window.screen.width
-      this.minWidth = realScreenWidth<1500?800:1100
+      // 与 BillModalMixin 一致：按窗口宽度限制表格最小宽度，避免窄窗口下弹窗 body 出现横向滚动条
+      this.minWidth = Math.max(600, Math.min(1500, window.innerWidth - 300))
     },
     methods: {
       //调用完edit()方法之后会自动调用此方法

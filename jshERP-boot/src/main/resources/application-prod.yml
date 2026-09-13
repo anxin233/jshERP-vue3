@@ -1,0 +1,25 @@
+# 生产环境
+# 启用方式：--spring.profiles.active=prod
+# 数据源与 Redis 凭据必须通过环境变量注入（未设置时启动失败，避免误连开发库）：
+#   JSH_DB_URL / JSH_DB_USERNAME / JSH_DB_PASSWORD / JSH_REDIS_HOST / JSH_REDIS_PASSWORD
+spring:
+  datasource:
+    url: ${JSH_DB_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${JSH_DB_USERNAME}
+    password: ${JSH_DB_PASSWORD}
+  redis:
+    host: ${JSH_REDIS_HOST}
+    port: ${JSH_REDIS_PORT:6379}
+    password: ${JSH_REDIS_PASSWORD}
+  flyway:
+    # 禁止自动 baseline
+    baseline-on-migrate: false
+
+server:
+  tomcat:
+    basedir: /opt/tmp/tomcat
+
+file:
+  path: /opt/jshERP/upload
+  exportTmp: /opt/jshERP/export

@@ -26,6 +26,9 @@ const colorList = [
     key: '极客蓝', color: '#2F54EB',
   },
   {
+    key: '晴空蓝', color: '#1677FF',
+  },
+  {
     key: '酱紫', color: '#722ED1',
   },
 ];

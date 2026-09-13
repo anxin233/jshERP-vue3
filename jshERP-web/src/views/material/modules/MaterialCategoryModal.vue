@@ -6,7 +6,7 @@
       :ok=false
       :open="visible"
       :confirmLoading="confirmLoading"
-      :okButtonProps="{ props: {disabled: disableSubmit} }"
+      :okButtonProps="{ disabled: disableSubmit }"
       :getContainer="() => $refs.container"
       :maskStyle="{'top':'93px','left':'154px'}"
       :wrapClassName="wrapClassNameInfo()"

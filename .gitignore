@@ -5,6 +5,10 @@
 ## backend
 **/target
 **/logs
+**/upload
+**/export
+jshERP-boot/upload/
+jshERP-boot/export/
 
 ## front
 **/*.lock
@@ -12,9 +16,14 @@
 ## docker deploy secrets
 deploy/docker/.env
 deploy/docker/ssl-aicode-extract/
+deploy/dev/.env
 
 ## claude
 .claude/settings.local.json
 .claude/projects/
 .claude/*.jsonl
 jshERP-web/npminstall-debug.log
+
+## os / office temp
+.DS_Store
+~$*

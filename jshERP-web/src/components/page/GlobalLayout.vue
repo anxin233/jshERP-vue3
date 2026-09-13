@@ -10,7 +10,7 @@
         @close="() => this.collapsed = false"
         :closable="false"
         :open="collapsed"
-        :width="150"
+        :width="siderWidth"
       >
         <side-menu
           mode="inline"
@@ -40,7 +40,7 @@
         @close="() => this.collapsed = false"
         :closable="false"
         :open="collapsed"
-        :width="150"
+        :width="siderWidth"
       >
         <side-menu
           mode="inline"
@@ -54,12 +54,12 @@
 
     <a-layout
       :class="[layoutMode, `content-width-${contentWidth}`]"
-      :style="{ paddingLeft: fixSiderbar && isDesktop() ? `${sidebarOpened ? 150 : 80}px` : '0' }">
+      :style="{ paddingLeft: fixSiderbar && isDesktop() ? `${sidebarOpened ? siderWidth : siderCollapsedWidth}px` : '0' }">
       <!-- layout header -->
       <global-header
         :mode="layoutMode"
         :menus="menus"
-        :theme="navTheme"
+        :theme="headerTheme"
         :collapsed="collapsed"
         :device="device"
         @toggle="toggle"
@@ -67,7 +67,13 @@
       />
 
       <!-- layout content -->
-      <a-layout-content :style="{ height: '100%', paddingTop: fixedHeader ? '49px' : '0' }">
+      <a-layout-content
+        :style="{
+          height: '100%',
+          paddingTop: fixedHeader ? `${headerHeight}px` : '0',
+          background: 'var(--jsh-content-bg, #f0f2f5)'
+        }"
+      >
         <slot></slot>
       </a-layout-content>
 
@@ -96,6 +102,11 @@
   import { mapState, mapActions } from 'vuex'
   import { mixin, mixinDevice } from '@/utils/mixin.js'
   import storage from '@/utils/storage'
+  import {
+    HEADER_HEIGHT,
+    SIDER_WIDTH,
+    SIDER_COLLAPSED_WIDTH
+  } from '@/config/layout'
 
   export default {
     name: 'GlobalLayout',
@@ -114,7 +125,10 @@
       return {
         collapsed: false,
         activeMenu:{},
-        menus: []
+        menus: [],
+        headerHeight: HEADER_HEIGHT,
+        siderWidth: SIDER_WIDTH,
+        siderCollapsedWidth: SIDER_COLLAPSED_WIDTH
       }
     },
     computed: {
@@ -123,7 +137,11 @@
         mainRouters: state => state.permission.addRouters,
         // 后台菜单
         permissionMenuList: state => state.user.permissionList
-      })
+      }),
+      // sidemenu：顶栏用 light（主色底），侧栏用 navTheme（默认 dark 深蓝）
+      headerTheme () {
+        return this.layoutMode === 'sidemenu' ? 'light' : this.navTheme
+      }
     },
     watch: {
       sidebarOpened(val) {
@@ -184,8 +202,8 @@
 
 <style lang="less">
   body {
-    // 打开滚动条固定显示
-    overflow-y: scroll;
+    // 使用 auto 而不是 scroll，只在需要时显示滚动条
+    overflow-y: auto;
 
     &.colorWeak {
       filter: invert(80%);
@@ -298,20 +316,22 @@
         transition: width .2s;
 
         &.ant-header-side-opened {
-          width: calc(100% - 150px)
+          width: calc(100% - var(--jsh-sider-width, 180px));
         }
 
         &.ant-header-side-closed {
-          width: calc(100% - 80px)
+          width: calc(100% - var(--jsh-sider-collapsed-width, 80px));
         }
       }
     }
 
     .header {
-      height: 64px;
+      height: var(--jsh-header-height, 49px);
       padding: 0 12px 0 0;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+      background: var(--jsh-header-bg-light, #1890ff);
+      color: var(--jsh-header-color-light, #fff);
+      box-shadow: none;
+      border-bottom: 1px solid var(--jsh-header-border, transparent);
       position: relative;
     }
 
@@ -329,18 +349,19 @@
 
           height: 70%;
           line-height: 36px;
+          color: inherit;
 
           &.action-full {
             height: 100%;
           }
 
           &:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
           }
 
           .avatar {
-            margin: 20px 10px 20px 0;
-            color: #1890ff;
+            margin: 10px 10px 10px 0;
+            color: var(--jsh-color-primary, #1890ff);
             background: hsla(0, 0%, 100%, .85);
             vertical-align: middle;
           }
@@ -351,26 +372,33 @@
           }
 
           .anticon {
-            color: white;
+            color: inherit;
           }
         }
       }
 
+      /* dark：深底浅字 */
       &.dark {
-        .user-wrapper {
+        background: var(--jsh-header-bg-dark, #001529);
+        color: var(--jsh-header-color-dark, rgba(255, 255, 255, 0.85));
 
-          .action {
-            color: black;
+        .user-wrapper .action {
+          color: var(--jsh-header-color-dark, rgba(255, 255, 255, 0.85));
 
-            &:hover {
-              background: rgba(0, 0, 0, 0.05);
-            }
+          &:hover {
+            background: rgba(255, 255, 255, 0.12);
+          }
 
-            .anticon {
-              color: black;
-            }
+          .anticon {
+            color: inherit;
           }
         }
+      }
+
+      /* light：浅底深字 */
+      &.light {
+        background: var(--jsh-header-bg-light, #fff);
+        color: var(--jsh-header-color-light, rgba(0, 0, 0, 0.85));
       }
     }
 
@@ -441,12 +469,12 @@
         margin: auto;
         padding: 0 20px 0 0;
         display: flex;
-        height: 49px;
+        height: var(--jsh-header-height, 49px);
 
         .ant-menu.ant-menu-horizontal {
           border: none;
-          height: 64px;
-          line-height: 64px;
+          height: var(--jsh-header-height, 49px);
+          line-height: var(--jsh-header-height, 49px);
         }
 
         .header-index-left {
@@ -455,9 +483,9 @@
 
           .logo.top-nav-header {
             width: 165px;
-            height: 64px;
+            height: var(--jsh-logo-height, 49px);
             position: relative;
-            line-height: 64px;
+            line-height: var(--jsh-logo-height, 49px);
             transition: all .3s;
             overflow: hidden;
 
@@ -480,22 +508,23 @@
 
         .header-index-right {
           float: right;
-          height: 49px;
+          height: var(--jsh-header-height, 49px);
           overflow: hidden;
           .action:hover {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: rgba(255, 255, 255, 0.12);
           }
         }
       }
 
       &.light {
-        background-color: #fff;
+        background-color: var(--jsh-header-bg-light, #fff);
+        color: var(--jsh-header-color-light, #fff);
 
         .header-index-wide {
           .header-index-left {
             .logo {
               h1 {
-                color: #002140;
+                color: #fff;
               }
             }
           }
@@ -503,19 +532,21 @@
       }
 
       &.dark {
+        background-color: var(--jsh-header-bg-dark, #001529);
+        color: var(--jsh-header-color-dark, rgba(255, 255, 255, 0.85));
 
         .user-wrapper {
 
           .action {
-            color: white;
+            color: inherit;
 
             &:hover {
-              background: rgba(255, 255, 255, 0.3);
+              background: rgba(255, 255, 255, 0.12);
             }
           }
         }
         .header-index-wide .header-index-left .trigger:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.12);
         }
       }
 
@@ -524,7 +555,7 @@
     // 内容区
     .layout-content {
       margin: 24px 24px 0px;
-      height: 64px;
+      height: var(--jsh-header-height, 49px);
       padding: 0 12px 0 0;
     }
 
@@ -566,23 +597,28 @@
 
   // 菜单样式
   .sider {
-    box-shadow: 2px 116px 6px 0 rgba(0, 21, 41, .35);
+    box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.06);
     position: relative;
     z-index: 10;
+    background: var(--jsh-sider-bg, #fff) !important;
 
     &.ant-fixed-sidemenu {
       position: fixed;
       height: 100%;
     }
 
+    &.dark {
+      background: var(--jsh-sider-bg-dark, #001529) !important;
+    }
+
     .logo {
-      height: 64px;
+      height: var(--jsh-logo-height, 49px);
       position: relative;
-      line-height: 64px;
-      padding-left: 10px;
+      line-height: var(--jsh-logo-height, 49px);
+      padding-left: 16px;
       -webkit-transition: all .3s;
       transition: all .3s;
-      background: #ffffff;
+      background: var(--jsh-logo-bg, #1890ff);
       overflow: hidden;
 
       img, h1 {
@@ -596,23 +632,24 @@
 
       h1 {
         color: #fff;
-        font-size: 18px;
-        margin: 0 0 10px 8px;
+        font-size: 20px;
+        margin: 0;
         font-family: "Chinese Quote", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
         font-weight: 600;
+        letter-spacing: 0.02em;
       }
     }
 
     &.light {
-      background-color: #fff;
-      box-shadow: 2px 116px 8px 0 rgba(29, 35, 41, 0.05);
+      background: #fff !important;
+      box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.06);
 
       .logo {
-        background: #fff;
-        box-shadow: 1px 1px 0 0 #e8e8e8;
+        background: var(--jsh-logo-bg, #1890ff);
+        box-shadow: none;
 
         h1 {
-          color: unset;
+          color: #fff;
         }
       }
 

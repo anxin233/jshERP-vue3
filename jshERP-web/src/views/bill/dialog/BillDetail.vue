@@ -118,7 +118,7 @@
                 </a-col>
                 <a-col v-if="model.hasBackFlag" :lg="24" :md="6" :sm="6">
                   <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="退货单号">
-                    <template v-for="(item, index) in linkNumberList">
+                    <template v-for="(item, index) in linkNumberList" :key="index">
                       <a @click="myHandleDetail(item.number)">{{item.number}}</a><br/>
                     </template>
                   </a-form-item>
@@ -449,7 +449,7 @@
             </a-col>
             <a-col v-if="model.hasBackFlag" :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="退货单号">
-                <template v-for="(item, index) in linkNumberList">
+                <template v-for="(item, index) in linkNumberList" :key="index">
                   <a @click="myHandleDetail(item.number)">{{item.number}}</a><br/>
                 </template>
               </a-form-item>
@@ -458,7 +458,7 @@
           <a-row class="form-row" :gutter="24">
             <a-col v-if="financialBillNoList.length" :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="付款单号">
-                <template v-for="(item, index) in financialBillNoList">
+                <template v-for="(item, index) in financialBillNoList" :key="index">
                   <a @click="myHandleFinancialDetail(item.billNo)">{{item.billNo}}</a><br/>
                 </template>
               </a-form-item>
@@ -618,7 +618,7 @@
               </a-form-item>
             </a-col>
             <a-col :span="6">
-              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="付款优惠">
+              <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="收款优惠">
                 {{model.discountMoney}}
               </a-form-item>
             </a-col>
@@ -741,7 +741,7 @@
             </a-col>
             <a-col v-if="model.hasBackFlag" :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="退货单号">
-                <template v-for="(item, index) in linkNumberList">
+                <template v-for="(item, index) in linkNumberList" :key="index">
                   <a @click="myHandleDetail(item.number)">{{item.number}}</a><br/>
                 </template>
               </a-form-item>
@@ -755,7 +755,7 @@
             </a-col>
             <a-col v-if="financialBillNoList.length" :span="6">
               <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="收款单号">
-                <template v-for="(item, index) in financialBillNoList">
+                <template v-for="(item, index) in financialBillNoList" :key="index">
                   <a @click="myHandleFinancialDetail(item.billNo)">{{item.billNo}}</a><br/>
                 </template>
               </a-form-item>
@@ -1181,7 +1181,8 @@
   import BillPrintIframe from './BillPrintIframe'
   import BillPrintProIframe from './BillPrintProIframe'
   import FinancialDetail from '../../financial/dialog/FinancialDetail'
-  import JUpload from '@/components/jeecg/JUpload'  import storage from '@/utils/storage'
+  import JUpload from '@/components/jeecg/JUpload'
+  import storage from '@/utils/storage'
   export default {
     name: 'BillDetail',
     components: {
@@ -1221,7 +1222,7 @@
         wrapperCol: {
           xs: { span: 24 },
           sm: { span: 16 },
-        },
+        },
         loading: false,
         dataSource: [],
         url: {

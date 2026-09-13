@@ -8,25 +8,44 @@ server:
     # 服务路径
     context-path: /jshERP-boot
   tomcat:
-    # 文件上传临时路径
-    basedir: /opt/tmp/tomcat
+    # Tomcat 工作目录（本机开发用 java.io.tmpdir，避免 /opt 无权限）
+    # 生产可覆盖：--server.tomcat.basedir=/opt/tmp/tomcat
+    basedir: ${java.io.tmpdir}/jsh-tomcat
 
 spring:
+  # Keep legacy service cycles working during the Spring Boot 2.7 compatibility phase
+  main:
+    allow-circular-references: true
+  # Springfox 2.x compatibility with Spring Boot 2.6+ path matching
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   datasource:
-    # 数据库连接
-    url: jdbc:mysql://127.0.0.1:3306/jsh_erp?useUnicode=true&characterEncoding=utf8&useCursorFetch=true&defaultFetchSize=500&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false
+    # 默认连本机开发库（deploy/dev 的 Docker MySQL，见 deploy/dev/README.md）。
+    # 远程/生产环境请通过环境变量注入，禁止把真实凭据写入仓库：
+    #   JSH_DB_URL / JSH_DB_USERNAME / JSH_DB_PASSWORD
+    url: ${JSH_DB_URL:jdbc:mysql://127.0.0.1:3306/jsh_erp?useUnicode=true&characterEncoding=utf8&useCursorFetch=true&defaultFetchSize=500&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: 123456
+    username: ${JSH_DB_USERNAME:root}
+    password: ${JSH_DB_PASSWORD:jsherp_dev_root}
   redis:
-    host: 127.0.0.1
-    port: 6379
-    password: 1234abcd
+    # 默认连本机开发 Redis（deploy/dev）；远程通过 JSH_REDIS_* 环境变量注入
+    host: ${JSH_REDIS_HOST:127.0.0.1}
+    port: ${JSH_REDIS_PORT:6379}
+    password: ${JSH_REDIS_PASSWORD:jsherp_dev_redis}
   servlet:
     multipart:
       # 文件上传限制 (byte)
       max-file-size: 10485760
       max-request-size: 10485760
+  # Flyway：默认只执行 migrate；已有老库首次接入请显式使用 flyway-baseline profile 启动一次。
+  # baseline-version / table 由 Spring Boot 绑定，flyway-baseline profile 下的 FlywayConfig 会读取。
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history
+    baseline-on-migrate: false
+    baseline-version: 8
 
 # mybatis-plus 配置
 mybatis-plus:
@@ -51,7 +70,7 @@ plugin:
 file:
   # 文件上传方式 1-本机 2-oss
   uploadType: 1
-  # 文件上传根目录
-  path: /opt/jshERP/upload
-  # 文件导出缓存
-  exportTmp: /opt/jshERP/export
+  # 文件上传根目录（本机开发用相对路径；生产可覆盖 --file.path=/opt/jshERP/upload）
+  path: ./upload
+  # 文件导出缓存（生产可覆盖 --file.exportTmp=/opt/jshERP/export）
+  exportTmp: ./export

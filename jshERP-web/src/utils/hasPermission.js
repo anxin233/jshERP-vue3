@@ -23,7 +23,7 @@ const hasPermission = {
 export function filterNodePermission(el, binding, vnode) {
   let permissionList = [];
   try {
-    const instance = binding && binding.instance ? binding.instance : (vnode && vnode.context)
+    const instance = binding && binding.instance
     let obj = instance && instance.$props ? instance.$props.formData : null;
     if (obj) {
       let bpmList = obj.permissionList;

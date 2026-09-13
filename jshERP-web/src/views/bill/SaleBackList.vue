@@ -122,11 +122,11 @@
         <div class="table-operator"  style="margin-top: 5px">
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="myHandleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" @click="batchSetStatus(1)"><template #icon><legacy-icon type="check" /></template>审核</a-button>
+          <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" @click="batchSetStatus(0)"><template #icon><legacy-icon type="stop" /></template>反审核</a-button>
           <a-tooltip title="只可将状态是部分入库的单据强制完成">
             <a-button v-if="inOutManageFlag && btnEnableList.indexOf(1)>-1" @click="batchForceClose"><template #icon><legacy-icon type="issues-close" /></template>强制结单</a-button>
           </a-tooltip>
-          <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" @click="batchSetStatus(1)"><template #icon><legacy-icon type="check" /></template>审核</a-button>
-          <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" @click="batchSetStatus(0)"><template #icon><legacy-icon type="stop" /></template>反审核</a-button>
           <a-button v-if="isShowExcel && btnEnableList.indexOf(3)>-1" @click="handleExport"><template #icon><legacy-icon type="download" /></template>导出</a-button>
           <a-popover trigger="click" placement="right">
             <template #content>

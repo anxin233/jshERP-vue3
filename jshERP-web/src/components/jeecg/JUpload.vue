@@ -471,13 +471,16 @@
           this._picMouseOver = (ev) => {
             ev = ev || window.event
             const target = ev.target || ev.srcElement
-            if (target.className === 'ant-upload-list-item-info') {
+            // v3: .ant-upload-list-item-info 包裹层；v4: 直接在 .ant-upload-list-item 上悬浮
+            const isItemInfo = target.className === 'ant-upload-list-item-info'
+            const isItem = target.className && String(target.className).indexOf('ant-upload-list-item') === 0
+            if (isItemInfo || isItem) {
               this.showMoverTask = false
-              const item = target.parentElement
+              const item = isItemInfo ? target.parentElement : target
               this.left = item.offsetLeft
               this.top = item.offsetTop + item.offsetHeight - 50
               this.moveDisplay = 'block'
-              const img = target.getElementsByTagName('img')[0]
+              const img = item.getElementsByTagName('img')[0]
               if (img) {
                 this.currentImg = img.src
               }
@@ -486,7 +489,8 @@
           this._picMouseOut = (ev) => {
             ev = ev || window.event
             const target = ev.target || ev.srcElement
-            if (target.className === 'ant-upload-list-item-info') {
+            if (target.className === 'ant-upload-list-item-info' ||
+              (target.className && String(target.className).indexOf('ant-upload-list-item') === 0)) {
               this.showMoverTask = true
               setTimeout(() => {
                 if (this.moverHold === false) {

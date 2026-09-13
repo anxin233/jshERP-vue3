@@ -156,6 +156,7 @@ CREATE TABLE `jsh_depot_head`  (
   `discount_last_money` decimal(24, 6) NULL DEFAULT NULL COMMENT '优惠后金额',
   `other_money` decimal(24, 6) NULL DEFAULT NULL COMMENT '销售或采购费用合计',
   `deposit` decimal(24, 6) NULL DEFAULT NULL COMMENT '订金',
+  `last_deposit` decimal(24, 6) NULL DEFAULT NULL COMMENT '剩余订金',
   `debt` decimal(24, 6) NULL DEFAULT NULL COMMENT '本次欠款',
   `last_debt` decimal(24, 6) NULL DEFAULT NULL COMMENT '最终欠款',
   `status` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '状态，0未审核、1已审核、2完成采购|销售、3部分采购|销售、9审核中',
@@ -697,6 +698,7 @@ INSERT INTO `jsh_platform_config` VALUES (19, 'email_from', '邮件发送端-发
 INSERT INTO `jsh_platform_config` VALUES (20, 'email_auth_code', '邮件发送端-授权码', '');
 INSERT INTO `jsh_platform_config` VALUES (21, 'email_smtp_host', '邮件发送端-SMTP服务器', '');
 INSERT INTO `jsh_platform_config` VALUES (22, 'checkcode_flag', '验证码启用标记', '1');
+INSERT INTO `jsh_platform_config` VALUES (23, 'app_version', '手机端版本', '');
 
 -- ----------------------------
 -- Table structure for jsh_role

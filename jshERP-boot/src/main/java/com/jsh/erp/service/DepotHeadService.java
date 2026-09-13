@@ -185,8 +185,12 @@ public class DepotHeadService {
                     BigDecimal debt = discountLastMoney.add(otherMoney).subtract((deposit.add(changeAmount)));
                     dh.setDebt(roleService.parseBillPriceByLimit(debt, billCategory, priceLimit, request));
                     //最终欠款的金额
-                    BigDecimal lastDebt = dh.getLastDebt()!=null?dh.getLastDebt():BigDecimal.ZERO;
-                    dh.setLastDebt(roleService.parseBillPriceByLimit(lastDebt, billCategory, priceLimit, request));
+                    //TODO 暂时还是先通过计算获取，半年后改成从数据库直接去读last_dept time:20260601
+                    if(financialBillPriceMap!=null) {
+                        BigDecimal financialBillPrice = financialBillPriceMap.get(dh.getId())!=null?financialBillPriceMap.get(dh.getId()):BigDecimal.ZERO;
+                        BigDecimal lastDebt = debt.subtract(financialBillPrice);
+                        dh.setLastDebt(roleService.parseBillPriceByLimit(lastDebt, billCategory, priceLimit, request));
+                    }
                     //是否有退款单
                     if(billSizeMap!=null) {
                         Integer billListSize = billSizeMap.get(dh.getNumber());
@@ -419,6 +423,12 @@ public class DepotHeadService {
             if(!"0".equals(depotHead.getStatus())) {
                 throw new BusinessRunTimeException(ExceptionConstants.DEPOT_HEAD_UN_AUDIT_DELETE_FAILED_CODE,
                         String.format(ExceptionConstants.DEPOT_HEAD_UN_AUDIT_DELETE_FAILED_MSG));
+            }
+            //检查有没有被财务单据关联
+            List<AccountHead> ahList = accountHeadService.getFinancialBillNoByBillId(depotHead.getId());
+            if (!ahList.isEmpty()) {
+                throw new BusinessRunTimeException(ExceptionConstants.DEPOT_HEAD_FINANCIAL_ASSOCIATED_CODE,
+                        String.format(ExceptionConstants.DEPOT_HEAD_FINANCIAL_ASSOCIATED_MSG, depotHead.getNumber(), ahList.get(0).getBillNo()));
             }
         }
         for(DepotHead depotHead: dhList){
@@ -695,6 +705,31 @@ public class DepotHeadService {
         return result;
     }
 
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public int batchSetLastDeposit(String ids, HttpServletRequest request) throws Exception {
+        int result = 0;
+        StringBuilder billNoStr = new StringBuilder();
+        List<Long> idList = StringUtil.strToLongList(ids);
+        for(Long id: idList) {
+            DepotHead dh = getDepotHead(id);
+            //订单中的原订金
+            BigDecimal originalDeposit = dh.getChangeAmount()!=null?dh.getChangeAmount().abs():BigDecimal.ZERO;
+            if(originalDeposit.compareTo(BigDecimal.ZERO)!=0) {
+                //更新剩余订金
+                updateLastDepositByNumber(dh.getNumber());
+                billNoStr.append(dh.getNumber()).append(" ");
+            }
+            result = 1;
+        }
+        //记录日志
+        String billNos = billNoStr.toString();
+        if(StringUtil.isNotEmpty(billNos)) {
+            logService.insertLog("单据", "修正剩余订金：" + billNos,
+                    ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
+        }
+        return result;
+    }
+
     /**
      * 获取单据的本次欠款
      * @param dh
@@ -747,7 +782,7 @@ public class DepotHeadService {
             }
             // 开启强审核，并且没有开启负库存：
             // 1、开启出入库管理，销售出库和采购退货单据审核的时候不做校验，其它出库做校验；
-            // 2、未开启出入库管理，销售出库和采购退货单据审核的时候做校验，其它出库不做校验。
+            // 2、未开启出入库管理，销售出库、采购退货和其它出库单据审核的时候都做校验。
             if("1".equals(status)) {
                 if(forceApprovalFlag && !minusStockFlag) {
                     if(inOutManageFlag) {
@@ -757,7 +792,8 @@ public class DepotHeadService {
                         }
                     } else {
                         if(("出库".equals(depotHead.getType()) && "销售".equals(depotHead.getSubType()))
-                                || ("出库".equals(depotHead.getType()) && "采购退货".equals(depotHead.getSubType()))) {
+                            || ("出库".equals(depotHead.getType()) && "采购退货".equals(depotHead.getSubType()))
+                            || "出库".equals(depotHead.getType()) && "其它".equals(depotHead.getSubType())) {
                             //校验单据中的商品库存是否不足
                             depotItemService.checkMaterialStock(depotHead.getNumber(), depotHead.getId());
                         }
@@ -1210,6 +1246,7 @@ public class DepotHeadService {
         if(StringUtil.isEmpty(depotHead.getStatus())) {
             depotHead.setStatus(BusinessConstants.BILLS_STATUS_UN_AUDIT);
         }
+        depotHead.setLastDeposit(BigDecimal.ZERO);
         depotHead.setPurchaseStatus(BusinessConstants.BILLS_STATUS_UN_AUDIT);
         depotHead.setPayType(depotHead.getPayType()==null?"现付":depotHead.getPayType());
         if(StringUtil.isNotEmpty(depotHead.getAccountIdList())){
@@ -1267,10 +1304,12 @@ public class DepotHeadService {
         List<DepotHead> list = depotHeadMapper.selectByExample(dhExample);
         if(list!=null) {
             Long headId = list.get(0).getId();
-            /**入库和出库处理单据子表信息*/
-            depotItemService.saveDetials(rows,headId, "add",request);
-            /**更新最终欠款*/
+            /*入库和出库处理单据子表信息*/
+            depotItemService.saveDetials(rows,headId, "add", null, request);
+            /*更新最终欠款*/
             updateLastDebtByBillId(depotHead.getDebt(), headId);
+            /*更新剩余订金*/
+            updateLastDepositByNumber(depotHead.getLinkNumber());
         }
         String statusStr = depotHead.getStatus().equals("1")?"[审核]":"";
         logService.insertLog("单据",
@@ -1308,6 +1347,8 @@ public class DepotHeadService {
             throw new BusinessRunTimeException(ExceptionConstants.DEPOT_HEAD_BILL_CANNOT_EDIT_CODE,
                     String.format(ExceptionConstants.DEPOT_HEAD_BILL_CANNOT_EDIT_MSG));
         }
+        //获取之前的关联单据信息
+        DepotHead preDepotHead = getDepotHead(depotHead.getId());
         //获取之前的会员id
         Long preOrganId = getDepotHead(depotHead.getId()).getOrganId();
         String subType = depotHead.getSubType();
@@ -1375,10 +1416,12 @@ public class DepotHeadService {
                 }
             }
         }
-        /**入库和出库处理单据子表信息*/
-        depotItemService.saveDetials(rows,depotHead.getId(), "update",request);
-        /**更新最终欠款*/
+        /*入库和出库处理单据子表信息*/
+        depotItemService.saveDetials(rows,depotHead.getId(), "update", preDepotHead, request);
+        /*更新最终欠款*/
         updateLastDebtByBillId(depotHead.getDebt(), depotHead.getId());
+        /*更新剩余订金*/
+        updateLastDepositByNumber(depotHead.getLinkNumber());
         String statusStr = depotHead.getStatus().equals("1")?"[审核]":"";
         logService.insertLog("单据",
                 new StringBuffer(BusinessConstants.LOG_OPERATION_TYPE_EDIT).append(depotHead.getNumber()).append(statusStr).toString(),
@@ -1414,6 +1457,27 @@ public class DepotHeadService {
             dh.setId(billId);
             dh.setLastDebt(debt.subtract(financialBillPrice));
             depotHeadMapper.updateByPrimaryKeySelective(dh);
+        }
+    }
+
+    /**
+     * 更新剩余订金
+     * @param linkNumber
+     * @return
+     */
+    @Transactional(value = "transactionManager", rollbackFor = Exception.class)
+    public void updateLastDepositByNumber(String linkNumber) throws Exception {
+        if(StringUtil.isNotEmpty(linkNumber)) {
+            DepotHead originalBill = getDepotHead(linkNumber);
+            //订单中的原订金
+            BigDecimal originalDeposit = originalBill.getChangeAmount()!=null?originalBill.getChangeAmount().abs():BigDecimal.ZERO;
+            BigDecimal allDeposit = depotHeadMapperEx.getAllDepositByLinkNumber(linkNumber);
+            if(allDeposit != null) {
+                DepotHead dh = new DepotHead();
+                dh.setId(originalBill.getId());
+                dh.setLastDeposit(originalDeposit.subtract(allDeposit));
+                depotHeadMapper.updateByPrimaryKeySelective(dh);
+            }
         }
     }
 
@@ -1925,7 +1989,7 @@ public class DepotHeadService {
             if(list!=null) {
                 Long headId = list.get(0).getId();
                 /**入库和出库处理单据子表信息*/
-                depotItemService.saveDetials(rows, headId, "add", request);
+                depotItemService.saveDetials(rows, headId, "add", null, request);
             }
         }
         logService.insertLog("单据",

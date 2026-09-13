@@ -158,7 +158,7 @@
   import {getAction} from '@/api/manage'
   import {findBySelectSup, queryMaterialCategoryTreeList, getAllOrganizationTreeByUser} from '@/api/api'
   import JEllipsis from '@/components/jeecg/JEllipsis'
-  import moment from 'moment'
+  import dayjs from 'dayjs'
   import storage from '@/utils/storage'
   export default {
     name: "BuyInReport",
@@ -183,7 +183,7 @@
           materialParam:'',
           beginTime: getPrevMonthFormatDate(3),
           endTime: getFormatDate(),
-          createTimeRange: [moment(getPrevMonthFormatDate(3)), moment(getFormatDate())],
+          createTimeRange: [dayjs(getPrevMonthFormatDate(3)), dayjs(getFormatDate())],
           organId: undefined,
           depotId: undefined,
           organizationId: undefined,
@@ -243,7 +243,7 @@
       this.handleChangeOtherField(0)
     },
     methods: {
-      moment,
+      dayjs,
       getQueryParams() {
         return buildBuySaleReportQueryParams(this.queryParam, this.ipagination)
       },
@@ -251,7 +251,7 @@
         this.queryParam.beginTime = dateString[0]
         this.queryParam.endTime = dateString[1]
         if (dateString[0] && dateString[1]) {
-          this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+          this.queryParam.createTimeRange = [dayjs(dateString[0]), dayjs(dateString[1])]
         } else {
           this.queryParam.createTimeRange = []
         }

@@ -51,7 +51,6 @@
       },
       listeners() {
         const listeners = {}
-        Object.assign(listeners, this['$' + 'listeners'] || {})
         Object.keys(this.$attrs).forEach(key => {
           if (/^on[A-Z]|^onUpdate:/.test(key)) {
             const eventName = key.slice(2).replace(/^[A-Z]/, match => match.toLowerCase())

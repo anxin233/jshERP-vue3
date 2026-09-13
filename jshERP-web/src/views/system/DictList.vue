@@ -102,7 +102,7 @@
   import DictDataListModal from './modules/DictDataListModal'
   import {JeecgListMixin} from '@/mixins/JeecgListMixin'
   import { deleteAction } from '@/api/manage'
-  import moment from 'moment/moment'
+  import dayjs from 'dayjs'
   export default {
     name: "DictList",
     dicts: ['sys_normal_disable'],
@@ -177,7 +177,7 @@
         this.queryParam.beginTime=dateString[0]
         this.queryParam.endTime=dateString[1]
         if(dateString[0] && dateString[1]) {
-          this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+          this.queryParam.createTimeRange = [dayjs(dateString[0]), dayjs(dateString[1])]
         }
       },
       onDateOk(value) {

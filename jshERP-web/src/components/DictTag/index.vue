@@ -1,6 +1,6 @@
 <template>
   <div>
-    <template v-for="(item, index) in options">
+    <template v-for="(item, index) in options" :key="item.value">
       <template v-if="values.includes(item.value)">
         <span
           v-if="item.raw.listClass == 'default' || item.raw.listClass == ''"

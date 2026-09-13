@@ -43,9 +43,10 @@ export const FinancialModalMixin = {
     };
   },
   created () {
-    let realScreenWidth = window.screen.width
-    this.width = realScreenWidth<1500?'1200px':'1550px'
-    this.minWidth = realScreenWidth<1500?1150:1500
+    // 表格最小宽度按"当前窗口宽度"计算（而不是屏幕宽度），避免窗口较窄时表格超出弹窗 body 出现横向滚动条
+    const winWidth = window.innerWidth
+    this.width = winWidth<1500?'1200px':'1550px'
+    this.minWidth = Math.max(600, Math.min(1500, winWidth - 300))
   },
   mounted() {
     document.getElementById(this.prefixNo).addEventListener('keydown', this.handleOkKey)

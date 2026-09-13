@@ -7,6 +7,8 @@ import { VueAxios } from "@/utils/request"
 
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
+import '@/assets/less/layout-tokens.less'
+import '@/assets/less/common.less'
 
 import router, { preloadDynamicRoutes } from '@/permission' // permission control + 路由预加载
 import '@/utils/filter' // base filter
@@ -37,10 +39,22 @@ import DictTag from '@/components/DictTag'
 import LegacyIcon from '@/components/legacy/LegacyIcon.vue'
 import storage, { installStorage } from '@/utils/storage'
 
+// 一次性纠正为参考布局：白侧栏 + 主色 #1890FF（之后仍尊重用户手动切换）
+const NAV_THEME_RESTORE_KEY = 'NAV_THEME_RESTORE_LIGHT_20260727'
+const PRIMARY_COLOR_RESTORE_KEY = 'PRIMARY_COLOR_RESTORE_1890_20260727'
+
 const app = createApp({
   mounted () {
     // store.commit('SET_SIDEBAR_TYPE', storage.get(SIDEBAR_TYPE, true))
     store.commit('SET_SIDEBAR_TYPE', true)
+    if (!storage.get(NAV_THEME_RESTORE_KEY)) {
+      storage.set(DEFAULT_THEME, config.navTheme)
+      storage.set(NAV_THEME_RESTORE_KEY, 1)
+    }
+    if (!storage.get(PRIMARY_COLOR_RESTORE_KEY)) {
+      storage.set(DEFAULT_COLOR, config.primaryColor)
+      storage.set(PRIMARY_COLOR_RESTORE_KEY, 1)
+    }
     store.commit('TOGGLE_THEME', storage.get(DEFAULT_THEME, config.navTheme))
     store.commit('TOGGLE_LAYOUT_MODE', storage.get(DEFAULT_LAYOUT_MODE, config.layout))
     store.commit('TOGGLE_FIXED_HEADER', storage.get(DEFAULT_FIXED_HEADER, config.fixedHeader))
@@ -55,12 +69,31 @@ const app = createApp({
   render: () => h(App)
 })
 
+// Vue3 下页面模板里的具名插槽实际挂在子组件（a-table）实例上，页面自身 $slots 为空，
+// 因此需要先在页面 refs 的子组件里查找插槽，否则自定义列会退化为纯文本。
+function resolveColumnSlot (vm, slotName) {
+  if (vm.$slots && vm.$slots[slotName]) {
+    return vm.$slots[slotName]
+  }
+  const refs = vm.$refs || {}
+  for (const key of Object.keys(refs)) {
+    const ref = refs[key]
+    const list = Array.isArray(ref) ? ref : [ref]
+    for (const item of list) {
+      if (item && item.$slots && item.$slots[slotName]) {
+        return item.$slots[slotName]
+      }
+    }
+  }
+  return null
+}
+
 app.config.globalProperties.$renderColumnSlot = function (slotName, cell) {
   const payload = cell && typeof cell === 'object'
     ? cell
     : { text: cell }
   const text = Object.prototype.hasOwnProperty.call(payload, 'text') ? payload.text : cell
-  const slot = this.$slots && this.$slots[slotName]
+  const slot = resolveColumnSlot(this, slotName)
   return slot ? slot({
     text,
     value: text,

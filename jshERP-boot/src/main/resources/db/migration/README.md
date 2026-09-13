@@ -35,13 +35,15 @@ python scripts/build_v1_baseline.py
 java -jar jshERP.jar --spring.profiles.active=flyway-baseline
 ```
 
-`flyway-baseline` profile 会读取 `spring.flyway.baseline-version`，默认标记到 `8`，不会自动猜测数据库状态。首次 baseline 成功并生成 `flyway_schema_history` 后，后续恢复普通启动，并继续执行 V9+ 的增量脚本。
+`flyway-baseline` profile 对应配置文件 [`application-flyway-baseline.yml`](../application-flyway-baseline.yml)，会读取 `spring.flyway.baseline-version`，默认标记到 `8`，不会自动猜测数据库状态。首次 baseline 成功并生成 `flyway_schema_history` 后，后续恢复普通启动，并继续执行 V9+ 的增量脚本。
+
+主配置中的 Flyway 默认项见 [`application.yml`](../application.yml) 的 `spring.flyway` 节点。
 
 | 数据库状态 | 推荐行为 |
 |------------|----------|
-| 空库 | 普通启动，执行 V1→V8 |
+| 空库 | 普通启动，执行 V1→最新 |
 | 已有完整扩展结构但无 `flyway_schema_history` | 启用一次 `flyway-baseline`，baseline 到 8 |
-| 仅有核心 ERP 结构 | 调整 `spring.flyway.baseline-version=1` 后启用一次 `flyway-baseline` |
-| 已有 `flyway_schema_history` | 普通启动，仅执行未应用的 V9+ |
+| 仅有核心 ERP 结构 | 在 `application-flyway-baseline.yml`（或启动参数）将 `spring.flyway.baseline-version` 设为 `1` 后启用一次 `flyway-baseline` |
+| 已有 `flyway_schema_history` | 普通启动，仅执行未应用的后续版本 |
 
-**生产**：禁止自动猜测 baseline。上线前必须先确认数据库实际版本并备份，再决定是否启用 `flyway-baseline`。
+**生产**：禁止自动猜测 baseline。上线前必须先确认数据库实际版本并备份，再决定是否启用 `flyway-baseline`。应用配置统一使用 YAML（`application*.yml`），不再使用 `application*.properties`。

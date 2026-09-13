@@ -1,0 +1,29 @@
+# 本机开发：连 deploy/dev 的 Docker MySQL + Redis
+# 启用：--spring.profiles.active=local
+# 或 IDE Active profiles = local
+#
+# 依赖：cd deploy/dev && docker compose up -d
+
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/jsh_erp?useUnicode=true&characterEncoding=utf8&useCursorFetch=true&defaultFetchSize=500&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: jsherp_dev_root
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: jsherp_dev_redis
+  # 本地库若用 SQL 脚本初始化写入 history 时 checksum 可能为空；关闭校验避免启动失败
+  flyway:
+    validate-on-migrate: false
+    baseline-on-migrate: false
+
+
+server:
+  tomcat:
+    basedir: ${java.io.tmpdir}/jsh-tomcat
+
+file:
+  path: ./upload
+  exportTmp: ./export

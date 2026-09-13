@@ -25,33 +25,24 @@
   }
 </script>
 <style lang="less" scoped>
-  /*缩小首页布 局顶部的高度*/
-  @height: 49px;
-
-  .sider {
+  /* 与顶栏贯通：主色蓝底白字 */
+  .logo {
+    height: var(--jsh-logo-height, 49px) !important;
+    line-height: var(--jsh-logo-height, 49px) !important;
     box-shadow: none !important;
-    .logo {
-      color: #ffffff;
-      height: @height !important;
-      line-height: @height !important;
-      box-shadow: none !important;
-      transition: background 300ms;
-      background: #002140;
-      h1 {
-        font-size: 24px;
-        color: #ffffff;
-      }
-      a {
-        color: white;
-        &:hover {
-          color: rgba(255, 255, 255, 0.8);
-        }
-      }
+    transition: background 300ms;
+    overflow: hidden;
+    padding-left: 16px;
+    background: var(--jsh-logo-bg, #1890ff);
 
-    }
-
-    &.light .logo {
-      background-color: @primary-color;
+    h1 {
+      display: inline-block;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #fff;
+      vertical-align: middle;
     }
   }
 </style>

@@ -11,7 +11,7 @@
       :wrapClassName="wrapClassNameInfo()"
       :mask="isDesktop()"
       :maskClosable="false"
-      :okButtonProps="{ props: {disabled: disableSubmit} }"
+      :okButtonProps="{ disabled: disableSubmit }"
       @ok="handleOk"
       @cancel="handleCancel"
       cancelText="取消"

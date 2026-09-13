@@ -4,6 +4,9 @@ import { gzipSync } from 'node:zlib'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+// 与 src/config/layout.js、layout-tokens 主色一致
+const PRIMARY_COLOR = '#1890FF'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function resolve (dir) {
@@ -91,8 +94,8 @@ export default defineConfig(({ mode }) => {
       preprocessorOptions: {
         less: {
           modifyVars: {
-            'primary-color': '#1890FF',
-            'link-color': '#1890FF',
+            'primary-color': PRIMARY_COLOR,
+            'link-color': PRIMARY_COLOR,
             'border-radius-base': '4px',
             'font-size-base': '14px',
             'font-size-lg': '16px',

@@ -157,7 +157,7 @@
   }
 </script>
 <style scoped>
-  .valid-error .ant-select-selection__placeholder{
+  .valid-error .ant-select-selection-placeholder{
     color: #f5222d;
   }
 </style>

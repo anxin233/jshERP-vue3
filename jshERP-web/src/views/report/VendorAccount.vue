@@ -146,7 +146,7 @@
   import { getAction } from '@/api/manage'
   import {findBySelectSup} from '@/api/api'
   import JEllipsis from '@/components/jeecg/JEllipsis'
-  import moment from 'moment'
+  import dayjs from 'dayjs'
   export default {
     name: "VendorAccount",
     mixins:[JeecgListMixin],
@@ -174,7 +174,7 @@
           hasDebt: '1',
           beginTime: getPrevMonthFormatDate(3),
           endTime: getFormatDate(),
-          createTimeRange: [moment(getPrevMonthFormatDate(3)), moment(getFormatDate())],
+          createTimeRange: [dayjs(getPrevMonthFormatDate(3)), dayjs(getFormatDate())],
         },
         ipagination:{
           pageSize: 11,
@@ -247,7 +247,7 @@
         this.queryParam.beginTime = dateString[0]
         this.queryParam.endTime = dateString[1]
         if (dateString[0] && dateString[1]) {
-          this.queryParam.createTimeRange = [moment(dateString[0]), moment(dateString[1])]
+          this.queryParam.createTimeRange = [dayjs(dateString[0]), dayjs(dateString[1])]
         } else {
           this.queryParam.createTimeRange = []
         }

@@ -174,8 +174,8 @@
 </script>
 
 <style lang="less" scoped>
-
-  @height: 49px;
+  /* 文档 24：统一 header 高度；light=浅底深字，dark=深底浅字 */
+  @height: var(--jsh-header-height, 49px);
 
   .layout {
 
@@ -190,7 +190,7 @@
         }
       }
       .trigger {
-        line-height: 64px;
+        line-height: var(--jsh-header-height, 49px);
         &:hover {
           background: rgba(0, 0, 0, 0.05);
         }
@@ -199,22 +199,29 @@
 
     .header {
       z-index: 2;
-      color: white;
       height: @height;
-      background-color: @primary-color;
-      transition: background 300ms;
+      transition: background 300ms, color 300ms;
+      /* light：浅底深字 */
+      color: var(--jsh-header-color-light, #fff);
+      background-color: var(--jsh-header-bg-light, #1890ff);
+      box-shadow: none;
+      border-bottom: 1px solid var(--jsh-header-border, transparent);
 
-      /* dark 样式 */
+      /* dark：深底浅字 */
       &.dark {
-        color: #000;
-        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-        background-color: white !important;
+        color: var(--jsh-header-color-dark, rgba(255, 255, 255, 0.85));
+        background-color: var(--jsh-header-bg-dark, #001529) !important;
+        box-shadow: none;
+        border-bottom-color: transparent;
       }
     }
 
     .header, .top-nav-header-index {
       &.dark .trigger:hover {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.12);
+      }
+      &.light .trigger:hover {
+        background: rgba(255, 255, 255, 0.12);
       }
     }
   }

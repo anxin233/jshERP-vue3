@@ -165,6 +165,7 @@
       width: 100%;
     }
 
+    :deep(.ant-select-selection-search-input),
     :deep(.ant-select-search__field) {
       display: none !important;
     }

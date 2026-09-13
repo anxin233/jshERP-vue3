@@ -138,12 +138,12 @@
         <div class="table-operator"  style="margin-top: 5px">
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="myHandleAdd" type="primary"><template #icon><legacy-icon type="plus" /></template>新增</a-button>
           <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchDel"><template #icon><legacy-icon type="delete" /></template>删除</a-button>
+          <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" @click="batchSetStatus(1)"><template #icon><legacy-icon type="check" /></template>审核</a-button>
+          <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" @click="batchSetStatus(0)"><template #icon><legacy-icon type="stop" /></template>反审核</a-button>
           <a-button v-if="quickBtn.saleBack.indexOf(1)>-1 && btnEnableList.indexOf(1)>-1" @click="transferBill('转销售退货', quickBtn.saleBack)"><template #icon><legacy-icon type="share-alt" /></template>转销售退货</a-button>
           <a-tooltip title="只可将状态是部分出库的单据强制完成">
             <a-button v-if="inOutManageFlag && btnEnableList.indexOf(1)>-1" @click="batchForceClose"><template #icon><legacy-icon type="issues-close" /></template>强制结单</a-button>
           </a-tooltip>
-          <a-button v-if="checkFlag && btnEnableList.indexOf(2)>-1" @click="batchSetStatus(1)"><template #icon><legacy-icon type="check" /></template>审核</a-button>
-          <a-button v-if="checkFlag && btnEnableList.indexOf(7)>-1" @click="batchSetStatus(0)"><template #icon><legacy-icon type="stop" /></template>反审核</a-button>
           <a-tooltip title="只有最终欠款的值进行修正">
             <a-button v-if="btnEnableList.indexOf(1)>-1" @click="batchSetLastDebt"><template #icon><legacy-icon type="fund" /></template>修正欠款</a-button>
           </a-tooltip>

@@ -6,10 +6,7 @@ import com.jsh.erp.constants.BusinessConstants;
 import com.jsh.erp.constants.ExceptionConstants;
 import com.jsh.erp.datasource.entities.*;
 import com.jsh.erp.datasource.mappers.*;
-import com.jsh.erp.datasource.vo.DepotItemStockWarningCount;
-import com.jsh.erp.datasource.vo.DepotItemVo4Stock;
-import com.jsh.erp.datasource.vo.DepotItemVoBatchNumberList;
-import com.jsh.erp.datasource.vo.InOutPriceVo;
+import com.jsh.erp.datasource.vo.*;
 import com.jsh.erp.exception.BusinessRunTimeException;
 import com.jsh.erp.exception.JshException;
 import com.jsh.erp.utils.StringUtil;
@@ -381,7 +378,7 @@ public class DepotItemService {
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
-    public void saveDetials(String rows, Long headerId, String actionType, HttpServletRequest request) throws Exception{
+    public void saveDetials(String rows, Long headerId, String actionType, DepotHead preDepotHead, HttpServletRequest request) throws Exception{
         //查询单据主表信息
         DepotHead depotHead =depotHeadMapper.selectByPrimaryKey(headerId);
         //删除序列号和回收序列号
@@ -703,6 +700,10 @@ public class DepotItemService {
                     //单据状态:是否全部完成 2-全部完成 3-部分完成（针对订单的分批出入库）
                     String billStatus = getBillStatusByParam(depotHead, depotHead.getLinkNumber(), "normal");
                     changeBillStatus(depotHead.getLinkNumber(), billStatus);
+                    if(preDepotHead!=null && StringUtil.isNotEmpty(preDepotHead.getLinkNumber()) && !preDepotHead.getLinkNumber().equals(depotHead.getLinkNumber())) {
+                        String preBillStatus = getBillStatusByParam(preDepotHead, preDepotHead.getLinkNumber(), "normal");
+                        changeBillStatus(preDepotHead.getLinkNumber(), preBillStatus);
+                    }
                 }
             }
             //当前单据类型为采购订单的逻辑
@@ -711,11 +712,23 @@ public class DepotItemService {
                 if(StringUtil.isNotEmpty(depotHead.getLinkNumber())) {
                     String billStatus = getBillStatusByParam(depotHead, depotHead.getLinkNumber(), "normal");
                     changeBillPurchaseStatus(depotHead.getLinkNumber(), billStatus);
+                    if(preDepotHead!=null && StringUtil.isNotEmpty(preDepotHead.getLinkNumber()) && !preDepotHead.getLinkNumber().equals(depotHead.getLinkNumber())) {
+                        String preBillStatus = getBillStatusByParam(preDepotHead, preDepotHead.getLinkNumber(), "normal");
+                        if(preBillStatus.equals(BusinessConstants.BILLS_STATUS_AUDIT)) {
+                            //采购进度不存在已审核状态，需要转为未采购-0
+                            preBillStatus = BusinessConstants.BILLS_STATUS_UN_AUDIT;
+                        }
+                        changeBillPurchaseStatus(preDepotHead.getLinkNumber(), preBillStatus);
+                    }
                 }
                 //如果关联单据号非空则更新订单的状态,此处针对请购单转采购订单的场景
                 if(StringUtil.isNotEmpty(depotHead.getLinkApply())) {
                     String billStatus = getBillStatusByParam(depotHead, depotHead.getLinkApply(), "apply");
                     changeBillStatus(depotHead.getLinkApply(), billStatus);
+                    if(preDepotHead!=null && StringUtil.isNotEmpty(preDepotHead.getLinkApply()) && !preDepotHead.getLinkApply().equals(depotHead.getLinkApply())) {
+                        String preBillStatus = getBillStatusByParam(preDepotHead, preDepotHead.getLinkApply(), "apply");
+                        changeBillStatus(preDepotHead.getLinkApply(), preBillStatus);
+                    }
                 }
             }
         } else {
@@ -737,21 +750,26 @@ public class DepotItemService {
         List<DepotItemVo4MaterialAndSum> linkList = depotItemMapperEx.getLinkBillDetailMaterialSum(linkStr);
         //获取分批操作后单据的商品和商品数量（汇总）
         List<DepotItemVo4MaterialAndSum> batchList = depotItemMapperEx.getBatchBillDetailMaterialSum(linkStr, linkType, depotHead.getType());
-        //将分批操作后的单据的商品和商品数据构造成Map
-        Map<Long, BigDecimal> materialSumMap = new HashMap<>();
-        for(DepotItemVo4MaterialAndSum materialAndSum : batchList) {
-            materialSumMap.put(materialAndSum.getMaterialExtendId(), materialAndSum.getOperNumber());
-        }
-        for(DepotItemVo4MaterialAndSum materialAndSum : linkList) {
-            //过滤掉原单里面有数量为0的商品
-            if(materialAndSum.getOperNumber().compareTo(BigDecimal.ZERO) != 0) {
-                BigDecimal materialSum = materialSumMap.get(materialAndSum.getMaterialExtendId());
-                if (materialSum != null) {
-                    if (materialSum.compareTo(materialAndSum.getOperNumber()) < 0) {
+        if(batchList.isEmpty()) {
+            //从未进行过分批操作
+            res = BusinessConstants.BILLS_STATUS_AUDIT;
+        } else {
+            //将分批操作后的单据的商品和商品数据构造成Map
+            Map<Long, BigDecimal> materialSumMap = new HashMap<>();
+            for(DepotItemVo4MaterialAndSum materialAndSum : batchList) {
+                materialSumMap.put(materialAndSum.getMaterialExtendId(), materialAndSum.getOperNumber());
+            }
+            for(DepotItemVo4MaterialAndSum materialAndSum : linkList) {
+                //过滤掉原单里面有数量为0的商品
+                if(materialAndSum.getOperNumber().compareTo(BigDecimal.ZERO) != 0) {
+                    BigDecimal materialSum = materialSumMap.get(materialAndSum.getMaterialExtendId());
+                    if (materialSum != null) {
+                        if (materialSum.compareTo(materialAndSum.getOperNumber()) < 0) {
+                            res = BusinessConstants.BILLS_STATUS_SKIPING;
+                        }
+                    } else {
                         res = BusinessConstants.BILLS_STATUS_SKIPING;
                     }
-                } else {
-                    res = BusinessConstants.BILLS_STATUS_SKIPING;
                 }
             }
         }
@@ -1214,78 +1232,51 @@ public class DepotItemService {
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
-    public BigDecimal getFinishPurchaseNumber(Long meId, Long id, Long headerId, Unit unitInfo, String materialUnit, String linkType) {
+    public BigDecimal getFinishPurchaseNumber(Long meId, Long id, String number, String linkType, String subType) {
         BigDecimal count = BigDecimal.ZERO;
-        Long linkId = id;
-        DepotHead depotHead =depotHeadMapper.selectByPrimaryKey(headerId);
-        String linkStr = depotHead.getNumber(); //订单号
         // 针对以销定购的情况
-        if(BusinessConstants.SUB_TYPE_SALES_ORDER.equals(depotHead.getSubType())) {
+        if(BusinessConstants.SUB_TYPE_SALES_ORDER.equals(subType)) {
             String goToType = BusinessConstants.SUB_TYPE_PURCHASE_ORDER;
             String noType = "normal";
-            count = depotItemMapperEx.getFinishNumber(meId, linkId, linkStr, noType, goToType);
-            //根据多单位情况进行数量的转换
-            if(materialUnit.equals(unitInfo.getOtherUnit()) && unitInfo.getRatio()!=null && unitInfo.getRatio().compareTo(BigDecimal.ZERO)!=0) {
-                count = count.divide(unitInfo.getRatio(),2,BigDecimal.ROUND_HALF_UP);
-            }
-            if(materialUnit.equals(unitInfo.getOtherUnitTwo()) && unitInfo.getRatioTwo()!=null && unitInfo.getRatioTwo().compareTo(BigDecimal.ZERO)!=0) {
-                count = count.divide(unitInfo.getRatioTwo(),2,BigDecimal.ROUND_HALF_UP);
-            }
-            if(materialUnit.equals(unitInfo.getOtherUnitThree()) && unitInfo.getRatioThree()!=null && unitInfo.getRatioThree().compareTo(BigDecimal.ZERO)!=0) {
-                count = count.divide(unitInfo.getRatioThree(),2,BigDecimal.ROUND_HALF_UP);
-            }
+            count = depotItemMapperEx.getFinishNumber(meId, id, number, noType, goToType);
         }
         return count;
     }
 
     @Transactional(value = "transactionManager", rollbackFor = Exception.class)
-    public BigDecimal getFinishNumber(Long meId, Long id, Long headerId, Unit unitInfo, String materialUnit, String linkType) {
-        Long linkId = id;
+    public BigDecimal getFinishNumber(Long meId, Long id, String number, String linkType, String subType) {
         String goToType = "";
-        DepotHead depotHead =depotHeadMapper.selectByPrimaryKey(headerId);
-        String linkStr = depotHead.getNumber(); //订单号
         if("other".equals(linkType)) {
             //采购入库、采购退货、销售出库、销售退货都转其它入库
-            if(BusinessConstants.SUB_TYPE_PURCHASE.equals(depotHead.getSubType())
-                    || BusinessConstants.SUB_TYPE_PURCHASE_RETURN.equals(depotHead.getSubType())
-                    || BusinessConstants.SUB_TYPE_SALES.equals(depotHead.getSubType())
-                    || BusinessConstants.SUB_TYPE_SALES_RETURN.equals(depotHead.getSubType())) {
+            if(BusinessConstants.SUB_TYPE_PURCHASE.equals(subType)
+                    || BusinessConstants.SUB_TYPE_PURCHASE_RETURN.equals(subType)
+                    || BusinessConstants.SUB_TYPE_SALES.equals(subType)
+                    || BusinessConstants.SUB_TYPE_SALES_RETURN.equals(subType)) {
                 goToType = BusinessConstants.SUB_TYPE_OTHER;
             }
         } else if("basic".equals(linkType)||"purchase".equals(linkType)) {
             //采购订单转采购入库
-            if(BusinessConstants.SUB_TYPE_PURCHASE_ORDER.equals(depotHead.getSubType())) {
+            if(BusinessConstants.SUB_TYPE_PURCHASE_ORDER.equals(subType)) {
                 goToType = BusinessConstants.SUB_TYPE_PURCHASE;
             }
             //销售订单转销售出库
-            if(BusinessConstants.SUB_TYPE_SALES_ORDER.equals(depotHead.getSubType())) {
+            if(BusinessConstants.SUB_TYPE_SALES_ORDER.equals(subType)) {
                 goToType = BusinessConstants.SUB_TYPE_SALES;
             }
             //采购入库转采购退货
-            if(BusinessConstants.SUB_TYPE_PURCHASE.equals(depotHead.getSubType())) {
+            if(BusinessConstants.SUB_TYPE_PURCHASE.equals(subType)) {
                 goToType = BusinessConstants.SUB_TYPE_PURCHASE_RETURN;
             }
             //销售出库转销售退货
-            if(BusinessConstants.SUB_TYPE_SALES.equals(depotHead.getSubType())) {
+            if(BusinessConstants.SUB_TYPE_SALES.equals(subType)) {
                 goToType = BusinessConstants.SUB_TYPE_SALES_RETURN;
             }
         }
         String noType = "normal";
-        if(BusinessConstants.SUB_TYPE_PURCHASE_APPLY.equals(depotHead.getSubType())) {
+        if(BusinessConstants.SUB_TYPE_PURCHASE_APPLY.equals(subType)) {
             noType = "apply";
         }
-        BigDecimal count = depotItemMapperEx.getFinishNumber(meId, linkId, linkStr, noType, goToType);
-        //根据多单位情况进行数量的转换
-        if(materialUnit.equals(unitInfo.getOtherUnit()) && unitInfo.getRatio()!=null && unitInfo.getRatio().compareTo(BigDecimal.ZERO)!=0) {
-            count = count.divide(unitInfo.getRatio(),2,BigDecimal.ROUND_HALF_UP);
-        }
-        if(materialUnit.equals(unitInfo.getOtherUnitTwo()) && unitInfo.getRatioTwo()!=null && unitInfo.getRatioTwo().compareTo(BigDecimal.ZERO)!=0) {
-            count = count.divide(unitInfo.getRatioTwo(),2,BigDecimal.ROUND_HALF_UP);
-        }
-        if(materialUnit.equals(unitInfo.getOtherUnitThree()) && unitInfo.getRatioThree()!=null && unitInfo.getRatioThree().compareTo(BigDecimal.ZERO)!=0) {
-            count = count.divide(unitInfo.getRatioThree(),2,BigDecimal.ROUND_HALF_UP);
-        }
-        return count;
+        return depotItemMapperEx.getFinishNumber(meId, id, number, noType, goToType);
     }
 
     /**

@@ -82,6 +82,13 @@ export const JeecgListMixin = {
     }
   },
   created() {
+    // Vue3 的 data 为浅合并：页面若只覆写部分 ipagination 字段（如仅 pageSize/pageSizeOptions），
+    // 会丢失 current/total，导致 currentPage 参数缺失、列表加载失败。这里补齐默认值。
+    this.ipagination = Object.assign({
+      current: 1,
+      pageSize: 10,
+      total: 0
+    }, this.ipagination || {})
     if(this.isDesktop()) {
       this.cardStyle = 'height:' + (document.documentElement.clientHeight-100) + 'px'
     }
@@ -355,19 +362,15 @@ export const JeecgListMixin = {
           this.$message.warning("文件下载失败")
           return
         }
-        if (typeof window.navigator.msSaveBlob !== 'undefined') {
-          window.navigator.msSaveBlob(new Blob([data],{type: 'application/vnd.ms-excel'}), fileName+'.xls')
-        }else{
-          let url = window.URL.createObjectURL(new Blob([data],{type: 'application/vnd.ms-excel'}))
-          let link = document.createElement('a')
-          link.style.display = 'none'
-          link.href = url
-          link.setAttribute('download', fileName + '_' + getNowFormatStr()+'.xls')
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link); //下载完成移除元素
-          window.URL.revokeObjectURL(url); //释放掉blob对象
-        }
+        let url = window.URL.createObjectURL(new Blob([data],{type: 'application/vnd.ms-excel'}))
+        let link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download', fileName + '_' + getNowFormatStr()+'.xls')
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link); //下载完成移除元素
+        window.URL.revokeObjectURL(url); //释放掉blob对象
       })
     },
     //通过post方式导出Excel
@@ -382,19 +385,15 @@ export const JeecgListMixin = {
           this.$message.warning("文件下载失败")
           return
         }
-        if (typeof window.navigator.msSaveBlob !== 'undefined') {
-          window.navigator.msSaveBlob(new Blob([data],{type: 'application/vnd.ms-excel'}), fileName+'.xls')
-        }else{
-          let url = window.URL.createObjectURL(new Blob([data],{type: 'application/vnd.ms-excel'}))
-          let link = document.createElement('a')
-          link.style.display = 'none'
-          link.href = url
-          link.setAttribute('download', fileName + '_' + getNowFormatStr()+'.xls')
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link); //下载完成移除元素
-          window.URL.revokeObjectURL(url); //释放掉blob对象
-        }
+        let url = window.URL.createObjectURL(new Blob([data],{type: 'application/vnd.ms-excel'}))
+        let link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download', fileName + '_' + getNowFormatStr()+'.xls')
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link); //下载完成移除元素
+        window.URL.revokeObjectURL(url); //释放掉blob对象
       })
     },
     /* 导入 */

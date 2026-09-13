@@ -335,7 +335,13 @@ public class SystemConfigService {
     }
 
     public String getFileUrlLocal(String imgPath) {
-        return filePath + File.separator + imgPath;
+        // 防目录穿越：规范化后必须仍位于上传根目录内（单纯 replace ".." 可被 "....//" 之类绕过）
+        Path root = Paths.get(filePath).toAbsolutePath().normalize();
+        Path target = root.resolve(imgPath).normalize();
+        if (!target.startsWith(root)) {
+            throw new IllegalArgumentException("非法的文件路径: " + imgPath);
+        }
+        return target.toString();
     }
 
     public String getFileUrlAliOss(String imgPath) throws Exception {

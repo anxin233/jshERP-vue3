@@ -39,7 +39,8 @@
               </a-col>
               <a-col :md="7" :sm="24">
                 <a-form-item>
-                  <span>总库存：{{currentStock}}（总库存金额：{{currentStockPrice}}（总重量：{{currentWeight}}</span>
+                  <span v-if="showStockPrice">总库存：{{currentStock}}（总库存金额：{{currentStockPrice}}，总重量：{{currentWeight}}）</span>
+                  <span v-if="!showStockPrice">总库存：{{currentStock}}（总重量：{{currentWeight}}）</span>
                 </a-form-item>
               </a-col>
             </a-row>
@@ -107,10 +108,14 @@
               <template v-else>{{ column.title }}</template>
             </template>
             <template #action="{ text, record }"><span>
-              <a @click="showMaterialInOutList(record)">{{record.id?'流水':''}}</a>
-              <a-divider type="vertical" />
+              <a @click="showMaterialInOutList(record)" v-if="showStockPrice">{{record.id?'流水':''}}</a>
+              <a-divider type="vertical" v-if="showStockPrice" />
               <a @click="showMaterialDepotStockList(record)">{{record.id?'分布':''}}</a>
             </span></template>
+            <template #customRenderPurchaseDecimal="{ text, record }">
+              <a v-if="moveAvgPriceFlag" @click="showStockPriceInOutList(record)">{{record.purchaseDecimal}}</a>
+              <template v-else>{{record.purchaseDecimal}}</template>
+            </template>
             <template #customPic="{ text, record }">
               <a-popover placement="right" trigger="click" destroyTooltipOnHide>
                 <template #content>
@@ -148,25 +153,28 @@
         <!-- table区域-end -->
         <material-in-out-list ref="materialInOutList" @ok="modalFormOk"></material-in-out-list>
         <material-depot-stock-list ref="materialDepotStockList" @ok="modalFormOk"></material-depot-stock-list>
+        <stock-price-in-out-list ref="stockPriceInOutList"></stock-price-in-out-list>
       </a-card>
     </a-col>
   </a-row>
 </template>
 <script>
   import MaterialInOutList from './modules/MaterialInOutList'
+  import StockPriceInOutList from './modules/StockPriceInOutList'
   import MaterialDepotStockList from './modules/MaterialDepotStockList'
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { getAction, getFileAccessHttpUrl } from '@/api/manage'
   import {queryMaterialCategoryTreeList} from '@/api/api'
   import { getMpListShort } from "@/utils/util"
   import JEllipsis from '@/components/jeecg/JEllipsis'
-  import moment from 'moment'
+  import dayjs from 'dayjs'
   import storage from '@/utils/storage'
   export default {
     name: "MaterialStock",
     mixins:[JeecgListMixin],
     components: {
       MaterialInOutList,
+      StockPriceInOutList,
       MaterialDepotStockList,
       JEllipsis
     },
@@ -197,6 +205,8 @@
         currentStock: '',
         currentStockPrice: '',
         currentWeight: '',
+        showStockPrice: false,
+        moveAvgPriceFlag: false,
         pageName: 'materialStock',
         // 默认索引
         defDataIndex:['rowIndex','action','mBarCode','name','standard','model','color','categoryName', 'position','unitName',
@@ -223,7 +233,9 @@
           {title: '类别', dataIndex: 'categoryName', width: 60, ellipsis:true},
           {title: '仓位货架', dataIndex: 'position', width: 60, ellipsis:true},
           {title: '单位', dataIndex: 'unitName', width: 60, ellipsis:true},
-          {title: '成本价', dataIndex: 'purchaseDecimal', sorter: (a, b) => a.purchaseDecimal - b.purchaseDecimal, width: 60},
+          {title: '成本价', dataIndex: 'purchaseDecimal', sorter: (a, b) => a.purchaseDecimal - b.purchaseDecimal, width: 60,
+            customRender: (cell) => this.$renderColumnSlot('customRenderPurchaseDecimal', cell)
+          },
           {title: '初始库存', dataIndex: 'initialStock', width: 60},
           {title: '库存', dataIndex: 'currentStock', sorter: (a, b) => a.currentStock - b.currentStock, width: 60,
             customRender: (cell) => this.$renderColumnSlot('customRenderStock', cell)
@@ -250,7 +262,7 @@
       }
     },
     methods: {
-      moment,
+      dayjs,
       getQueryParams() {
         let param = Object.assign({}, this.queryParam, this.isorter);
         if(this.depotSelected && this.depotSelected.length>0) {
@@ -310,6 +322,8 @@
             this.currentStock = Number(res.data.currentStock || 0).toFixed(2)
             this.currentStockPrice = Number(res.data.currentStockPrice || 0).toFixed(2)
             this.currentWeight = Number(res.data.currentWeight || 0).toFixed(2)
+            this.showStockPrice = res.data.showStockPrice
+            this.moveAvgPriceFlag = res.data.moveAvgPriceFlag
           } else if(res.code===510){
             this.$message.warning(res.data)
           } else {
@@ -326,6 +340,15 @@
         this.$refs.materialInOutList.show(record, depotIds);
         this.$refs.materialInOutList.title = "查看商品库存流水（条码：";
         this.$refs.materialInOutList.disableSubmit = false;
+      },
+      showStockPriceInOutList(record) {
+        let depotIds = ''
+        if(this.depotSelected && this.depotSelected.length>0) {
+          depotIds = this.depotSelected.join()
+        }
+        this.$refs.stockPriceInOutList.show(record, depotIds);
+        this.$refs.stockPriceInOutList.title = "查看成本价的单据流水";
+        this.$refs.stockPriceInOutList.disableSubmit = false;
       },
       showMaterialDepotStockList(record) {
         let depotIds = ''

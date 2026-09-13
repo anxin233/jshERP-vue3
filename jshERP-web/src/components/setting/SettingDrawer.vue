@@ -190,7 +190,6 @@
 </template>
 
 <script>
-  import DetailList from '@/components/tools/DetailList'
   import SettingItem from '@/components/setting/SettingItem'
   import config from '@/defaultSettings'
   import { updateTheme, updateColorWeak, colorList } from '@/components/tools/setting'
@@ -199,7 +198,6 @@
 
   export default {
     components: {
-      DetailList,
       SettingItem
     },
     mixins: [mixin, mixinDevice],
