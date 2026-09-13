@@ -18,6 +18,13 @@
 | V10 | `V10__system_config_material_price_tax_flag.sql` | 系统配置商品价格含税标记 |
 | V11 | `V11__local_db_sync_20260601.sql` | 本地库补齐欠款字段、字典菜单和权限字段容量 |
 | V12 | `V12__workorder_menu_icon.sql` | 工单管理菜单补全 icon |
+| V13 | `V13__tenant_role_project_permission.sql` | 租户角色项目菜单权限 |
+| V14 | `V14__fix_menu_name_encoding.sql` | 修复 V8 扩展菜单名称双重编码乱码 |
+| V15 | `V15__add_last_deposit.sql` | 单据增加最终订金字段 |
+| V16 | `V16__add_app_version_platform_config.sql` | 平台配置增加手机端版本 |
+| V17 | `V17__fix_seed_name_encoding.sql` | 修复 V7/V9/V11 种子数据双重编码乱码（菜单/选项/字典） |
+
+> 乱码成因：历史某次执行 V7/V9/V11 时连接字符集为 latin1（MySQL 为 cp1252），UTF-8 中文被二次编码入库；V14 只修复了 V8 的菜单。修复脚本使用 `UNHEX` 十六进制字面量并用 `HEX(col) LIKE 'C3%'` 做幂等判断，与客户端编码无关。
 
 ## 重新生成 V1
 
