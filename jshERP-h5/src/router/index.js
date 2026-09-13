@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/store/user'
 
 const routes = [
   {
@@ -53,6 +54,25 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+router.beforeEach((to) => {
+  const userStore = useUserStore()
+  if (!userStore.token) {
+    if (to.path === '/login') return true
+    const query = to.fullPath && to.fullPath !== '/' ? { redirect: to.fullPath } : {}
+    return { path: '/login', query }
+  }
+  if (to.path === '/login') {
+    return { path: '/home' }
+  }
+  if (!userStore.sessionChecked) {
+    // 应用启动后首次进入业务页时校验登录态并加载按钮权限（token 失效会被请求层拦截并跳登录）
+    userStore.loadBtnPermissions().catch(() => {
+      userStore.sessionChecked = false
+    })
+  }
+  return true
 })
 
 router.afterEach((to) => {
